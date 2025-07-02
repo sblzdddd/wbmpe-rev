@@ -14,7 +14,7 @@ const { toggleSidebar } = useSidebar()
 <template>
   <SidebarMenu>
     <SidebarMenuItem>
-      <div class="flex w-full items-center gap-2 overflow-hidden py-2 text-left outline-hidden group-data-[collapsible=icon]:size-12! [&>span:last-child]:truncate text-sm group-data-[collapsible=icon]:p-0!">
+      <div class="flex w-full items-center gap-4.5 overflow-hidden py-1.5 text-left outline-hidden group-data-[collapsible=icon]:size-12! [&>span:last-child]:truncate text-sm group-data-[collapsible=icon]:p-0!">
         
         <Button variant="ghost" size="icon" class="ml-0.5" @click.stop="toggleSidebar()">
           <Icon name="lucide:menu" size="20" />

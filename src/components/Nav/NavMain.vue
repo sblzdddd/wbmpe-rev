@@ -45,8 +45,13 @@ const { isOnTop } = useScroll()
 @reference '../../assets/css/tailwind.css';
 .menu-btn {
   @apply py-4 pl-4 hover:!bg-transparent relative overflow-hidden;
+  &:is(.dark *) {
+    &:before {
+      @apply bg-white/15;
+    }
+  }
   &:before {
-    @apply content-[''] absolute top-0 left-0 w-[70%] h-full opacity-0 transition-all ease-out duration-150 bg-accent rounded-md;
+    @apply bg-black/15  content-[''] absolute top-0 left-0 w-[70%] h-full opacity-0 transition-all ease-out duration-150 rounded-md;
     transform-origin: left;
   }
   &:is(:where(.group)[data-collapsible="icon"] *):before {
@@ -55,6 +60,9 @@ const { isOnTop } = useScroll()
   }
   &:hover:before {
     @apply w-full scale-100 opacity-100;
+  }
+  &:active:before {
+    @apply w-full scale-90 opacity-100;
   }
   &.nav-active:before {
     @apply !opacity-0 !duration-0;

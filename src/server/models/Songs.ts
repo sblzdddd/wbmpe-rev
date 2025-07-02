@@ -1,0 +1,16 @@
+import mongoose from 'mongoose';
+import { ObjectId } from 'mongodb';
+
+const songSchema = new mongoose.Schema({
+  addedBy: {type: ObjectId, ref: 'Users', required: false},   // userId
+  album: {type: ObjectId, ref: 'Albums', required: true},   // albumId
+  artists: [{type: ObjectId, ref: 'Artists'}],   // artistIds
+  duration: {type: Number, required: true},
+  name: {type: String, required: true},
+  src: {type: String, required: true, unique: true},
+}, {
+  timestamps: true, // Adds createdAt and updatedAt fields
+});
+
+const Songs = mongoose.model('Songs', songSchema);
+export default Songs;

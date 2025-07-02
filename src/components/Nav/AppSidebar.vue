@@ -4,7 +4,7 @@ import { animate, createSpring } from 'animejs'
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
+  // SidebarFooter,
   SidebarHeader,
   useSidebar,
 } from '@/components/ui/sidebar'
@@ -14,9 +14,15 @@ const {open} = useSidebar()
 const router = useRouter()
 const route = useRoute()
 
+const getBasePath = (path: string) => {
+  // /playlists/1 -> /playlists
+  return '/' + path.split('/')[1]
+}
+
 router.beforeEach(async (to, from, next) => {
-  const navItem = document.getElementById(to.path)
-  const lastNavItem = document.getElementById(from.path)
+  if(to.path === from.path) return next()
+  const navItem = document.getElementById(getBasePath(to.path))
+  const lastNavItem = document.getElementById(getBasePath(from.path))
   let lastNavItemRect = null
   if(lastNavItem) {
     lastNavItem.classList.remove('nav-active')
@@ -65,7 +71,7 @@ watch(open, async () => {
 })
 
 onMounted(() => {
-  const navItem = document.getElementById(route.path)
+  const navItem = document.getElementById(getBasePath(route.path))
   if(navItem) {
     navItem.classList.add('nav-active')
     const rect = navItem.getBoundingClientRect()
@@ -170,7 +176,7 @@ const data = {
       <NavTitle />
     </SidebarHeader>
     <SidebarContent class="gap-0">
-      <div id="nav-highlighter" class="fixed bg-black/15 dark:bg-accent rounded-md opacity-0 transition-opacity duration-200" />
+      <div id="nav-highlighter" class="fixed bg-black/15 dark:bg-white/15 rounded-md opacity-0 transition-opacity duration-200" />
       <NavMain :data="data.navMain" />
       <NavPlaylist :data="data.playlist" />
     </SidebarContent>

@@ -1,21 +1,25 @@
-export interface Song {
-  id: number;
+import type { SimpleArtist } from "./artist";
+import type { SimpleAlbum } from "./album";
+import type { TimeMetadata } from "./time_metadata";
+
+export type Song = {
+  _id: string;
   src: string;
   name: string;
-  artistNames: string;
-  albumId: number;
-  artists: number[];
-  album: string|null;
+  artists: SimpleArtist[];
+  album: SimpleAlbum;
   duration: number;
-  pic?: string;
-  hasSubtitles: boolean|null;
-  addedTime: number;
-  is_favourite: boolean;
-  is_parsed: boolean|null;
-}
-export interface SongList {
+  isFavourite: boolean;
+} & TimeMetadata
+
+export type SongItem = {
+  _id: string;
+  song: Song;
+} & TimeMetadata
+
+export type SongList = {
   length: number;
   page: number;
   max_page: number;
-  songs: Song[];
+  songs: SongItem[];
 }

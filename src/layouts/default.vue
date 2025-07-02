@@ -3,7 +3,17 @@ import {
   SidebarInset,
   SidebarProvider,
 } from '@/components/ui/sidebar'
-import bg from '@/assets/images/bg.jpg'
+import AppBackdrop from '@/components/Background/AppBackdrop.vue'
+
+const router = useRouter();
+const { resetBackground } = useBackground();
+
+router.beforeEach((to, from, next) => {
+  if (to.path === '/') {
+    resetBackground();
+  }
+  next();
+});
 
 defineOptions({
   name: "DefaultLayout",
@@ -11,7 +21,12 @@ defineOptions({
 </script>
 <template>
   <SidebarProvider>
-    <img class="absolute top-0 left-0 w-full h-full z-[-1] mask opacity-25 dark:opacity-50" :src="bg" >
+    <img 
+      class="absolute top-0 left-0 w-full h-full z-[-2] transition-opacity duration-500 ease-in-out object-cover opacity-10 dark:opacity-60"
+      :style="{ maskImage: 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 75%)' }"
+      src="/images/bg.jpg"
+    >
+    <AppBackdrop />
     <Nav-AppSidebar />
     <SidebarInset class="bg-transparent">
       <Nav-AppHeader />
@@ -31,14 +46,11 @@ defineOptions({
 }
 
 .page-enter-from {
-  transform: translateX(60px);
+  transform: translateX(30px);
 }
 
 .page-wrapper {
   width: 100%;
   height: 100%;
-}
-.mask {
-  mask-image: linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 65%);
 }
 </style>

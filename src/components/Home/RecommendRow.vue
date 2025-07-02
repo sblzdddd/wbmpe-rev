@@ -15,7 +15,7 @@
       </div>
     </div>
     <section ref="carouselRef" class="carousel grow overflow-hidden py-3" :class="open ?'mx-0 md:mx-1 lg:mx-4 xl:mx-7 px-3' : 'mx-0 md:mx-1 lg:mx-7 xl:mx-[100px] px-3'">
-      <div class="carousel__container flex gap-6">
+      <div class="carousel__container flex gap-7">
         <NuxtLink v-for="item in data.items" :key="item.title" :to="item.link" :class="recom_item_class" class="carousel__slide">
           <Image :src="item.image" :alt="item.title" img-class="w-full h-full aspect-square object-cover rounded-sm" />
           <div class="pt-0 pb-0 flex flex-col items-start">

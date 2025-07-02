@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/first-attribute-linebreak -->
 <template>
-  <div ref="bannerRef" class="banner relative overflow-hidden" v-bind="$attrs">
+  <div ref="bannerRef" v-bind="$attrs">
     <div class="banner__container">
       <Card v-for="item in banner" :key="item.title" :to="item.link"
             class="banner__slide h-full bg-cover bg-center mx-2 p-3 relative cursor-pointer"

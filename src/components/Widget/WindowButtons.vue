@@ -21,12 +21,14 @@
             variant="ghost"
             size="icon"
             class="w-7 h-7"
-            @click.stop=""
+            @click.stop="closeWindow()"
     >
       <Icon name="lucide:x" size="16"/>
     </Button>
   </div>
 </template>
 <script setup lang="ts">
-
+const closeWindow = () => {
+  document.getElementsByTagName('html')[0].remove();
+}
 </script>

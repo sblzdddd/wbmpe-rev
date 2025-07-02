@@ -1,12 +1,17 @@
+import type { SimpleArtist } from "./artist";
 import type { SongList } from "./song";
 
+export interface SimpleAlbum {
+  _id: string;
+  name: string;
+  coverUrl: string;
+}
+
 export interface AlbumData {
-  id: number;
-  pic: string;
+  _id: string;
+  artists: SimpleArtist[];
+  coverUrl: string;
   name: string;
   description: string;
-  length: number;
-  page: number;
-  max_page: number;
-  songs: SongList;
+  songList: SongList;
 }

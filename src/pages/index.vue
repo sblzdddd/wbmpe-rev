@@ -18,16 +18,14 @@ const { data: homeData } = await useFetch<HomeResponse>('/api/home', {
 })
 const { paddingClass } = useContentPadding()
 
-console.log(homeData.value)
-
 </script>
 
 <template>
   <div class="flex flex-1 flex-col gap-4">
     <div class="grid grid-cols-5 gap-4 mt-6 mb-16" :class="paddingClass">
-      <TopBanner :banner="homeData?.data?.banner" class="h-full col-span-5 xl:col-span-2" />
-      <TopRecommend :data="homeData?.data?.card_recom" class="h-44 col-span-5 sm:col-span-4 lg:col-span-3 xl:col-span-2" />
-      <Card class="bg-white/70 dark:bg-muted/70 rounded-xl hidden sm:block col-span-1 lg:col-span-2 xl:col-span-1 p-4">
+      <TopBanner :banner="homeData?.data?.banner" class="h-full col-span-5 xl:col-span-2 banner !rounded-xl shadow-sm overflow-hidden relative" />
+      <TopRecommend :data="homeData?.data?.card_recom" class="h-44 col-span-5 lg:col-span-3 xl:col-span-2" />
+      <Card class="bg-white/70 dark:bg-muted/70 rounded-xl hidden lg:block lg:col-span-2 xl:col-span-1 p-4">
         <CardHeader class="px-0">
           <CardTitle>Total Time:</CardTitle>
         </CardHeader>
