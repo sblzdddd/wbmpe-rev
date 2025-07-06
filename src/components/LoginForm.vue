@@ -13,7 +13,6 @@ const canSubmit = computed(() => {
 
 const password = ref('')
 const email = ref('')
-const formError = ref('')
 
 const submit = async (e: Event) => {
   e.preventDefault()
@@ -21,7 +20,6 @@ const submit = async (e: Event) => {
   if (!canSubmit.value) return
   
   clearError()
-  formError.value = ''
   
   const result = await login(email.value, password.value)
   
@@ -31,17 +29,19 @@ const submit = async (e: Event) => {
     // Reset form
     email.value = ''
     password.value = ''
-  } else {
-    formError.value = result.error || 'Login failed'
   }
 }
 
 // Clear error when form changes
 watch([email, password], () => {
-  if (formError.value) {
-    formError.value = ''
-  }
+  clearError()
 })
+
+const startOAuth = (provider: string) => {
+  console.log('Starting OAuth with provider:', provider)
+  window.location.href = `/auth/${provider}`
+  // TODO: Implement OAuth
+}
 </script>
 
 <template>
@@ -73,6 +73,7 @@ watch([email, password], () => {
           <a
             href="#"
             class="ml-auto text-sm underline-offset-2 hover:underline"
+            @click="openDialog?.(DialogType.RESET_PASSWORD); closeDialog?.(DialogType.LOGIN)"
           >
             Forgot your password?
           </a>
@@ -80,13 +81,10 @@ watch([email, password], () => {
         <Input id="password" v-model="password" type="password" placeholder="********" required />
       </div>
       <!-- Error message -->
-      <div v-if="formError">
-        <div v-for="error in JSON.parse(formError)" :key="error.validation" class="text-sm text-red-500 text-center">
+      <div v-if="error">
+        <div v-for="error in JSON.parse(error)" :key="error.validation" class="text-sm text-red-500 text-center">
           {{ error.path[0] }}: {{ error.message }}
         </div>
-      </div>
-      <div v-else-if="error" class="text-sm text-red-500 text-center">
-        {{ error }}
       </div>
       <!-- Login button -->
       <Button type="submit" class="w-full" :disabled="!canSubmit || loading">
@@ -99,13 +97,17 @@ watch([email, password], () => {
         </span>
       </div>
       <div class="grid grid-cols-2 gap-4">
-        <Button variant="outline" type="button" class="w-full">
-          <Icon name="lucide:github" size="16" />
-          <span class="sr-only">Login with Apple</span>
+        <Button variant="outline" type="button" class="w-full" @click="startOAuth('github')">
+          <Icon name="lucide:github" size="20" />
+          GITHUB
         </Button>
-        <Button variant="outline" type="button" class="w-full">
-          <Icon name="mingcute:google-line" size="20" />
-          <span class="sr-only">Login with Google</span>
+        <Button variant="outline" type="button" class="w-full" @click="startOAuth('google')">
+          <Icon name="mingcute:google-line" size="24" />
+          GOOGLE
+        </Button>
+        <Button variant="outline" type="button" class="w-full col-span-2" @click="startOAuth('heroku')">
+          <Icon name="bx:bxl-heroku" size="24" class="text-white" />
+          HEROKU
         </Button>
       </div>
       <div class="text-center text-sm">

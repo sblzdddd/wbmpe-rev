@@ -1,5 +1,9 @@
 import { z } from 'zod'
 import { Users, UserAuth } from '~/server/models'
+import { hashPassword } from '~/server/utils/auth'
+import BakaLogger from '~/server/utils/BakaLogger'
+
+const logger = BakaLogger.child({ service: 'Auth' })
 
 const bodySchema = z.object({
   email: z.string().email(),
@@ -29,19 +33,23 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Hash password
+    // Hash password using custom auth utility
     const pwdHash = await hashPassword(password)
 
     const user = await Users.createNewUser(userName, email, pwdHash)
 
     // Create session for newly registered user
     await setUserSession(event, {
-      id: user._id.toString(),
-      pwdHash,
+      user: {
+        id: user._id.toString(),
+        email,
+        userName: user.userName,
+        nickName: user.nickName,
+        avatarUrl: user.avatarUrl
+      },
+      loggedInAt: new Date()
     });
     
-    console.log('After registration - session:', await getUserSession(event))
-
     return {
       user: {
         id: user._id,
@@ -56,10 +64,49 @@ export default defineEventHandler(async (event) => {
       throw error
     }
     
-    console.error('Registration error:', error)
+    logger.error('Registration error:', error)
     throw createError({
       statusCode: 500,
-      message: 'Internal server error'
+      message: 'Registration failed'
     })
+  }
+})
+
+defineRouteMeta({
+  openAPI: {
+    $global: {
+      components: {
+        schemas: {
+          RegisterRequest: {
+            type: 'object',
+            properties: {
+              email: { type: 'string', format: 'email' },
+              password: { type: 'string' },
+              userName: { type: 'string' }
+            },
+            required: ['email', 'password', 'userName']
+          },
+        }
+      }
+    },
+    tags: ["Auth"],
+    description: "User registration",
+    requestBody: {
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/RegisterRequest' } } }
+    },
+    responses: {
+      '200': {
+        description: 'Registration successful',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserResponse' } } }
+      },
+      '400': {
+        description: 'Bad request - email or username already exists',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+      },
+      '500': {
+        description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+      }
+    }
   }
 }) 

@@ -14,6 +14,7 @@ interface AuthResponse {
 
 interface ApiError {
   data?: {
+    statusCode: number
     message?: string
   }
 }
@@ -39,7 +40,7 @@ export const useAuth = () => {
       return { success: true, user: response.user }
     } catch (err: unknown) {
       const apiError = err as ApiError
-      error.value = apiError.data?.message || 'Login failed'
+      error.value = JSON.stringify([{path: [apiError.data?.statusCode || 'Error'], message: apiError.data?.message || 'Login failed'}])
       return { success: false, error: error.value }
     } finally {
       loading.value = false
@@ -89,7 +90,7 @@ export const useAuth = () => {
 
   const checkAuth = async () => {
     try {
-      const response = await $fetch<AuthResponse>('/api/auth/me')
+      const response = await $fetch<AuthResponse>('/api/user/me')
       user.value = response.user
       return { success: true, user: response.user }
     } catch (err: unknown) {

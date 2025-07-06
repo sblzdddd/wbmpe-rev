@@ -23,7 +23,7 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string, 
     const transporter = createTransporter()
     
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_USER_ALIAS,
       to: email,
       subject: 'Password Reset Request - WBMPE',
       html: `

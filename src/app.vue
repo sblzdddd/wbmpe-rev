@@ -1,6 +1,6 @@
 <template>
   <NuxtPwaManifest />
-  <NuxtLoadingIndicator color="#502e21"/>
+  <NuxtLoadingIndicator color="#658eff"/>
   <NuxtLayout>
     <NuxtPage/>
   </NuxtLayout>

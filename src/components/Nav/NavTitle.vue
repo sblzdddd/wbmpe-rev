@@ -19,7 +19,7 @@ const { toggleSidebar } = useSidebar()
         <Button variant="ghost" size="icon" class="ml-0.5" @click.stop="toggleSidebar()">
           <Icon name="lucide:menu" size="20" />
         </Button>
-        <Image v-if="colorMode.preference === 'dark'" src="/images/logo/logo-dark_256.png" alt="logo" img-class="w-36 mr-auto group-data-[collapsible=icon]:hidden" />
+        <Image v-if="colorMode.value === 'dark'" src="/images/logo/logo-dark_256.png" alt="logo" img-class="w-36 mr-auto group-data-[collapsible=icon]:hidden" />
         <Image v-else src="/images/logo/logo-light_256.png" alt="logo" img-class="w-36 mr-auto group-data-[collapsible=icon]:hidden" />
       </div>
     </SidebarMenuItem>

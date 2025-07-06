@@ -17,17 +17,17 @@ const handleError = () => clearError({ redirect: '/' })
       <div class="text-center space-y-4">
         <h2 class="text-6xl font-bold text-muted-foreground">{{ error?.statusCode || '404' }}</h2>
         <h1 class="text-2xl font-semibold">{{ error?.statusMessage || 'Page Not Found' }}</h1>
-        <p class="text-muted-foreground max-w-md mb-1">
+        <p class="text-muted-foreground max-w-md">
           {{ error?.message || 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.' }}
         </p>
-        <div class="flex gap-2 justify-center">
+        <div class="flex gap-4 justify-center mt-8">
           <Button variant="default" @click="handleError">
-            <Icon name="lucide:home" class="w-4 h-4 mr-2" />
+            <Icon name="lucide:home" class="w-4 h-4" />
             Go Home
           </Button>
           <ClientOnly>
             <Button v-if="canGoBack" variant="outline" @click="$router.back()">
-              <Icon name="lucide:arrow-left" class="w-4 h-4 mr-2" />
+              <Icon name="lucide:arrow-left" class="w-4 h-4" />
               Go Back
             </Button>
           </ClientOnly>

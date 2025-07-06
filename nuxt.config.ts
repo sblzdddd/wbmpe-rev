@@ -1,15 +1,28 @@
 import tailwindcss from "@tailwindcss/vite";
 
-const sw = false
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
 
   runtimeConfig: {
     mongodbUri: process.env.MONGODB_URI, // Expose MONGODB_URI to runtime config
+    oauth: {
+      // provider in lowercase (github, google, etc.)
+      heroku: {
+        clientId: process.env.NUXT_OAUTH_HEROKU_CLIENT_ID,
+        clientSecret: process.env.NUXT_OAUTH_HEROKU_CLIENT_SECRET
+      },
+      github: {
+        clientId: process.env.NUXT_OAUTH_GITHUB_CLIENT_ID,
+        clientSecret: process.env.NUXT_OAUTH_GITHUB_CLIENT_SECRET
+      },
+      google: {
+        clientId: process.env.NUXT_OAUTH_GOOGLE_CLIENT_ID,
+        clientSecret: process.env.NUXT_OAUTH_GOOGLE_CLIENT_SECRET
+      }
+    }
   },
-  
+
   app: {
       pageTransition: {name: 'page', mode: 'out-in'},
       layoutTransition: {name: 'page', mode: 'out-in'},
@@ -28,11 +41,11 @@ export default defineNuxtConfig({
         ]
       }
   },
-  devtools: { enabled: true, timeline: { enabled: true } },
 
+  devtools: { enabled: true, timeline: { enabled: true } },
   srcDir: 'src',
-  
   css: ['~/assets/css/tailwind.css'],
+
   vite: {
     plugins: [
       tailwindcss(),
@@ -47,9 +60,10 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxt/image',
     '@nuxt/test-utils',
-    '@vite-pwa/nuxt',
+    // '@vite-pwa/nuxt',
     'nuxt-auth-utils',
-    'nuxt-security'
+    'nuxt-security',
+    '@sentry/nuxt/module'
   ],
 
   security: {
@@ -59,10 +73,6 @@ export default defineNuxtConfig({
       hashScripts: true, // Enables CSP hash support for scripts in SSG mode
       hashStyles: false // Disables CSP hash support for styles in SSG mode (recommended)
     },
-    headers: {
-      routeRules: {
-        
-      }
   },
 
   // pwa: {
@@ -118,6 +128,32 @@ export default defineNuxtConfig({
   // },
 
   nitro: {
+    experimental: {
+      openAPI: true,
+      tasks: true,
+    },
+    openAPI: {
+      route: "/_docs/openapi.json",
+      meta: {
+        title: 'BakaAPI',
+        description: 'BakaAPI is the RESTful API for WBMPE.',
+        version: '1.0',
+      },
+      production: "runtime",
+      ui: {
+        scalar: {
+          route: "/_docs/scalar",
+          theme: 'default'
+        },
+        swagger: {
+          route: "/_docs/swagger",
+        }
+      }
+    },
+    scheduledTasks: {
+      // Run `cleanup:password-reset-token` task every hour
+      '0 * * * *': ['cleanup:tokens']
+    }
   },
 
   colorMode: {
@@ -133,5 +169,16 @@ export default defineNuxtConfig({
      * Directory that the component lives in.
      */
     componentDir: './src/components/ui'
+  },
+
+  sentry: {
+    sourceMapsUploadOptions: {
+      org: 'sblzdddd',
+      project: 'wbmp-rev'
+    }
+  },
+
+  sourcemap: {
+    client: 'hidden'
   }
 })

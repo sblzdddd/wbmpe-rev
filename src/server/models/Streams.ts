@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 const streamsSchema = new mongoose.Schema({
   songId: {type: ObjectId, ref: 'Songs', required: true, unique: true},
   audio: {
-    normal: {type: String, required: true},
+    normal: {type: String, required: false},
     high: {type: String, required: false},
     lossless: {type: String, required: false}
   },

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 
-import type { FullPlaylist } from "~/types/playlist";
+import type { FullPlaylist } from "~/types/Playlist/";
 import type { TimeMetadata } from "~/types/time_metadata";
 import type { CollectionSongItemDocument } from "./CollectionSongItem";
 import CollectionSongItemSchema from "./CollectionSongItem";

@@ -1,4 +1,5 @@
-export interface TimeMetadata {
+
+export type TimeMetadata = {
   createdAt: string;
   updatedAt: string;
 }

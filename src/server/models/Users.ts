@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import Playlists from "./Playlists";
 import UserAuth from "./UserAuth";
-import type { SimpleUser } from "~/types/user";
+import type { SimpleUser } from "~/types/User/User";
 
 export type UserDocument = {
   _id: ObjectId;

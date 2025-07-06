@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { Users, UserAuth } from '~/server/models'
 import BakaLogger from '~/server/utils/BakaLogger'
+import { verifyPassword } from '~/server/utils/auth'
 
 const bodySchema = z.object({
   email: z.string().email(),
@@ -25,8 +26,25 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Verify password
+    // Verify password using custom auth utility
+    logger.info('Attempting password verification', {
+      email,
+      hasStoredHash: !!userAuth.pwdHash,
+      storedHashLength: userAuth.pwdHash?.length,
+      passwordLength: password.length,
+      storedHashPrefix: userAuth.pwdHash?.substring(0, 10) + '...',
+      storedHashFormat: userAuth.pwdHash?.startsWith('$2a$') ? 'bcrypt' : 
+                        userAuth.pwdHash?.startsWith('$2b$') ? 'bcrypt' : 
+                        userAuth.pwdHash?.startsWith('$scrypt$') ? 'scrypt' : 'unknown'
+    })
+    
     const isValidPassword = await verifyPassword(password, userAuth.pwdHash)
+    
+    logger.info('Password verification result', {
+      email,
+      isValidPassword,
+      passwordProvided: password.substring(0, 3) + '***'
+    })
     
     if (!isValidPassword) {
       logger.error('Invalid password for user', {email: email})
@@ -40,26 +58,31 @@ export default defineEventHandler(async (event) => {
     const user = await Users.findById(userAuth.userId)
     
     if (!user) {
-      logger.error('User not found in database', {id: userAuth.userId})
+      logger.error('User not found in database', {email: email})
       throw createError({
         statusCode: 401,
-        message: 'User not found'
+        message: 'Invalid email or password'
       })
     }
-    
-    // Set session data
+
+    // Set user session
     await setUserSession(event, {
-      id: user._id.toString(),
-      pwdHash: userAuth.pwdHash,
-    });
-
-    logger.log('success', 'Setting session for user', {id: user._id.toString(), userName: user.userName})
-    logger.debug('After login - session:', await getUserSession(event))
-
-    return {
       user: {
         id: user._id.toString(),
-        email: email,
+        email: userAuth.email,
+        userName: user.userName,
+        nickName: user.nickName,
+        avatarUrl: user.avatarUrl
+      },
+      loggedInAt: new Date()
+    })
+
+    logger.info('Login successful', {email: email, userId: user._id})
+    
+    return {
+      user: {
+        id: user._id,
+        email: userAuth.email,
         userName: user.userName,
         nickName: user.nickName,
         avatarUrl: user.avatarUrl
@@ -73,7 +96,45 @@ export default defineEventHandler(async (event) => {
     logger.error('Login error:', error)
     throw createError({
       statusCode: 500,
-      message: 'Internal server error'
+      message: 'Login failed'
     })
+  }
+})
+
+defineRouteMeta({
+  openAPI: {
+    $global: {
+      components: {
+        schemas: {
+          LoginRequest: {
+            type: 'object',
+            properties: {
+              email: { type: 'string', format: 'email' },
+              password: { type: 'string' }
+            },
+            required: ['email', 'password']
+          },
+        }
+      }
+    },
+    tags: ["Auth"],
+    description: "User login",
+    requestBody: {
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } } }
+    },
+    responses: {
+      '200': {
+        description: 'Login successful',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserResponse' } } }
+      },
+      '401': {
+        description: 'Invalid credentials',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+      },
+      '500': {
+        description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+      }
+    }
   }
 })

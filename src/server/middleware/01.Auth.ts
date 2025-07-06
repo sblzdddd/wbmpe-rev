@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   
   // Define protected API endpoints that require authentication
   const loginOnlyEndpoints = [
-    '/api/auth/me'
+    '/api/user/me'
     // '/api/playlist',
     // '/api/albums',
     // '/api/artists',

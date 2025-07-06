@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import Image from '~/components/Widget/Image.vue'
 import { useAuth } from '@/composables/useAuth'
 import { useDialog, DialogType } from '~/composables/useDialog'
+import ResetPasswordDialog from '~/components/ResetPasswordDialog.vue'
 
 const colorMode = useColorMode()
 const { isOnTop } = useScroll()
@@ -22,7 +23,7 @@ const handleLogout = async () => {
   <header class="sticky top-0 flex h-16 shrink-0 items-center gap-2 z-[50] transition-[background-color,border-color] duration-200" :class="isOnTop ? '' : 'bg-sidebar border-b-[1.5px] h-[65px]'">
     <div class="flex items-center gap-1 pl-2">
       <template v-if="!open">
-        <Image v-if="colorMode.preference === 'dark'" src="/images/logo/logo-dark_256.png" alt="logo" img-class="w-36" />
+        <Image v-if="colorMode.value === 'dark'" src="/images/logo/logo-dark_256.png" alt="logo" img-class="w-36" />
         <Image v-else src="/images/logo/logo-light_256.png" alt="logo" img-class="w-36" />
       </template>
     </div>
@@ -55,6 +56,7 @@ const handleLogout = async () => {
         </Button>
         <LoginDialog />
         <RegisterDialog />
+        <ResetPasswordDialog />
         <Widget-ThemeSwitcher/>
         <Widget-WindowButtons/>
       </div>

@@ -3,13 +3,13 @@ import winston from "winston";
 import path from "path";
 import { levelColors, serviceBgColors, whiteText, resetColor } from "./ConsoleColors";
 import fs from "fs";
-import { Logtail } from "@logtail/node";
-import { LogtailTransport } from "@logtail/winston";
 
-// Create a Logtail client
-const logtail = new Logtail(process.env.LOGTAIL_SOURCE_TOKEN!, {
-  endpoint: process.env.LOGTAIL_ENDPOINT!,
-});
+import * as Sentry from "@sentry/nuxt";
+import Transport from 'winston-transport';
+
+const SentryWinstonTransport = Sentry.createSentryWinstonTransport(Transport);
+
+
 
 // Get current date for log file names
 const logFileName = new Date().toLocaleString('zh-CN').replaceAll("/", "-").replaceAll(" ", "_").replaceAll(/:/g, '.');
@@ -90,15 +90,13 @@ const logger = winston.createLogger({
       ),
     }),
 
-    new LogtailTransport(logtail, {
+    new SentryWinstonTransport({
       level: 'verbose',
-    })
+      silent: process.env.NODE_ENV === 'development'
+    }),
   ],
 });
 
 logger.log('success', 'Logger initialized', {service: 'BakaLogger'});
-
-// Flush logs to Logtail
-logtail.flush();
 
 export default logger;

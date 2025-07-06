@@ -25,3 +25,6 @@ logs
 
 src/server/data
 baka.ts
+
+# Sentry Config File
+.env.sentry-build-plugin

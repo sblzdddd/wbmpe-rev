@@ -8,7 +8,7 @@ export default async (_nitroApp: Nitro) => {
 
   try {
     await import('~/server/models/index')
-    await mongoose.connect(config.mongodbUri);
+    await mongoose.connect(config.mongodbUri as string);
     logger.log('success', 'Connected to MongoDB', {service: 'MongoDB'});
     
     // Wait for the connection to be ready

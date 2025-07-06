@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { UserAuth } from '~/server/models'
 import PasswordResetToken from '~/server/models/PasswordResetToken'
 import BakaLogger from '~/server/utils/BakaLogger'
+import { hashPassword } from '~/server/utils/auth'
 
 const bodySchema = z.object({
   token: z.string(),
@@ -41,7 +42,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Hash new password
+    // Hash new password using custom auth utility
     const hashedPassword = await hashPassword(password)
 
     // Update user password
@@ -70,5 +71,50 @@ export default defineEventHandler(async (event) => {
       statusCode: 500,
       message: 'Failed to reset password'
     })
+  }
+})
+
+defineRouteMeta({
+  openAPI: {
+    $global: {
+      components: {
+        schemas: {
+          ResetPasswordRequest: {
+            type: 'object',
+            properties: {
+              token: { type: 'string' },
+              password: { type: 'string' }
+            },
+            required: ['token', 'password']
+          },
+          ResetPasswordResponse: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              message: { type: 'string' }
+            }
+          },
+        }
+      }
+    },
+    tags: ["Auth"],
+    description: "Reset password with token",
+    requestBody: {
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/ResetPasswordRequest' } } }
+    },
+    responses: {
+      '200': {
+        description: 'Password reset successful',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/ResetPasswordResponse' } } }
+      },
+      '400': {
+        description: 'Invalid or expired token',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+      },
+      '500': {
+        description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+      }
+    }
   }
 })
