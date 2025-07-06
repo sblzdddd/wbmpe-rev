@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { MONGODB_URI } from "./baka";
-import { findFullPlaylistData } from "./models/Playlists";
+import Playlists from "./models/Playlists";
 import '~/server/models/Users';
 import '~/server/models/UserAuth';
 import '~/server/models/UserSubscriptions';
@@ -18,8 +18,12 @@ const db = mongoose.connection;
 try {
 
   await db.asPromise();
-  
-  await findFullPlaylistData("686354643eeb5905435b86de", 1, 20)
+  const playlist = await Playlists.findFullPlaylistData("686354643eeb5905435b86de")
+  if(playlist) {
+    console.log(JSON.stringify(playlist, null, 2))
+  } else {
+    console.log("Playlist not found: ")
+  }
 
 } catch (error) {
   console.error('Error in main process:', error);

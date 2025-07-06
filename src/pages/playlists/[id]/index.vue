@@ -6,13 +6,13 @@
         <div v-else class="w-40 h-40 rounded-sm bg-gray overflow-hidden">
           <div class="w-full h-full flex items-start flex-col justify-start gap-[2px] rotate-z-[-24deg] translate-y-[-56px] translate-x-[20px]">
             <div class="w-full h-40 flex items-center justify-center gap-[2px]">
-              <img v-if="BackgroundImages[0]" :src="BackgroundImages[0]" class="w-40 h-40 object-cover shadow-xs" :alt="`Playlist ${id}`" />
-              <img v-if="BackgroundImages[1]" :src="BackgroundImages[1]" class="w-40 h-40 object-cover shadow-xs" :alt="`Playlist ${id}`" />
+              <img v-if="BackgroundImages[0]" :src="BackgroundImages[0]" class="w-40 h-40 object-cover shadow-xs" :alt="`Playlist ${id}`" >
+              <img v-if="BackgroundImages[1]" :src="BackgroundImages[1]" class="w-40 h-40 object-cover shadow-xs" :alt="`Playlist ${id}`" >
             </div>
             <div class="w-full h-20 flex items-center justify-center gap-[2px]">
-              <img v-if="BackgroundImages[2]" :src="BackgroundImages[2]" class="w-20 h-20 object-cover shadow-xs" :alt="`Playlist ${id}`" />
-              <img v-if="BackgroundImages[3]" :src="BackgroundImages[3]" class="w-20 h-20 object-cover shadow-xs" :alt="`Playlist ${id}`" />
-              <img v-if="BackgroundImages[4]" :src="BackgroundImages[4]" class="w-20 h-20 object-cover shadow-xs" :alt="`Playlist ${id}`" />
+              <img v-if="BackgroundImages[2]" :src="BackgroundImages[2]" class="w-20 h-20 object-cover shadow-xs" :alt="`Playlist ${id}`" >
+              <img v-if="BackgroundImages[3]" :src="BackgroundImages[3]" class="w-20 h-20 object-cover shadow-xs" :alt="`Playlist ${id}`" >
+              <img v-if="BackgroundImages[4]" :src="BackgroundImages[4]" class="w-20 h-20 object-cover shadow-xs" :alt="`Playlist ${id}`" >
               <div class="!min-w-20 !min-h-20 bg-muted-foreground rounded-sm" />
             </div>
           </div>
@@ -65,7 +65,7 @@
             <div :class="{'active': sortMode === 'like', 'asc': sortOrder === 'asc'}" @click="sortMode = 'like'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'">Like <Icon v-if="sortMode === 'like'" name="lucide:chevron-down" /></div>
             <div :class="{'active': sortMode === 'duration', 'asc': sortOrder === 'asc'}" @click="sortMode = 'duration'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'">Duration <Icon v-if="sortMode === 'duration'" name="lucide:chevron-down" /></div>
           </div>
-          <div class="flex flex-col gap-1">
+          <div v-if="playlist?.data?.songList.songs.length > 0" class="flex flex-col gap-1">
             <SongItem
               v-for="(song, index) in playlist?.data?.songList.songs"
               :id="index"
@@ -130,7 +130,7 @@ watch([() => sortMode.value, () => sortOrder.value], async ([newSortMode, newSor
   isUpdatingFromRoute.value = false;
 }, {deep: true, immediate: true})
 
-const { data: playlist } = await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
+const { data: playlist, error } = await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
   default: () => ({
     data: {
       _id: "",
@@ -155,12 +155,27 @@ const { data: playlist } = await useFetch<PlaylistResponse>(`/api/playlist/${id}
   })
 })
 
+if (error.value) {
+  // Check if there's browser history to go back
+  if (import.meta.client && window.history.length > 1) {
+    // Go back to the previous page
+    window.history.back();
+  } else {
+    throw createError({
+      statusCode: error.value.statusCode || 500,
+      statusMessage: error.value.statusMessage || "Internal Server Error",
+      message: error.value.message || "An unknown error occurred",
+      fatal: false
+    })
+  }
+}
+
 const BackgroundImages = ref<string[]>([]);
 
 watch(() => playlist.value?.data, (newVal) => {
   if(newVal?.coverUrl) {
     setBackground(newVal.coverUrl, 0.55, 32, 40);
-  } else {
+  } else if (newVal?.songList.songs.length > 0) {
     for(let i = 0; i < 6; i++) {
       BackgroundImages.value.push(playlist.value?.data?.songList.songs[i].song.album.coverUrl || "");
     }

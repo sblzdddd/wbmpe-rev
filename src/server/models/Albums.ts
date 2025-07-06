@@ -1,11 +1,6 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
-
-const CollectionSongItemSchema = new mongoose.Schema({
-  song: {type: ObjectId, ref: 'Songs', required: true, unique: true}
-}, {
-  timestamps: true, // Adds createdAt and updatedAt fields
-});
+import CollectionSongItemSchema from "./CollectionSongItem";
 
 const albumsSchema = new mongoose.Schema({
   name: {type: String, required: true},

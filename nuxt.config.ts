@@ -48,8 +48,22 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxt/test-utils',
     '@vite-pwa/nuxt',
-    'nuxt-auth-utils'
+    'nuxt-auth-utils',
+    'nuxt-security'
   ],
+
+  security: {
+    nonce: true, // Enables HTML nonce support in SSR mode
+    ssg: {
+      meta: true, // Enables CSP as a meta tag in SSG mode
+      hashScripts: true, // Enables CSP hash support for scripts in SSG mode
+      hashStyles: false // Disables CSP hash support for styles in SSG mode (recommended)
+    },
+    headers: {
+      routeRules: {
+        
+      }
+  },
 
   // pwa: {
   //   strategies: sw ? 'injectManifest' : 'generateSW',
@@ -102,6 +116,9 @@ export default defineNuxtConfig({
   //     type: 'module',
   //   },
   // },
+
+  nitro: {
+  },
 
   colorMode: {
     classSuffix: ''

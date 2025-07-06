@@ -30,7 +30,7 @@ export const useAuth = () => {
     error.value = null
     
     try {
-      const response = await $fetch<AuthResponse>('/api/login', {
+      const response = await $fetch<AuthResponse>('/api/auth/login', {
         method: 'POST',
         body: { email, password }
       })
@@ -51,7 +51,7 @@ export const useAuth = () => {
     error.value = null
     
     try {
-      await $fetch('/api/logout', {
+      await $fetch('/api/auth/logout', {
         method: 'POST'
       })
       
@@ -71,7 +71,7 @@ export const useAuth = () => {
     error.value = null
     
     try {
-      const response = await $fetch<AuthResponse>('/api/register', {
+      const response = await $fetch<AuthResponse>('/api/auth/register', {
         method: 'POST',
         body: { email, password, userName }
       })

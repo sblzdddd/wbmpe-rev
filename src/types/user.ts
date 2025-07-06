@@ -4,3 +4,4 @@ export type SimpleUser = {
   nickName: string;
   avatarUrl: string;
 }
+

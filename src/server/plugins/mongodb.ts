@@ -1,6 +1,7 @@
 // server/plugins/mongodb.ts
 import mongoose from 'mongoose';
 import type { Nitro } from 'nitropack';
+import logger from '../utils/BakaLogger';
 
 export default async (_nitroApp: Nitro) => {
   const config = useRuntimeConfig(); // Access runtime config
@@ -8,12 +9,12 @@ export default async (_nitroApp: Nitro) => {
   try {
     await import('~/server/models/index')
     await mongoose.connect(config.mongodbUri);
-    console.log('Connected to MongoDB');
+    logger.log('success', 'Connected to MongoDB', {service: 'MongoDB'});
     
     // Wait for the connection to be ready
     await mongoose.connection.asPromise();
-    console.log('MongoDB connection is ready');
+    logger.log('success', 'MongoDB connection is ready', {service: 'MongoDB'});
   } catch (e) {
-    console.error('Error connecting to MongoDB:', e);
+    logger.error('Error connecting to MongoDB:', e, {service: 'MongoDB'});
   }
 };

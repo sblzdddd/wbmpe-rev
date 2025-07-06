@@ -30,7 +30,7 @@ defineOptions({
     <Nav-AppSidebar />
     <SidebarInset class="bg-transparent">
       <Nav-AppHeader />
-      <NuxtPage />
+      <slot />
     </SidebarInset>
   </SidebarProvider>
 </template>

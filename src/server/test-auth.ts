@@ -3,7 +3,6 @@ import { MONGODB_URI } from "./baka";
 import Users from "./models/Users";
 import UserAuth from "./models/UserAuth";
 import Playlists from "./models/Playlists";
-import { hashPassword } from "./utils/auth";
 
 async function createTestUser() {
   try {
