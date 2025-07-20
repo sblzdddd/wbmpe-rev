@@ -38,7 +38,7 @@
     "mongoose": "^8.16.1",
     "morgan": "^1.10.0",
     "nodemailer": "^7.0.4",
-    "nuxt": "^3.17.5",
+    "nuxt": "^4.0.0",
     "nuxt-auth-utils": "0.5.20",
     "nuxt-security": "2.2.0",
     "reka-ui": "^2.3.2",
