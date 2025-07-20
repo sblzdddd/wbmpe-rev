@@ -45,12 +45,18 @@ defineOptions({
   opacity: 0;
 }
 
-.page-enter-from {
-  transform: translateX(30px);
-}
-
 .page-wrapper {
   width: 100%;
   height: 100%;
+}
+
+.layout-enter-active,
+.layout-leave-active {
+  transition: all 0.15s ease-out;
+}
+
+.layout-enter-from,
+.layout-leave-to {
+  opacity: 0;
 }
 </style>

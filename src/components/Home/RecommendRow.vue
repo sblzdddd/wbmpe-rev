@@ -32,7 +32,7 @@ import type { PropType } from 'vue';
 import emblaCarouselVue from 'embla-carousel-vue'
 import { useContentPadding } from '~/composables/useContentPadding'
 import { useSidebar } from '~/components/ui/sidebar'
-import Image from '~/components/Widget/Image.vue'
+import Image from '~/components/Image.vue'
 import type { Recom } from '~/types/home'
 
 

@@ -1,5 +1,5 @@
 import Users from './Users';
-import UserAuth from './UserAuth';
+import UserAuth, { type UserAuthDocument } from './UserAuth';
 import UserSubscriptions from './UserSubscriptions';
 import Songs from './Songs';
 import Artists from './Artists';
@@ -9,7 +9,7 @@ import Streams from './Streams';
 import Lyrics from './Lyrics';
 import logger from '../utils/BakaLogger';
 
-export { Users, UserAuth, UserSubscriptions, Songs, Artists, Albums, Playlists, Streams, Lyrics }
+export { Users, UserAuth, type UserAuthDocument, UserSubscriptions, Songs, Artists, Albums, Playlists, Streams, Lyrics }
 
 console.log(Users, UserAuth, UserSubscriptions, Songs, Artists, Albums, Playlists, Streams, Lyrics)
 

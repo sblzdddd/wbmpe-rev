@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/first-attribute-linebreak -->
 <template>
-  <div class="flex items-center gap-2">
+  <div class="items-center gap-2 hidden lg:flex">
     <Button id="minimizeWindow"
             variant="ghost"
             size="icon"

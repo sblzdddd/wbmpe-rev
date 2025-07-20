@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import Image from '@/components/Widget/Image.vue';
+import Image from '~/components/Image.vue';
 import { Button } from '@/components/ui/button';
 import type { PlaylistResponse } from '@/types/Playlist/index';
 import SongItem from '@/components/Widget/SongItem.vue';

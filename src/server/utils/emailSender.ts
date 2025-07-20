@@ -59,3 +59,42 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string, 
 export const generateResetToken = (): string => {
   return crypto.randomBytes(32).toString('hex')
 }
+
+export const sendEmailVerificationCode = async (email: string, verificationCode: string) => {
+  try {
+    const transporter = createTransporter()
+    
+    const mailOptions = {
+      from: process.env.EMAIL_USER_ALIAS,
+      to: email,
+      subject: 'Email Verification Code - WBMPE',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Email Verification</h2>
+          <p>Hello,</p>
+          <p>Thank you for signing up for WBMPE! To complete your registration, please use the verification code below:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <div style="background-color: #f8f9fa; border: 2px dashed #dee2e6; padding: 20px; border-radius: 8px; display: inline-block;">
+              <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #333;">${verificationCode}</span>
+            </div>
+          </div>
+          <p>Enter this code on the verification page to activate your account.</p>
+          <p>This code will expire in 10 minutes for security reasons.</p>
+          <p>If you didn't create an account with us, please ignore this email.</p>
+          <p>Best regards,<br>The WBMPE Team</p>
+        </div>
+      `
+    }
+
+    const info = await transporter.sendMail(mailOptions)
+    logger.info('Email verification code sent successfully', { email, messageId: info.messageId })
+    return { success: true, messageId: info.messageId }
+  } catch (error) {
+    logger.error('Failed to send email verification code', { email, error })
+    throw error
+  }
+}
+
+export const generateVerificationCode = (): string => {
+  return Math.floor(100000 + Math.random() * 900000).toString()
+}

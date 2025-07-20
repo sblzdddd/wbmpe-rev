@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 
-import type { FullPlaylist } from "~/types/Playlist/";
+import type { FullPlaylist, PlaylistMeta } from "~/types/Playlist/";
 import type { TimeMetadata } from "~/types/time_metadata";
 import type { CollectionSongItemDocument } from "./CollectionSongItem";
 import CollectionSongItemSchema from "./CollectionSongItem";
@@ -62,7 +63,50 @@ const playlistsSchema = new mongoose.Schema({
     async createNewRecentPlaylist(owner: ObjectId|null=null): Promise<PlaylistDocument> {
       const playlist = await Playlists.create({playlistType: 'recent', name: 'Recently Played', description: '', coverUrl: '', owner, songs: []})
       return playlist.toObject() as unknown as PlaylistDocument;
-    }
+    },
+    async getCreatedPlaylistInfo(playlistId: string): Promise<PlaylistMeta> {
+      const playlist = await Playlists.findById(playlistId)
+        .select('-__v -songs -owner -description -createdAt -updatedAt')
+        .lean();
+      if (!playlist) {
+        throw new Error('Playlist not found');
+      }
+      return playlist as unknown as PlaylistMeta;
+    },
+    async getLastSongCoverUrl(playlistId: string): Promise<string> {
+      const result = await Playlists.aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(playlistId) } },
+        { $project: { firstSongId: { $arrayElemAt: ['$songs.song', 0] } } },
+        {
+          $lookup: {
+            from: 'songs',
+            localField: 'firstSongId',
+            foreignField: '_id',
+            as: 'firstSong'
+          }
+        },
+        { $unwind: '$firstSong' },
+        {
+          $lookup: {
+            from: 'albums',
+            localField: 'firstSong.album',
+            foreignField: '_id',
+            as: 'album'
+          }
+        },
+        { $unwind: '$album' },
+        { $project: { coverUrl: '$album.coverUrl' } }
+      ]);
+      
+      const coverUrl = result[0]?.coverUrl;
+      if(coverUrl) {
+        await Playlists.updateOne({ _id: playlistId }, { coverUrl });
+      }
+      return coverUrl;
+    },
+    async updatePlaylistCoverUrl(playlistId: string, coverUrl: string): Promise<void> {
+      await Playlists.updateOne({ _id: playlistId }, { coverUrl });
+    },
   }
 });
 

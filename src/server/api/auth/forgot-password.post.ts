@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
 
     // Generate reset URL
     const baseUrl = process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`
+    const resetUrl = `${baseUrl}/auth/reset-password?token=${resetToken}`
 
     // Send email
     await sendPasswordResetEmail(email, resetToken, resetUrl)

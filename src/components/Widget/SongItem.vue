@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue"
 import type { Song } from "@/types/song"
-import Image from "@/components/Widget/Image.vue"
+import Image from "~/components/Image.vue"
 import { Button } from "@/components/ui/button"
 
 const props = defineProps({

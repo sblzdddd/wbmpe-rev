@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { Users, UserAuth } from '~/server/models'
-import { hashPassword } from '~/server/utils/auth'
+import { hashPasswordCustom } from '~/server/utils/auth'
 import BakaLogger from '~/server/utils/BakaLogger'
 
 const logger = BakaLogger.child({ service: 'Auth' })
@@ -34,21 +34,16 @@ export default defineEventHandler(async (event) => {
     }
 
     // Hash password using custom auth utility
-    const pwdHash = await hashPassword(password)
+    const pwdHash = await hashPasswordCustom(password)
 
     const user = await Users.createNewUser(userName, email, pwdHash)
 
-    // Create session for newly registered user
+    // Set user session
     await setUserSession(event, {
-      user: {
-        id: user._id.toString(),
-        email,
-        userName: user.userName,
-        nickName: user.nickName,
-        avatarUrl: user.avatarUrl
-      },
+      userId: user._id.toString(),
+      pwdHash: pwdHash,
       loggedInAt: new Date()
-    });
+    })
     
     return {
       user: {

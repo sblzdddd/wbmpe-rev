@@ -65,15 +65,12 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    console.log(user._id.toString())
+
     // Set user session
     await setUserSession(event, {
-      user: {
-        id: user._id.toString(),
-        email: userAuth.email,
-        userName: user.userName,
-        nickName: user.nickName,
-        avatarUrl: user.avatarUrl
-      },
+      userId: user._id.toString(),
+      pwdHash: userAuth.pwdHash,
       loggedInAt: new Date()
     })
 

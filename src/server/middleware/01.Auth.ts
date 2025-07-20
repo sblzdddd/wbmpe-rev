@@ -1,4 +1,5 @@
-import { UserAuth } from "~/server/models"
+import { ObjectId } from "mongodb"
+import { UserAuth, type UserAuthDocument } from "~/server/models"
 import BakaLogger from "~/server/utils/BakaLogger"
 
 const logger = BakaLogger.child({service: 'AuthMiddleware'})
@@ -31,10 +32,10 @@ export default defineEventHandler(async (event) => {
   try {
     // Get current user from session
     const session = await getUserSession(event)
-    
+    console.log(session.userId)
     // Check if session has actual user data (not just a session ID)
     // A valid session should have id, pwdHash
-    if (!session.id || !session.pwdHash) {
+    if (!session || !session.userId || typeof session.userId !== 'string' || (!session.pwdHash && !session.githubId && !session.googleId)) {
       logger.warn('Auth middleware: Invalid session data:', session)
       await clearUserSession(event)
       throw createError({
@@ -43,10 +44,19 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Verify the session against the database
-    const userAuth = await UserAuth.findOne({userId: session.id, pwdHash: session.pwdHash})
+    // Verify the session against the database, based on the type of auth
+    let userAuth: UserAuthDocument | null = null
+    if (session.pwdHash) {
+      userAuth = await UserAuth.findOne({userId: new ObjectId(session.userId), pwdHash: session.pwdHash})
+    } else if (session.githubId) {
+      userAuth = await UserAuth.findOne({userId: new ObjectId(session.userId), githubId: session.githubId})
+    } else if (session.googleId) {
+      userAuth = await UserAuth.findOne({userId: new ObjectId(session.userId), googleId: session.googleId})
+    }
+
     if(!userAuth) {
       logger.warn('Auth middleware: User auth not found in database')
+      // clear the invalid session
       await clearUserSession(event)
       throw createError({
         statusCode: 401,
@@ -56,8 +66,10 @@ export default defineEventHandler(async (event) => {
 
     // Add user info to event context for use in API handlers
     event.context.user = {
-      id: session.id,
-      email: userAuth.email
+      id: session.userId,
+      email: userAuth.email,
+      githubId: userAuth.githubId,
+      googleId: userAuth.googleId
     }
     
   } catch (error: unknown) {

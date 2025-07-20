@@ -7,13 +7,19 @@
       class="w-7 h-7"
       @click.stop="toggleTheme"
   >
-    <Icon name="radix-icons:moon" size="16" class="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>
-    <Icon name="radix-icons:sun" size="16"
+    <Icon name="radix-icons:moon" :size="iconSize" class="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>
+    <Icon name="radix-icons:sun" :size="iconSize"
           class="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"/>
   </Button>
 </template>
 <script setup lang="ts">
 
+defineProps({
+  iconSize: {
+    type: String,
+    default: '16'
+  }
+})
 
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.preference === 'dark')

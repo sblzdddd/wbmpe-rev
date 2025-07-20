@@ -37,8 +37,12 @@ const toggleDotBtnsActive = (emblaApi: EmblaCarouselType) => {
   const previous = emblaApi.previousScrollSnap()
   const selected = emblaApi.selectedScrollSnap()
   const dotNodes = document.querySelectorAll('.banner__dot')
-  dotNodes[previous].classList.remove('!bg-white')
-  dotNodes[selected].classList.add('!bg-white')
+  if (previous !== null && dotNodes[previous]) {
+    dotNodes[previous].classList.remove('!bg-white')
+  }
+  if (selected !== null && dotNodes[selected]) {
+    dotNodes[selected].classList.add('!bg-white')
+  }
 }
 
 onMounted(() => {
@@ -50,6 +54,12 @@ onMounted(() => {
   dotNodes.forEach((dotNode, index) => {
     dotNode.addEventListener('mouseover', () => emblaApi.value?.scrollTo(index), false)
   })
+})
+
+onUnmounted(() => {
+  if (emblaApi.value) {
+    emblaApi.value.destroy()
+  }
 })
 </script>
 <style scoped>

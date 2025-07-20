@@ -9,7 +9,7 @@ const logger = BakaLogger.child({ service: 'AuthUtils' })
  * @param saltRounds - Number of salt rounds (default: 12)
  * @returns Promise<string> - The hashed password
  */
-export async function hashPassword(password: string, saltRounds: number = 12): Promise<string> {
+export async function hashPasswordCustom(password: string, saltRounds: number = 12): Promise<string> {
   try {
     logger.log("silly", 'Hashing password', { 
       passwordLength: password.length,

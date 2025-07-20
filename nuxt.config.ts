@@ -20,12 +20,15 @@ export default defineNuxtConfig({
         clientId: process.env.NUXT_OAUTH_GOOGLE_CLIENT_ID,
         clientSecret: process.env.NUXT_OAUTH_GOOGLE_CLIENT_SECRET
       }
+    },
+    session: {
+      maxAge: 60 * 60 * 24 * 7 // 1 week (7 days) in seconds
     }
   },
 
   app: {
       pageTransition: {name: 'page', mode: 'out-in'},
-      layoutTransition: {name: 'page', mode: 'out-in'},
+      layoutTransition: {name: 'layout', mode: 'out-in'},
       head: {
         link: [
           { rel: 'icon', sizes: '64x64', href: '/favicon.ico' },
@@ -73,6 +76,11 @@ export default defineNuxtConfig({
       hashScripts: true, // Enables CSP hash support for scripts in SSG mode
       hashStyles: false // Disables CSP hash support for styles in SSG mode (recommended)
     },
+    headers: {
+      contentSecurityPolicy: {
+        'img-src': ["'self'", 'data:', 'https://avatars.githubusercontent.com', 'https://lh3.googleusercontent.com']
+      }
+    }
   },
 
   // pwa: {

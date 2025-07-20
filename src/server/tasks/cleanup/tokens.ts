@@ -1,4 +1,4 @@
-import { cleanupExpiredTokens } from '~/server/utils/cleanupExpiredTokens'
+import { cleanupExpiredEmailVerificationTokens, cleanupExpiredTokens } from '~/server/utils/cleanupExpiredTokens'
 import BakaLogger from '~/server/utils/BakaLogger'
 
 
@@ -13,6 +13,7 @@ export default defineTask({
     try {
       logger.info('Starting cleanup of expired tokens')
       await cleanupExpiredTokens()
+      await cleanupExpiredEmailVerificationTokens()
       return {
         result: "Success"
       }

@@ -19,6 +19,7 @@ export const buttonVariants = cva(
           `hover:text-accent-foreground
           hover:before:scale-100
           hover:before:shadow-xs
+          hover:before:opacity-100
           active:before:shadow-none
           active:scale-100
           active:before:scale-95
@@ -32,7 +33,8 @@ export const buttonVariants = cva(
           before:inset-0
           before:rounded-md
           before:bg-black/15 dark:before:bg-white/15
-          before:scale-0
+          before:opacity-0
+          before:scale-80
           before:transition-[opacity,scale]
           before:ease-out
           before:duration-200

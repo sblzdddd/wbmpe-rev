@@ -15,6 +15,12 @@ export type PlaylistInfo = {
   owner: SimpleUser;
 } & TimeMetadata
 
+export type PlaylistMeta = {
+  _id: string;
+  coverUrl: string|null;
+  name: string;
+}
+
 export type PaginatedPlaylist = PlaylistInfo & {
   songList: SongList;
 }

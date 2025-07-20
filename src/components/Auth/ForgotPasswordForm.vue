@@ -4,6 +4,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useDialog, DialogType } from '~/composables/useDialog'
 
+const props = defineProps<{
+  isPage?: boolean
+}>()
+
 const { closeDialog, openDialog } = useDialog()
 
 const canSubmit = computed(() => {
@@ -100,8 +104,19 @@ watch(email, () => {
       </Button>
       
       <div class="text-center text-sm">
-        Remember your password?
-        <a href="#" class="underline underline-offset-4" @click="openDialog?.(DialogType.LOGIN); closeDialog?.(DialogType.RESET_PASSWORD)">
+        <NuxtLink
+          v-if="props.isPage"
+          to="/auth/login"
+          class="underline underline-offset-4"
+        >
+          Back to login
+        </NuxtLink>
+        <a
+          v-else
+          href="#"
+          class="underline underline-offset-4"
+          @click="openDialog?.(DialogType.LOGIN); closeDialog?.(DialogType.RESET_PASSWORD)"
+        >
           Back to login
         </a>
       </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Image from '~/components/Widget/Image.vue'
+import Image from '~/components/Image.vue'
 
 const search = ref('')
 </script>

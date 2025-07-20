@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { UserAuth } from '~/server/models'
 import PasswordResetToken from '~/server/models/PasswordResetToken'
 import BakaLogger from '~/server/utils/BakaLogger'
-import { hashPassword } from '~/server/utils/auth'
+import { hashPasswordCustom } from '~/server/utils/auth'
 
 const bodySchema = z.object({
   token: z.string(),
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Hash new password using custom auth utility
-    const hashedPassword = await hashPassword(password)
+    const hashedPassword = await hashPasswordCustom(password)
 
     // Update user password
     await UserAuth.findByIdAndUpdate(userAuth._id, {

@@ -1,56 +1,26 @@
-import { UserAuth } from "~/server/models"
 import Users from "~/server/models/Users"
+import type { UserInfoResponse } from "~/types/User/User"
 
 export default defineEventHandler(async (event) => {
   try {
-    // Get current user from session
-    const session = await getUserSession(event)
+    const userId = event.context.user?.id
+  
+    if (!userId) {
+      throw createError({
+        statusCode: 401,
+        message: 'Not authenticated'
+      })
+    }
     
-    // Check if session has actual user data (not just a session ID)
-    // A valid session should have id, pwdHash
-    if (!session.id || !session.pwdHash) {
-      console.log('Invalid session data:', session)
-      await clearUserSession(event)
-      throw createError({
-        statusCode: 401,
-        message: 'Not authenticated'
-      })
-    }
+    const user = await Users.getUserInfo(userId)
 
-    const userAuth = await UserAuth.findOne({userId: session.id, pwdHash: session.pwdHash})
-    if(!userAuth) {
-      await clearUserSession(event)
-      throw createError({
-        statusCode: 401,
-        message: 'Not authenticated'
-      })
-    }
-
-    const user = await Users.findById(userAuth.userId)
-    if(!user) {
-      await clearUserSession(event)
-      throw createError({
-        statusCode: 500,
-        message: 'Internal server error: user not found'
-      })
-    }
-
-    return {
-      user: {
-        id: user._id.toString(),
-        email: userAuth.email,
-        userName: user.userName,
-        nickName: user.nickName,
-        avatarUrl: user.avatarUrl
-      }
-    }
+    return { user } as UserInfoResponse
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
-    await clearUserSession(event)
     
-    console.error('Auth check error:', error)
+    console.error('Error:', error)
     throw createError({
       statusCode: 500,
       message: 'Internal server error: ' + error
@@ -60,12 +30,46 @@ export default defineEventHandler(async (event) => {
 
 defineRouteMeta({
   openAPI: {
+    $global: {
+      components: {
+        schemas: {
+          UserInfoResponse: {
+            type: 'object',
+            properties: {
+              user: { $ref: '#/components/schemas/UserInfo' }
+            }
+          },
+          UserInfo: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              userName: { type: 'string' },
+              nickName: { type: 'string' },
+              avatarUrl: { type: 'string' },
+              bio: { type: 'string', nullable: true },
+              createdPlaylists: { type: 'array', items: { $ref: '#/components/schemas/PlaylistMeta' } },
+              favorites: { $ref: '#/components/schemas/PlaylistMeta', nullable: true },
+              recent: { $ref: '#/components/schemas/PlaylistMeta', nullable: true }
+            }
+          },
+          PlaylistMeta: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              coverUrl: { type: 'string', nullable: true },
+              name: { type: 'string' }
+            }
+          }
+        }
+      }
+    },
+
     tags: ["User"],
     description: "Get current user information",
     responses: {
       '200': {
         description: 'Successful response',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserInfoResponse' } } }
       },
       '401': {
         description: 'Not authenticated',

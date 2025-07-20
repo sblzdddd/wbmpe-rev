@@ -1,5 +1,16 @@
 import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
+import type { TimeMetadata } from '~/types/time_metadata';
+
+export type SongDocument = {
+  _id: ObjectId;
+  addedBy: ObjectId;
+  album: ObjectId;
+  artists: ObjectId[];
+  duration: number;
+  name: string;
+  src: string;
+} & TimeMetadata;
 
 const songSchema = new mongoose.Schema({
   addedBy: {type: ObjectId, ref: 'Users', required: false},   // userId

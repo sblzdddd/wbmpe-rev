@@ -1,5 +1,6 @@
 import mongoose from "mongoose"
 import { MONGODB_URI } from "./baka"
+import { hashPasswordCustom, verifyPassword } from "../utils/auth"
 
 async function testPasswordHashing() {
   try {
@@ -13,9 +14,9 @@ async function testPasswordHashing() {
     
     // Test 1: Hash the same password multiple times
     console.log('\n--- Test 1: Multiple hashes of same password ---')
-    const hash1 = await hashPassword(testPassword)
-    const hash2 = await hashPassword(testPassword)
-    const hash3 = await hashPassword(testPassword)
+    const hash1 = await hashPasswordCustom(testPassword)
+    const hash2 = await hashPasswordCustom(testPassword)
+    const hash3 = await hashPasswordCustom(testPassword)
     
     console.log('Hash 1:', hash1)
     console.log('Hash 2:', hash2)

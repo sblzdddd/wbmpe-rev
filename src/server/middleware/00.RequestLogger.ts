@@ -1,12 +1,15 @@
 import logger from "../utils/BakaLogger";
 import { resetColor, levelColors } from "../utils/ConsoleColors";
 
+// Request Logger
+// This middleware logs all incoming requests to the console and file
 const requestLogger = logger.child({
   service: 'API',
 })
 
 requestLogger.log('success', 'Request logger initialized');
 
+// Define event handler
 export default defineEventHandler(async (event) => {
   const startTime = Date.now()
   const url = getRequestURL(event)

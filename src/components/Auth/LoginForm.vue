@@ -4,6 +4,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useDialog, DialogType } from '~/composables/useDialog'
 
+const props = defineProps<{
+  isPage?: boolean
+}>()
+
 const { login, loading, error, clearError } = useAuth()
 const { closeDialog, openDialog } = useDialog()
 
@@ -46,7 +50,7 @@ const startOAuth = (provider: string) => {
 
 <template>
   <form class="py-3 px-6 md:px-8" @submit="submit">
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-4">
       <div class="flex flex-col items-center text-center">
         <h1 class="text-2xl font-bold">
           Welcome back
@@ -70,7 +74,15 @@ const startOAuth = (provider: string) => {
       <div class="grid gap-3">
         <div class="flex items-center">
           <Label for="password"><Icon name="lucide:lock" size="16" class="mx-1" />Password</Label>
+          <NuxtLink
+            v-if="props.isPage"
+            to="/auth/forgot-password"
+            class="ml-auto text-sm underline-offset-2 hover:underline"
+          >
+            Forgot your password?
+          </NuxtLink>
           <a
+            v-else
             href="#"
             class="ml-auto text-sm underline-offset-2 hover:underline"
             @click="openDialog?.(DialogType.RESET_PASSWORD); closeDialog?.(DialogType.LOGIN)"
@@ -105,16 +117,16 @@ const startOAuth = (provider: string) => {
           <Icon name="mingcute:google-line" size="24" />
           GOOGLE
         </Button>
-        <Button variant="outline" type="button" class="w-full col-span-2" @click="startOAuth('heroku')">
-          <Icon name="bx:bxl-heroku" size="24" class="text-white" />
-          HEROKU
-        </Button>
       </div>
       <div class="text-center text-sm">
         Don't have an account?
-        <a href="#" class="underline underline-offset-4" @click="openDialog?.(DialogType.REGISTER); closeDialog?.(DialogType.LOGIN)">
+        <NuxtLink
+          to="/auth/register"
+          class="underline underline-offset-4"
+          @click="closeDialog?.(DialogType.LOGIN)"
+        >
           Sign up
-        </a>
+        </NuxtLink>
       </div>
     </div>
   </form>

@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nuxt";
 
 Sentry.init({
+  enabled: process.env.NODE_ENV === 'production',
   // If set up, you can use your runtime config here
   // dsn: useRuntimeConfig().public.sentry.dsn,
   dsn: "https://05f4efa085442291cc90200682c7b329@o4508415437307904.ingest.us.sentry.io/4509620413136896",
@@ -18,12 +19,12 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
   
   // If you don't want to use Session Replay, just remove the line below:
-  integrations: process.env.NODE_ENV === 'development' ? [] : [Sentry.replayIntegration()],
+  integrations: [Sentry.replayIntegration()],
   
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
 
-  environment: process.env.NODE_ENV || 'development',
+  environment: process.env.NODE_ENV || 'production',
   
   _experiments: {
     enableLogs: true

@@ -4,7 +4,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/sidebar/utils'
-import Image from '~/components/Widget/Image.vue'
+import Image from '~/components/Image.vue'
 
 const colorMode = useColorMode()
 const { toggleSidebar } = useSidebar()
