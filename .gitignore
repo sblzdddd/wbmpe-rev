@@ -23,8 +23,10 @@ logs
 .env.*
 !.env.example
 
-src/server/data
+server/data/**
 baka.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+sentry.client.config.ts
+sentry.server.config.ts

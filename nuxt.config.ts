@@ -22,7 +22,8 @@ export default defineNuxtConfig({
       }
     },
     session: {
-      maxAge: 60 * 60 * 24 * 7 // 1 week (7 days) in seconds
+      maxAge: 60 * 60 * 24 * 7, // 1 week (7 days) in seconds
+      password: process.env.NUXT_SESSION_PASSWORD || 'YouHaveNoSessionPasswordBaka'
     }
   },
 
@@ -66,7 +67,8 @@ export default defineNuxtConfig({
     // '@vite-pwa/nuxt',
     'nuxt-auth-utils',
     'nuxt-security',
-    '@sentry/nuxt/module'
+    '@sentry/nuxt/module',
+    '@pinia/nuxt'
   ],
 
   security: {
@@ -176,7 +178,7 @@ export default defineNuxtConfig({
     /**
      * Directory that the component lives in.
      */
-    componentDir: './src/components/ui'
+    componentDir: './app/components/ui'
   },
 
   sentry: {
