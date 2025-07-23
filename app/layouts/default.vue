@@ -6,7 +6,7 @@ import {
 import AppBackdrop from '@/components/Background/AppBackdrop.vue'
 
 const router = useRouter();
-const backgroundStore = useBackgroundStore();
+const backgroundStore = useBackground();
 
 router.beforeEach((to, from, next) => {
   if (to.path === '/') {

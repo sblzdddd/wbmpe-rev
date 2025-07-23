@@ -29,7 +29,8 @@ export default defineNuxtConfig({
     },
     session: {
       maxAge: 60 * 60 * 24 * 7, // 1 week (7 days) in seconds
-      password: process.env.NUXT_SESSION_PASSWORD || 'YouHaveNoSessionPasswordBaka'
+      password: process.env.NUXT_SESSION_PASSWORD || 'YouHaveNoSessionPasswordBaka',
+      name: 'baka-session'
     }
   },
 
@@ -194,7 +195,7 @@ export default defineNuxtConfig({
     /**
      * Directory that the component lives in.
      */
-    componentDir: './app/components/ui'
+    componentDir: './app/components/ui',
   },
 
   sentry: {

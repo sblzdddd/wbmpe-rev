@@ -1,9 +1,7 @@
 import type { UserInfoResponse } from "../../../types/User/User"
 import Users from "../../models/Users"
 
-interface BasicUserResponse {
-  user: Omit<UserInfoResponse['user'], 'createdPlaylists' | 'favorites' | 'recent'>
-}
+type BasicUserResponse = Omit<UserInfoResponse['user'], 'createdPlaylists' | 'favorites' | 'recent'>
 
 export default defineEventHandler(async (event) => {
   try {
@@ -18,7 +16,7 @@ export default defineEventHandler(async (event) => {
     
     const user = await Users.getBasicUserInfo(userId)
 
-    return { user } as BasicUserResponse
+    return user as BasicUserResponse
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error 

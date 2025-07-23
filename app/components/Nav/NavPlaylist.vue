@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { motion } from "motion-v"
 
-const route = useRoute()
-const router = useRouter()
-
 defineProps<{
   data: {
     name: string
@@ -13,13 +10,8 @@ defineProps<{
   }[]
 }>()
 
-const isOnTop = ref(true)
-const nextPath = useState('nextPath', () => route.path)
-
-router.beforeEach((to, from, next) => {
-  nextPath.value = to.path
-  next()
-})
+const { isOnTop } = useScrollBar()
+const nextPath = useState('nextPath')
 </script>
 
 <template>
@@ -41,23 +33,20 @@ router.beforeEach((to, from, next) => {
               side="bottom"
               align="end"
             >
-              <ContextMenuItem v-if="item.canEdit">
-                <Icon name="lucide:edit" size="17" class="text-muted-foreground" />
-                <span>Edit Playlist</span>
-              </ContextMenuItem>
+              <NuxtLink v-if="item.canEdit" :to="`/playlists/${item.url.split('/').pop()}/edit`">
+                <ContextMenuItem v-if="item.canEdit">
+                  <Icon name="lucide:edit" size="17" class="text-muted-foreground" />
+                  <span>Edit Playlist</span>
+                </ContextMenuItem>
+              </NuxtLink>
               <ContextMenuItem>
                 <Icon name="lucide:share" size="17" class="text-muted-foreground" />
                 <span>Share Playlist</span>
               </ContextMenuItem>
-              <ContextMenuSeparator v-if="item.canEdit" />
-              <ContextMenuItem v-if="item.canEdit">
-                <Icon name="lucide:trash" size="17" class="text-muted-foreground" />
-                <span>Delete Playlist</span>
-              </ContextMenuItem>
             </ContextMenuContent>
           </ContextMenu>
           <motion.div 
-            v-if="item.url == nextPath" 
+            v-if="item.url == (nextPath as string || '').replace('/edit', '')" 
             layout
             layout-id="nav-highlighter" 
             class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 

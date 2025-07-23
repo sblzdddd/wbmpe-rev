@@ -41,9 +41,7 @@ watch([email, password], () => {
 })
 
 const startOAuth = (provider: string) => {
-  console.log('Starting OAuth with provider:', provider)
   window.location.href = `/auth/${provider}`
-  // TODO: Implement OAuth
 }
 </script>
 

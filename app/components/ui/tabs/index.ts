@@ -1,0 +1,1 @@
+export { default as TabPages } from './TabPages.vue' 

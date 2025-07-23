@@ -24,13 +24,13 @@ const playlistsSchema = new mongoose.Schema({
   description: {type: String, required: false},
   owner: {type: ObjectId, ref: 'Users'},
   songs: [CollectionSongItemSchema],
+  isPublic: {type: Boolean, required: true, default: false},
 }, {
   timestamps: true, // Adds createdAt and updatedAt fields
   methods: {
   },
   statics: {
     async findFullPlaylistData(playlistId: string): Promise<FullPlaylist> {
-      console.log("fetching playlist", playlistId)
       try {
         // Get the playlist data
         const playlist = await Playlists.findById(playlistId)
@@ -48,7 +48,6 @@ const playlistsSchema = new mongoose.Schema({
         
         // Return the playlist with paginated songs
         const result = JSON.parse(JSON.stringify(playlist)) as unknown as FullPlaylist;
-        console.log("playlist info:", JSON.stringify(result, null, 2))
         
         return result;
       } catch (error) {

@@ -12,6 +12,7 @@ export type PlaylistInfo = {
   coverUrl: string;
   name: string;
   description: string;
+  isPublic: boolean;
   owner: SimpleUser;
 } & TimeMetadata
 
@@ -19,6 +20,7 @@ export type PlaylistMeta = {
   _id: string;
   coverUrl: string|null;
   name: string;
+  isPublic: boolean;
 }
 
 export type PaginatedPlaylist = PlaylistInfo & {

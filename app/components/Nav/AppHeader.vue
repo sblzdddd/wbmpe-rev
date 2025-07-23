@@ -9,8 +9,8 @@ const { paddingClass } = useContentPadding()
 </script>
 
 <template>
-  <header 
-    class="sticky top-0 flex h-16 shrink-0 items-center z-[50] transition-[background-color,border-color] duration-200" 
+  <header
+    class="sticky top-0 flex h-16 shrink-0 items-center z-[50] transition-[background-color,border-color] duration-200"
     :class="`${isOnTop ? '' : 'bg-sidebar border-b-[1.5px] h-[65px]'} ${paddingClass}`"
   >
     <div v-if="!open" class="flex items-center gap-1 mr-2">
@@ -27,14 +27,13 @@ const { paddingClass } = useContentPadding()
       </span>
     </div>
     <div class="grow" />
-    <ClientOnly>
-      <div class="flex items-center gap-2">
-        <Nav-UserInfo />
-        <Auth-LoginDialog />
-        <Auth-ForgotPasswordDialog />
-        <!-- <Widget-WindowButtons/> -->
-      </div>
-    </ClientOnly>
+    <div class="flex items-center gap-2">
+      <Nav-UserInfo />
+      <Auth-LoginDialog />
+      <Auth-ForgotPasswordDialog />
+
+      <!-- <Widget-WindowButtons/> -->
+    </div>
   </header>
 </template>
 

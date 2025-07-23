@@ -1,7 +1,6 @@
 <script setup lang="ts">
 // import type { Song } from "#types/Song"
 import type { Song } from "#types/Song"
-import { motion } from 'motion-v';
 
 const props = defineProps({
   index: {

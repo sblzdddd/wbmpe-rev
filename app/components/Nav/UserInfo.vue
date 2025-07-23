@@ -3,7 +3,15 @@ import { DialogType } from "#composables/useDialog"
 
 const colorMode = useColorMode()
 const { openDialog } = useDialog()
-const { user, isAuthenticated, logout } = useAuth()
+
+
+await useFetch('/api/user/me', {
+  key: 'userInfo',
+  default: () => ({
+    user: undefined
+  })
+})
+const { user, logout } = useAuth()
 
 // User panel state and refs
 const showUserPanel = ref(false)
@@ -38,9 +46,6 @@ const spring = createSpring({
 const getRelativePosition = (element: HTMLElement, container: HTMLElement) => {
   const elementRect = element.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
-
-  console.log("elementRect", elementRect)
-  console.log("containerRect", containerRect)
 
   return {
     top: elementRect.top - containerRect.top,
@@ -83,8 +88,6 @@ const getAvatarAndNamePosition = async () => {
     }
   }
 
-  console.log(userAvatar, userName, userPanelRoot)
-
   const imageRelativePosition = getRelativePosition(userAvatar, userPanelRoot)
   const nameRelativePosition = getRelativePosition(userName, userPanelRoot)
   return {
@@ -116,8 +119,6 @@ const openUserPanel = async () => {
   }
   const backdropEndWidth = userPanelRoot.clientWidth || 240
   const backdropEndHeight = userPanelRoot.clientHeight || 500
-
-  console.log(backdropEndWidth, backdropEndHeight)
 
   const imageEndPosition = {right: 150, top: 28}
   const nameEndPosition = {right: 130 - nameRelativePosition.width * 1.3, top: 36}
@@ -188,10 +189,6 @@ const closeUserPanel = async (callback: () => void = () => {}) => {
     console.warn("User panel backdrop, avatar, name or root not found")
     return
   }
-  const backdropEndWidth = userPanelRoot.clientWidth || 240
-  const backdropEndHeight = userPanelRoot.clientHeight || 500
-
-  console.log(backdropEndWidth, backdropEndHeight)
 
   const imageStartPosition = {right: 150, top: 28}
   const nameStartPosition = {right: 130 - nameRelativePosition.width * 1.3, top: 36}
@@ -272,13 +269,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="isAuthenticated && user" class="flex items-center gap-2">
+  <div v-if="user.data.value && user.data.value._id" class="flex items-center gap-2">
     <div class="user-info-root">
       <template v-if="showUserInfo">
         <div class="user-avatar">
-          <Image :src="user.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" img-class="w-5 h-5" />
+          <Image :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" img-class="w-5 h-5" />
         </div>
-        <span class="user-name">{{ user.nickName || user.userName }}</span>
+        <span class="user-name">{{ user.data.value.nickName || user.data.value.userName }}</span>
       </template>
 
       <div class="user-panel-toggle" :class="{'user-panel-toggle--interactive': !showUserPanel}" @click="onToggleClicked">
@@ -292,9 +289,9 @@ onUnmounted(() => {
             </Button>
           </div>
           <div class="user-panel-avatar">
-            <Image :src="user.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" img-class="w-5 h-5" />
+            <Image :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" img-class="w-5 h-5" />
           </div>
-          <span class="user-panel-name">{{ user.nickName || user.userName }}</span>
+          <span class="user-panel-name">{{ user.data.value.nickName || user.data.value.userName }}</span>
           <div class="user-panel-content">
             <div class="user-panel-user-info">
               <Button variant="outline" size="sm" class="h-8 rounded-full">

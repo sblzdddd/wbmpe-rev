@@ -1,6 +1,6 @@
 <template>
   <div :class="paddingClass">
-    <div class="flex flex-col mt-16 mx-16">
+    <div class="flex flex-col my-16 mx-16">
       <div class="flex gap-7 mb-12">
         <Image v-if="playlist?.data?.coverUrl" :src="playlist?.data?.coverUrl" img-class="w-40 h-40 rounded-sm" :alt="`Playlist ${id}`" />
         <div v-else class="w-40 h-40 rounded-sm bg-gray overflow-hidden">
@@ -21,60 +21,26 @@
           <h1 class="text-2xl font-bold">{{ playlist?.data?.name }}</h1>
           <div class="flex gap-2 text-sm text-muted-foreground">
             <p>{{ playlist?.data?.songList.length }} songs</p>
-            <p>created in {{ new Date(playlist?.data?.createdAt).toLocaleDateString() }}</p>
+            <p>created in {{ new Date(playlist?.data?.createdAt || '').toLocaleDateString() }}</p>
           </div>
           <p class="text-sm text-muted-foreground">{{ playlist?.data?.description }}</p>
           <div class="grow" />
           <div class="flex items-start justify-start gap-2">
             <Button variant="default"><Icon name="lucide:play" class="w-4 h-4" /> Play All</Button>
             <Button variant="outline"><Icon name="lucide:plus" class="w-4 h-4" /> Add to queue</Button>
-            <Button variant="outline"><Icon name="lucide:edit" class="w-4 h-4" /> Edit</Button>
+            <NuxtLink :to="`/playlists/${id}/edit`">
+              <Button variant="outline"><Icon name="lucide:edit" class="w-4 h-4" /> Edit</Button>
+            </NuxtLink>
           </div>
         </div>
       </div>
-      <div class="w-full flex gap-2 mb-6">
-        <NuxtLink to="?tab=songs">
-          <Button size="sm" variant="ghost" class="relative" :class="{'tab-active': route.query.tab === 'songs' || route.query.tab === undefined}">
-            {{ playlist?.data?.songList.length }} Songs
-            <motion.div 
-              v-if="route.query.tab === 'songs' || route.query.tab === undefined" 
-              layout
-              layout-id="playlist-tab-highlighter" 
-              :initial="false"
-              class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
-              :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
-            />
-          </Button>
-        </NuxtLink>
-        <NuxtLink to="?tab=comments">
-          <Button size="sm" variant="ghost" class="relative" :class="{'tab-active': route.query.tab === 'comments'}">
-            Comments
-            <motion.div 
-              v-if="route.query.tab === 'comments'" 
-              layout
-              layout-id="playlist-tab-highlighter" 
-              :initial="false"
-              class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
-              :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
-            />
-          </Button>
-        </NuxtLink>
-        <NuxtLink to="?tab=subscribers">
-          <Button size="sm" variant="ghost" class="relative" :class="{'tab-active': route.query.tab === 'subscribers'}">
-            Subscribers
-            <motion.div 
-              v-if="route.query.tab === 'subscribers'" 
-              layout
-              layout-id="playlist-tab-highlighter" 
-              :initial="false"
-              class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
-              :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
-            />
-          </Button>
-        </NuxtLink>
-      </div>
-      <Transition name="page" mode="out-in">
-        <div v-if="route.query.tab === 'songs' || route.query.tab === undefined">
+      
+      <TabPages 
+        :tabs="tabsConfig"
+        layout-id="playlist-tab-highlighter"
+        default-tab="songs"
+      >
+        <template #songs>
           <div class="list-header">
             <Tooltip>
               <TooltipTrigger>
@@ -89,7 +55,7 @@
             <div :class="{'active': sortMode === 'like', 'asc': sortOrder === 'asc'}" @click="sortMode = 'like'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'">Like <Icon v-if="sortMode === 'like'" name="lucide:chevron-down" /></div>
             <div :class="{'active': sortMode === 'duration', 'asc': sortOrder === 'asc'}" @click="sortMode = 'duration'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'">Duration <Icon v-if="sortMode === 'duration'" name="lucide:chevron-down" /></div>
           </div>
-          <div v-if="playlist?.data?.songList.songs.length > 0" class="flex flex-col">
+          <div v-if="playlist?.data?.songList.songs && playlist?.data?.songList.songs.length > 0" class="flex flex-col">
             <SongItem
               v-for="(song, index) in playlist?.data?.songList.songs"
               :id="index"
@@ -100,17 +66,20 @@
               @mouseenter="currentHoverIndex = index"
             />
           </div>
-        </div>
-        <div v-else-if="route.query.tab === 'comments'" class="flex flex-col gap-2">
-          <p>Comments</p>
-        </div>
-        <div v-else-if="route.query.tab === 'subscribers'" class="flex flex-col gap-2">
-          <p>Subscribers</p>
-        </div>
-        <div v-else class="flex flex-col gap-2">
-          <p>Error tab</p>
-        </div>
-      </Transition>
+        </template>
+
+        <template #comments>
+          <div class="flex flex-col gap-2">
+            <p>Comments</p>
+          </div>
+        </template>
+
+        <template #subscribers>
+          <div class="flex flex-col gap-2">
+            <p>Subscribers</p>
+          </div>
+        </template>
+      </TabPages>
     </div>
   </div>
 </template>
@@ -121,18 +90,40 @@ import { Button } from '@/components/ui/button';
 import type { PlaylistResponse } from '#types/Playlist';
 import SongItem from '@/components/Widget/SongItem.vue';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { motion } from 'motion-v';
+import { TabPages } from '@/components/ui/tabs';
 
 const route = useRoute();
 const id = route.params.id;
 
 const { paddingClass } = useContentPadding();
-const backgroundStore = useBackgroundStore(); 
+const backgroundStore = useBackground(); 
 
 const sortMode = ref<'index' | 'title' | 'album' | 'duration' | 'like'>('index');
 const sortOrder = ref<'asc' | 'desc'>('asc');
 
 const currentHoverIndex = ref<number>(-1);
+
+// Tab configuration
+const tabsConfig = computed(() => [
+  {
+    key: 'songs',
+    label: `${playlist.value?.data?.songList.length || 0} Songs`,
+    to: '?tab=songs',
+    slot: 'songs'
+  },
+  {
+    key: 'comments',
+    label: 'Comments',
+    to: '?tab=comments',
+    slot: 'comments'
+  },
+  {
+    key: 'subscribers',
+    label: 'Subscribers',
+    to: '?tab=subscribers',
+    slot: 'subscribers'
+  }
+]);
 
 // Flag to prevent infinite loops
 const isUpdatingFromRoute = ref(false);
@@ -159,7 +150,8 @@ watch([() => sortMode.value, () => sortOrder.value], async ([newSortMode, newSor
   isUpdatingFromRoute.value = false;
 }, {deep: true, immediate: true})
 
-const { data: playlist, error } = await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
+const { error } = await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
+  key: `playlist-page-${id}`,
   default: () => ({
     data: {
       _id: "",
@@ -169,6 +161,7 @@ const { data: playlist, error } = await useFetch<PlaylistResponse>(`/api/playlis
       description: "",
       createdAt: "",
       updatedAt: "",
+      isPublic: false,
       owner: {
         _id: "",
         userName: "",
@@ -185,6 +178,8 @@ const { data: playlist, error } = await useFetch<PlaylistResponse>(`/api/playlis
     }
   })
 })
+
+const { data: playlist } = useNuxtData<PlaylistResponse>(`playlist-page-${id}`)
 
 if (error.value) {
   // Check if there's browser history to go back
@@ -206,7 +201,7 @@ const BackgroundImages = ref<string[]>([]);
 watch(() => playlist.value?.data, (newVal) => {
   if(newVal?.coverUrl) {
     backgroundStore.setBackground(newVal.coverUrl, 0.55, 32, 40);
-  } else if (newVal?.songList.songs.length > 0) {
+  } else if (newVal?.songList.songs && newVal?.songList.songs.length > 0) {
     for(let i = 0; i < 6; i++) {
       const coverUrl = newVal?.songList.songs[i]?.song.album.coverUrl
       if (coverUrl) {
@@ -225,13 +220,6 @@ watch(() => playlist.value?.data, (newVal) => {
 </script>
 <style scoped>
 @reference '../../../assets/css/tailwind.css';
-.tab-active {
-  @apply !bg-none;
-  &::before {
-    background-color: transparent !important;
-    opacity: 0 !important;
-  }
-}
 .list-header {
   @apply grid pl-4 text-xs h-8 items-center mb-4 border-b border-black/10 dark:border-white/10;
   grid-template-columns: [index] 38px [first] minmax(120px, 4fr) [var1] minmax(120px, 3fr) [var2] 40px [last] 60px;

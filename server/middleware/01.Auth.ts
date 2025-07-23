@@ -31,7 +31,6 @@ export default defineEventHandler(async (event) => {
   try {
     // Get current user from session
     const session = await getUserSession(event)
-    console.log(session.userId)
     // Check if session has actual user data (not just a session ID)
     // A valid session should have id, pwdHash
     if (!session || !session.userId || typeof session.userId !== 'string' || (!session.pwdHash && !session.githubId && !session.googleId)) {

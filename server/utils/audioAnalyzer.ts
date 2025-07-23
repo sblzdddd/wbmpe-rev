@@ -60,11 +60,69 @@ export function determineAudioQuality(audioInfo: AudioInfo): 'normal' | 'high' |
   return 'unknown';
 }
 
+export async function decreaseAudioBitrate(
+  inputPath: string, 
+  outputPath: string, 
+  quality: 'high' | 'normal'
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    const bitrate = quality === 'high' ? '320k' : '128k';
+    
+    ffmpeg(inputPath)
+      .audioBitrate(bitrate)
+      .audioCodec('libmp3lame') // Use MP3 codec for compatibility
+      .audioChannels(2) // Stereo
+      .audioFrequency(44100) // 44.1kHz sample rate
+      .on('end', () => {
+        console.log(`Successfully converted ${inputPath} to ${quality} quality (${bitrate})`);
+        resolve(true);
+      })
+      .on('error', (err) => {
+        console.error(`Error converting ${inputPath} to ${quality} quality:`, err.message);
+        resolve(false);
+      })
+      .save(outputPath);
+    return true;
+  });
+}
+
+export async function createQualityVersions(
+  inputPath: string, 
+  outputDir: string, 
+  baseFileName: string
+): Promise<{ high?: string; normal?: string }> {
+  const results: { high?: string; normal?: string } = {};
+  
+  try {
+    // Ensure output directory exists
+    await fs.mkdir(outputDir, { recursive: true });
+    
+    // Create high quality version (320kbps)
+    const highPath = path.join(outputDir, `${baseFileName}_high.mp3`);
+    const highSuccess = await decreaseAudioBitrate(inputPath, highPath, 'high');
+    if (highSuccess) {
+      results.high = highPath;
+    }
+    
+    // Create normal quality version (128kbps)
+    const normalPath = path.join(outputDir, `${baseFileName}_normal.mp3`);
+    const normalSuccess = await decreaseAudioBitrate(inputPath, normalPath, 'normal');
+    if (normalSuccess) {
+      results.normal = normalPath;
+    }
+    
+    return results;
+  } catch (error) {
+    console.error('Error creating quality versions:', error);
+    return results;
+  }
+}
+
 export function resolveDownloadPath(downloadUrl: string): string | null {
   // Handle downloads:// protocol
   if (downloadUrl.startsWith('downloads://')) {
     const relativePath = downloadUrl.replace('downloads://', '');
-    return path.join(process.cwd(), 'src', 'server', 'data', 'downloads', relativePath.replaceAll(/["'*:]/g, '_'));
+    return path.join(process.cwd(), 'server', 'data', 'downloads', relativePath);
   }
   
   return null;

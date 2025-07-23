@@ -1,6 +1,6 @@
 <template>
   <NuxtImg
-  v-slot="{ src, isLoaded, imgAttrs }"
+  v-slot="{ isLoaded, imgAttrs }"
   :src="src"
   :alt="alt"
   :custom="true"
@@ -10,7 +10,6 @@
     v-if="isLoaded"
     v-bind="imgAttrs"
     :class="imgClass"
-    :src="src"
   >
   <Skeleton v-else :class="imgClass" />
   </NuxtImg>

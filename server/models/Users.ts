@@ -107,7 +107,7 @@ const userSchema = new mongoose.Schema({
     },
     getUserInfo: async (userId: string): Promise<UserInfo> => {
       const user = await Users.findById(userId)
-        .populate({path: 'createdPlaylists', select: '_id name coverUrl songs'})
+        .populate({path: 'createdPlaylists', select: '_id name coverUrl songs isPublic'})
         .populate({path: 'favorites', select: 'coverUrl'})
         .populate({path: 'recent', select: 'coverUrl'})
         .select('-__v')
@@ -173,7 +173,7 @@ const userSchema = new mongoose.Schema({
     },
     getUserPlaylists: async (userId: string) => {
       const user = await Users.findById(userId)
-        .populate({path: 'createdPlaylists', select: '_id name coverUrl songs'})
+        .populate({path: 'createdPlaylists', select: '_id name coverUrl songs isPublic'})
         .populate({path: 'favorites', select: 'coverUrl'})
         .populate({path: 'recent', select: 'coverUrl'})
         .select('createdPlaylists favorites recent')

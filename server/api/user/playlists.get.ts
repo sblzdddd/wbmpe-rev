@@ -2,11 +2,9 @@ import Users from "../../models/Users"
 import type { PlaylistMeta } from "../../../types/Playlist"
 
 interface UserPlaylistsResponse {
-  playlists: {
-    createdPlaylists: PlaylistMeta[]
-    favorites: PlaylistMeta | null
-    recent: PlaylistMeta | null
-  }
+  createdPlaylists: PlaylistMeta[]
+  favorites: PlaylistMeta | null
+  recent: PlaylistMeta | null
 }
 
 export default defineEventHandler(async (event) => {
@@ -22,9 +20,7 @@ export default defineEventHandler(async (event) => {
     
     const playlists = await Users.getUserPlaylists(userId)
 
-    console.log(playlists)
-
-    return { playlists } as UserPlaylistsResponse
+    return playlists as UserPlaylistsResponse
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error 

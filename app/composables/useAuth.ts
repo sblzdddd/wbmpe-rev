@@ -1,11 +1,5 @@
-import type { UserInfo } from '~~/types/User'
 
-// Basic user info without playlists for auth
-type BasicUserInfo = Omit<UserInfo, 'createdPlaylists' | 'favorites' | 'recent'>
-
-interface AuthResponse {
-  user: BasicUserInfo
-}
+import type { InternalApi } from 'nitropack'
 
 interface ApiError {
   data?: {
@@ -13,91 +7,75 @@ interface ApiError {
     message?: string
   }
 }
-
-const user = ref<BasicUserInfo | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 
 export const useAuth = () => {
-  const isAuthenticated = computed(() => !!user.value)
+  const user = useNuxtData<InternalApi['/api/user/me']['get']>('userInfo')
 
   const login = async (email: string, password: string) => {
     loading.value = true
     error.value = null
-    
-    try {
-      const response = await $fetch<AuthResponse>('/api/auth/login', {
-        method: 'POST',
-        body: { email, password }
-      })
-      
-      user.value = response.user
-      return { success: true, user: response.user }
-    } catch (err: unknown) {
-      const apiError = err as ApiError
-      error.value = JSON.stringify([{path: [apiError.data?.statusCode || 'Error'], message: apiError.data?.message || 'Login failed'}])
+
+    await $fetch<InternalApi['/api/auth/login']['post']>('/api/auth/login', {
+      method: 'POST',
+      body: { email, password },
+      onResponse: () => {
+        refreshNuxtData('userInfo')
+        refreshNuxtData('userPlaylists')
+      },
+    }).catch((err: ApiError) => {
+      error.value = JSON.stringify([{path: [err.data?.statusCode || 'Error'], message: err.data?.message || 'Login failed'}])
       return { success: false, error: error.value }
-    } finally {
+    }).finally(() => {
       loading.value = false
-    }
+    });
+    return { success: true }
   }
 
   const logout = async () => {
     loading.value = true
     error.value = null
-    
-    try {
-      await $fetch('/api/auth/logout', {
-        method: 'POST'
-      })
-      
-      user.value = null
-      return { success: true }
-    } catch (err: unknown) {
-      const apiError = err as ApiError
-      error.value = apiError.data?.message || 'Logout failed'
+    const originalUserData = user.data.value
+    const response = await $fetch<InternalApi['/api/auth/logout']['post']>('/api/auth/logout', {
+      method: 'POST',
+      onRequest: () => {
+        user.data.value = undefined;
+      },
+      onResponse: () => {
+        refreshNuxtData('userInfo')
+        refreshNuxtData('userPlaylists')
+      },
+      onResponseError: () => {
+        user.data.value = originalUserData;
+      }
+    }).catch((err: ApiError) => {
+      error.value = err.data?.message || 'Logout failed'
       return { success: false, error: error.value }
-    } finally {
+    }).finally(() => {
       loading.value = false
-    }
+    });
+    return { success: response.success }
   }
 
   const register = async (email: string, password: string, userName: string) => {
     loading.value = true
     error.value = null
     
-    try {
-      const response = await $fetch<AuthResponse>('/api/auth/register', {
-        method: 'POST',
-        body: { email, password, userName }
-      })
-      
-      user.value = response.user
-      return { success: true, user: response.user }
-    } catch (err: unknown) {
-      const apiError = err as ApiError
-      error.value = apiError.data?.message || 'Registration failed'
+    await $fetch<InternalApi['/api/auth/register']['post']>('/api/auth/register', {
+      method: 'POST',
+      body: { email, password, userName },
+      onResponse: () => {
+        refreshNuxtData('userInfo')
+        refreshNuxtData('userPlaylists')
+      },
+    }).catch((err: ApiError) => {
+      error.value = err.data?.message || 'Registration failed'
       return { success: false, error: error.value }
-    } finally {
+    }).finally(() => {
       loading.value = false
-    }
-  }
-
-  const checkAuth = async () => {
-    try {
-      const response = await $fetch<{ user: BasicUserInfo }>('/api/user/me')
-      user.value = response.user
-      return { success: true, user: response.user }
-    } catch (err: unknown) {
-      const apiError = err as ApiError
-      user.value = null
-      return { success: false, error: apiError.data?.message }
-    }
-  }
-
-  const initAuth = async () => {
-    // Check for existing session on app initialization
-    await checkAuth()
+    });
+    return { success: true }
   }
 
   const clearError = () => {
@@ -105,18 +83,13 @@ export const useAuth = () => {
   }
 
   return {
-    // State
-    user: computed(() => user.value),
+    user,
     loading: computed(() => loading.value),
     error: computed(() => error.value),
-    isAuthenticated,
-    
-    // Actions
+
     login,
     logout,
     register,
-    checkAuth,
-    initAuth,
     clearError
   }
 }

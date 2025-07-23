@@ -41,10 +41,8 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    console.log('userAuth', userAuth.userId)
-
     // verify and return user info
-    const userInfo = await Users.getUserInfo(userAuth.userId.toString())
+    const userInfo = await Users.getBasicUserInfo(userAuth.userId.toString())
     
     if (!userInfo) {
       logger.error('User not found in database', {email: email})
@@ -60,7 +58,6 @@ export default defineEventHandler(async (event) => {
       pwdHash: userAuth.pwdHash,
       loggedInAt: new Date()
     })
-
 
     logger.info('Login successful', {email: email, userId: userInfo._id})
     
@@ -104,7 +101,7 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Login successful',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserInfoResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/BasicUserResponse' } } }
       },
       '401': {
         description: 'Invalid credentials',
