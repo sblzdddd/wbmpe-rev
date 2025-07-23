@@ -19,8 +19,7 @@ const props = withDefaults(defineProps<SidebarProps>(), {
 
 const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
-
-const { isOnTop } = useScroll()
+const { isOnTop } = useScrollBar()
 </script>
 
 <template>

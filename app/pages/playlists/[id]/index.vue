@@ -34,23 +34,47 @@
       </div>
       <div class="w-full flex gap-2 mb-6">
         <NuxtLink to="?tab=songs">
-          <Button size="sm" variant="secondary" :class="{'tab-active': $route.query.tab === 'songs' || $route.query.tab === undefined}">
+          <Button size="sm" variant="ghost" class="relative" :class="{'tab-active': route.query.tab === 'songs' || route.query.tab === undefined}">
             {{ playlist?.data?.songList.length }} Songs
+            <motion.div 
+              v-if="route.query.tab === 'songs' || route.query.tab === undefined" 
+              layout
+              layout-id="playlist-tab-highlighter" 
+              :initial="false"
+              class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
+              :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
+            />
           </Button>
         </NuxtLink>
         <NuxtLink to="?tab=comments">
-          <Button size="sm" variant="secondary" :class="{'tab-active': $route.query.tab === 'comments'}">
+          <Button size="sm" variant="ghost" class="relative" :class="{'tab-active': route.query.tab === 'comments'}">
             Comments
+            <motion.div 
+              v-if="route.query.tab === 'comments'" 
+              layout
+              layout-id="playlist-tab-highlighter" 
+              :initial="false"
+              class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
+              :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
+            />
           </Button>
         </NuxtLink>
         <NuxtLink to="?tab=subscribers">
-          <Button size="sm" variant="secondary" :class="{'tab-active': $route.query.tab === 'subscribers'}">
+          <Button size="sm" variant="ghost" class="relative" :class="{'tab-active': route.query.tab === 'subscribers'}">
             Subscribers
+            <motion.div 
+              v-if="route.query.tab === 'subscribers'" 
+              layout
+              layout-id="playlist-tab-highlighter" 
+              :initial="false"
+              class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
+              :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
+            />
           </Button>
         </NuxtLink>
       </div>
       <Transition name="page" mode="out-in">
-        <div v-if="$route.query.tab === 'songs' || $route.query.tab === undefined">
+        <div v-if="route.query.tab === 'songs' || route.query.tab === undefined">
           <div class="list-header">
             <Tooltip>
               <TooltipTrigger>
@@ -65,20 +89,22 @@
             <div :class="{'active': sortMode === 'like', 'asc': sortOrder === 'asc'}" @click="sortMode = 'like'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'">Like <Icon v-if="sortMode === 'like'" name="lucide:chevron-down" /></div>
             <div :class="{'active': sortMode === 'duration', 'asc': sortOrder === 'asc'}" @click="sortMode = 'duration'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'">Duration <Icon v-if="sortMode === 'duration'" name="lucide:chevron-down" /></div>
           </div>
-          <div v-if="playlist?.data?.songList.songs.length > 0" class="flex flex-col gap-1">
+          <div v-if="playlist?.data?.songList.songs.length > 0" class="flex flex-col">
             <SongItem
               v-for="(song, index) in playlist?.data?.songList.songs"
               :id="index"
               :key="song._id"
               :song="song.song"
               :index="index"
+              :is-hovering="currentHoverIndex === index"
+              @mouseenter="currentHoverIndex = index"
             />
           </div>
         </div>
-        <div v-else-if="$route.query.tab === 'comments'" class="flex flex-col gap-2">
+        <div v-else-if="route.query.tab === 'comments'" class="flex flex-col gap-2">
           <p>Comments</p>
         </div>
-        <div v-else-if="$route.query.tab === 'subscribers'" class="flex flex-col gap-2">
+        <div v-else-if="route.query.tab === 'subscribers'" class="flex flex-col gap-2">
           <p>Subscribers</p>
         </div>
         <div v-else class="flex flex-col gap-2">
@@ -92,18 +118,21 @@
 <script setup lang="ts">
 import Image from '~/components/Image.vue';
 import { Button } from '@/components/ui/button';
-import type { PlaylistResponse } from '@/types/Playlist/index';
+import type { PlaylistResponse } from '#types/Playlist';
 import SongItem from '@/components/Widget/SongItem.vue';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { motion } from 'motion-v';
 
 const route = useRoute();
 const id = route.params.id;
 
 const { paddingClass } = useContentPadding();
-const { setBackground } = useBackground();
+const backgroundStore = useBackgroundStore(); 
 
 const sortMode = ref<'index' | 'title' | 'album' | 'duration' | 'like'>('index');
 const sortOrder = ref<'asc' | 'desc'>('asc');
+
+const currentHoverIndex = ref<number>(-1);
 
 // Flag to prevent infinite loops
 const isUpdatingFromRoute = ref(false);
@@ -134,16 +163,18 @@ const { data: playlist, error } = await useFetch<PlaylistResponse>(`/api/playlis
   default: () => ({
     data: {
       _id: "",
-      name: "Loading...",
-      description: "Loading...",
-      createdAt: "1999-01-01",
-      updatedAt: "1999-01-01",
+      playlistType: "playlist" as const,
       coverUrl: "",
+      name: "",
+      description: "",
+      createdAt: "",
+      updatedAt: "",
       owner: {
         _id: "",
         userName: "",
         nickName: "",
-        avatarUrl: ""
+        avatarUrl: "",
+        bio: ""
       },
       songList: {
         length: 0,
@@ -174,13 +205,20 @@ const BackgroundImages = ref<string[]>([]);
 
 watch(() => playlist.value?.data, (newVal) => {
   if(newVal?.coverUrl) {
-    setBackground(newVal.coverUrl, 0.55, 32, 40);
+    backgroundStore.setBackground(newVal.coverUrl, 0.55, 32, 40);
   } else if (newVal?.songList.songs.length > 0) {
     for(let i = 0; i < 6; i++) {
-      BackgroundImages.value.push(playlist.value?.data?.songList.songs[i].song.album.coverUrl || "");
+      const coverUrl = newVal?.songList.songs[i]?.song.album.coverUrl
+      if (coverUrl) {
+        BackgroundImages.value.push(coverUrl);
+      }
     }
-    if(BackgroundImages.value.length > 0 && BackgroundImages.value[0] !== "") {
-      setBackground(BackgroundImages.value[Math.floor(Math.random() * BackgroundImages.value.length)], 0.35, 32, 40);
+    if(BackgroundImages.value.length > 0) {
+      const randomIndex = Math.floor(Math.random() * BackgroundImages.value.length);
+      const coverUrl = BackgroundImages.value[randomIndex];
+      if (coverUrl) {
+        backgroundStore.setBackground(coverUrl, 0.35, 32, 40);
+      }
     }
   }
 }, {immediate: true})
@@ -188,9 +226,10 @@ watch(() => playlist.value?.data, (newVal) => {
 <style scoped>
 @reference '../../../assets/css/tailwind.css';
 .tab-active {
-  @apply bg-black text-white hover:bg-black/80 transition-[background-color,color] duration-300 ease-in-out;
-  &:is(.dark *) {
-    @apply bg-white text-black hover:bg-white/80;
+  @apply !bg-none;
+  &::before {
+    background-color: transparent !important;
+    opacity: 0 !important;
   }
 }
 .list-header {

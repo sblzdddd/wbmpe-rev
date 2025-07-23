@@ -1,6 +1,5 @@
 import { ObjectId } from "mongodb"
 import { UserAuth, type UserAuthDocument } from "../models"
-import BakaLogger from "../utils/BakaLogger"
 
 const logger = BakaLogger.child({service: 'AuthMiddleware'})
 
@@ -10,8 +9,8 @@ export default defineEventHandler(async (event) => {
   
   // Define protected API endpoints that require authentication
   const loginOnlyEndpoints = [
-    '/api/user/me'
-    // '/api/playlist',
+    '/api/user/me',
+    '/api/user/playlists',
     // '/api/albums',
     // '/api/artists',
     // '/api/songs',

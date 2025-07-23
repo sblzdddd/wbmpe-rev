@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue"
-import type { Song } from "@/types/song"
-import Image from "~/components/Image.vue"
-import { Button } from "@/components/ui/button"
+// import type { Song } from "#types/Song"
+import type { Song } from "#types/Song"
+import { motion } from 'motion-v';
 
 const props = defineProps({
   index: {
@@ -22,9 +21,13 @@ const props = defineProps({
     type: Object as () => Song,
     required: true
   },
+  isHovering: {
+    type: Boolean,
+    required: false,
+    default: false
+  }
 })
 
-const isHovering = ref(false)
 
 const playSong = () => {
   // TODO: Implement play functionality
@@ -50,14 +53,12 @@ const formatDuration = (seconds: number) => {
     :class="`${isPlaying ? 'active' : 'hover-highlight'}`"
     @dblclick="playSong()"
     @click="playSong()"
-    @mouseenter="isHovering = true"
-    @mouseleave="isHovering = false"
   >
     <div class="flex justify-start w-full">
       <p v-if="!isHovering" class="songItem-index" :class="{ 'not_stored': false }">
         {{ index + 1 }}
       </p>
-      <button v-else class="p-0 flex justify-center text-muted-foreground hover:text-black dark:hover:text-white hover:scale-105 active:scale-95 active:opacity-80 cursor-pointer">
+      <button v-else class="p-0 flex justify-center text-muted-foreground hover:text-black dark:hover:text-white hover:scale-105 active:scale-95 active:opacity-80 cursor-pointer" @click.stop="">
         <Icon name="material-symbols:play-arrow-rounded" size="24" />
       </button>
     </div>
@@ -73,7 +74,7 @@ const formatDuration = (seconds: number) => {
           </span>
         </p>
       </div>
-      <div v-if="isHovering" class="flex items-center justify-center">
+      <div class="song-actions">
         <Button variant="ghost" size="sm" class="size-7 p-0" @click.stop="">
           <Icon name="lucide:plus" size="16" />
         </Button>
@@ -101,17 +102,18 @@ const formatDuration = (seconds: number) => {
 <style scoped>
 @reference '../../assets/css/tailwind.css';
 .songItem {
-  @apply flex lg:grid items-center text-left text-sm py-1.5 px-4 hover:bg-black/5 dark:hover:bg-white/10
-  lg:rounded-md overflow-hidden relative;
+  @apply flex lg:grid items-center text-left text-sm py-1.5 px-4 relative hover:bg-black/15 dark:hover:bg-white/15
+  lg:rounded-md;
   border-color: transparent;
   grid-template-columns: [index] 40px [first] minmax(120px, 4fr) [var1] minmax(120px, 3fr) [var2] 40px [last] 50px;
-  transition: border 50ms ease;
-}
-
-
-
-.v-theme--wbmpe_light .hover-highlight {
-  @apply hover:bg-black/10;
+  .song-actions {
+    @apply hidden items-center justify-center;
+  }
+  &:hover {
+    .song-actions {
+      @apply flex;
+    }
+  }
 }
 
 .songItem.active {

@@ -17,7 +17,7 @@ const db = mongoose.connection;
 try {
 
   await db.asPromise();
-  const user = await Users.getUserInfo("68655bb698fedd16decd2438")
+  const user = await Users.getUserPlaylists("68635c1e527881ccc13814a6")
   console.log(JSON.stringify(user, null, 2))
 
 } catch (error) {

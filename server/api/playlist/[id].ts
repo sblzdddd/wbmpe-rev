@@ -1,7 +1,6 @@
 import type { PaginatedPlaylist } from '../../../types/Playlist/index'
 import Playlists from "../../models/Playlists";
 import { createSongList } from '../../utils/paginate'
-import BakaLogger from '../../utils/BakaLogger'
 import { isValidObjectIdString } from '../../utils/IdValidator'
 
 const logger = BakaLogger.child({service: 'PlaylistAPI'})

@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import { Users, UserAuth } from '../../models'
 import { hashPasswordCustom } from '../../utils/auth'
-import BakaLogger from '../../utils/BakaLogger'
 
 const logger = BakaLogger.child({ service: 'Auth' })
 
@@ -38,6 +37,9 @@ export default defineEventHandler(async (event) => {
 
     const user = await Users.createNewUser(userName, email, pwdHash)
 
+    // verify and return user info
+    const userInfo = await Users.getUserInfo(user._id.toString())
+
     // Set user session
     await setUserSession(event, {
       userId: user._id.toString(),
@@ -46,13 +48,7 @@ export default defineEventHandler(async (event) => {
     })
     
     return {
-      user: {
-        id: user._id,
-        email,
-        userName: user.userName,
-        nickName: user.nickName,
-        avatarUrl: user.avatarUrl
-      }
+      user: userInfo
     }
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'statusCode' in error) {
@@ -92,7 +88,7 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Registration successful',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserInfoResponse' } } }
       },
       '400': {
         description: 'Bad request - email or username already exists',

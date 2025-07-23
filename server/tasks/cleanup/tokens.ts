@@ -1,5 +1,4 @@
 import { cleanupExpiredEmailVerificationTokens, cleanupExpiredTokens } from '../../utils/cleanupExpiredTokens'
-import BakaLogger from '../../utils/BakaLogger'
 
 
 const logger = BakaLogger.child({ service: 'CleanupTokenTask' })

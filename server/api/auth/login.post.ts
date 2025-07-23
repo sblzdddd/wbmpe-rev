@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import { Users, UserAuth } from '../../models'
-import BakaLogger from '../../utils/BakaLogger'
-import { verifyPassword } from '../../utils/auth'
+import { verifyPasswordCustom } from '../../utils/auth'
 
 const bodySchema = z.object({
   email: z.string().email(),
@@ -16,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Find user auth by email
-    const userAuth = await UserAuth.findOne({ email }).populate('userId')
+    const userAuth = await UserAuth.findOne({ email })
     
     if (!userAuth || !userAuth.pwdHash) {
       logger.error('UserAuth not found / valid in database', {email: email})
@@ -25,20 +24,8 @@ export default defineEventHandler(async (event) => {
         message: 'Invalid email or password'
       })
     }
-
-    // Verify password using custom auth utility
-    logger.info('Attempting password verification', {
-      email,
-      hasStoredHash: !!userAuth.pwdHash,
-      storedHashLength: userAuth.pwdHash?.length,
-      passwordLength: password.length,
-      storedHashPrefix: userAuth.pwdHash?.substring(0, 10) + '...',
-      storedHashFormat: userAuth.pwdHash?.startsWith('$2a$') ? 'bcrypt' : 
-                        userAuth.pwdHash?.startsWith('$2b$') ? 'bcrypt' : 
-                        userAuth.pwdHash?.startsWith('$scrypt$') ? 'scrypt' : 'unknown'
-    })
     
-    const isValidPassword = await verifyPassword(password, userAuth.pwdHash)
+    const isValidPassword = await verifyPasswordCustom(password, userAuth.pwdHash)
     
     logger.info('Password verification result', {
       email,
@@ -54,10 +41,12 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Get user data
-    const user = await Users.findById(userAuth.userId)
+    console.log('userAuth', userAuth.userId)
+
+    // verify and return user info
+    const userInfo = await Users.getUserInfo(userAuth.userId.toString())
     
-    if (!user) {
+    if (!userInfo) {
       logger.error('User not found in database', {email: email})
       throw createError({
         statusCode: 401,
@@ -65,25 +54,18 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    console.log(user._id.toString())
-
     // Set user session
     await setUserSession(event, {
-      userId: user._id.toString(),
+      userId: userInfo._id.toString(),
       pwdHash: userAuth.pwdHash,
       loggedInAt: new Date()
     })
 
-    logger.info('Login successful', {email: email, userId: user._id})
+
+    logger.info('Login successful', {email: email, userId: userInfo._id})
     
     return {
-      user: {
-        id: user._id,
-        email: userAuth.email,
-        userName: user.userName,
-        nickName: user.nickName,
-        avatarUrl: user.avatarUrl
-      }
+      user: userInfo
     }
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'statusCode' in error) {
@@ -122,7 +104,7 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Login successful',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserInfoResponse' } } }
       },
       '401': {
         description: 'Invalid credentials',

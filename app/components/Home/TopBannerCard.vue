@@ -19,7 +19,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { Banner } from '@/types/home'
+import type { Banner } from '~~/types/Home'
 import emblaCarouselVue from 'embla-carousel-vue'
 import type {EmblaCarouselType} from 'embla-carousel'
 import Autoplay from 'embla-carousel-autoplay'

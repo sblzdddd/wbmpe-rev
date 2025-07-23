@@ -28,12 +28,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { PropType } from 'vue';
 import emblaCarouselVue from 'embla-carousel-vue'
-import { useContentPadding } from '~/composables/useContentPadding'
-import { useSidebar } from '~/components/ui/sidebar'
-import Image from '~/components/Image.vue'
-import type { Recom } from '~/types/home'
+import { useSidebar } from '#shadcn/sidebar'
+import type { Recom } from '#types/Home'
 
 
 const {open} = useSidebar()

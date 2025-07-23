@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs'
-import BakaLogger from './BakaLogger'
 
 const logger = BakaLogger.child({ service: 'AuthUtils' })
 
@@ -36,7 +35,7 @@ export async function hashPasswordCustom(password: string, saltRounds: number = 
  * @param hash - The hashed password to compare against
  * @returns Promise<boolean> - True if password matches, false otherwise
  */
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+export async function verifyPasswordCustom(password: string, hash: string): Promise<boolean> {
   try {
     logger.log("silly", 'Verifying password', {
       passwordLength: password.length,

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app'
-import { Button } from '@/components/ui/button'
 
 defineProps({
   error: {type:Object as () => NuxtError, required: true}
 })
 
 const canGoBack = computed(() => window.history.length > 1)
+const router = useRouter()
 
 const handleError = () => clearError({ redirect: '/' })
 </script>
@@ -26,7 +26,7 @@ const handleError = () => clearError({ redirect: '/' })
             Go Home
           </Button>
           <ClientOnly>
-            <Button v-if="canGoBack" variant="outline" @click="$router.back()">
+            <Button v-if="canGoBack" variant="outline" @click="router.back()">
               <Icon name="lucide:arrow-left" class="w-4 h-4" />
               Go Back
             </Button>

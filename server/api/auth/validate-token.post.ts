@@ -1,5 +1,4 @@
 import EmailVerificationToken from "../../models/EmailVerificationToken"
-import BakaLogger from "../../utils/BakaLogger"
 
 const logger = BakaLogger.child({ service: 'ValidateToken' })
 

@@ -1,6 +1,10 @@
 import type { UserInfoResponse } from "../../../types/User/User"
 import Users from "../../models/Users"
 
+interface BasicUserResponse {
+  user: Omit<UserInfoResponse['user'], 'createdPlaylists' | 'favorites' | 'recent'>
+}
+
 export default defineEventHandler(async (event) => {
   try {
     const userId = event.context.user?.id
@@ -12,9 +16,9 @@ export default defineEventHandler(async (event) => {
       })
     }
     
-    const user = await Users.getUserInfo(userId)
+    const user = await Users.getBasicUserInfo(userId)
 
-    return { user } as UserInfoResponse
+    return { user } as BasicUserResponse
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error 

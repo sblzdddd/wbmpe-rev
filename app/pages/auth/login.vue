@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'fullscreen'
+  layout: 'fullscreen',
+  middleware: 'guest'
 })
 </script>
 

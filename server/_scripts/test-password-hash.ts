@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import { MONGODB_URI } from "./baka"
-import { hashPasswordCustom, verifyPassword } from "../utils/auth"
+import { hashPasswordCustom, verifyPasswordCustom } from "../utils/auth"
 
 async function testPasswordHashing() {
   try {
@@ -25,9 +25,9 @@ async function testPasswordHashing() {
     
     // Test 2: Verify each hash
     console.log('\n--- Test 2: Verify each hash ---')
-    const verify1 = await verifyPassword(testPassword, hash1)
-    const verify2 = await verifyPassword(testPassword, hash2)
-    const verify3 = await verifyPassword(testPassword, hash3)
+    const verify1 = await verifyPasswordCustom(testPassword, hash1)
+    const verify2 = await verifyPasswordCustom(testPassword, hash2)
+    const verify3 = await verifyPasswordCustom(testPassword, hash3)
     
     console.log('Verify hash1:', verify1)
     console.log('Verify hash2:', verify2)
@@ -37,9 +37,9 @@ async function testPasswordHashing() {
     // Test 3: Verify with wrong password
     console.log('\n--- Test 3: Verify with wrong password ---')
     const wrongPassword = 'wrongpassword123'
-    const verifyWrong1 = await verifyPassword(wrongPassword, hash1)
-    const verifyWrong2 = await verifyPassword(wrongPassword, hash2)
-    const verifyWrong3 = await verifyPassword(wrongPassword, hash3)
+    const verifyWrong1 = await verifyPasswordCustom(wrongPassword, hash1)
+    const verifyWrong2 = await verifyPasswordCustom(wrongPassword, hash2)
+    const verifyWrong3 = await verifyPasswordCustom(wrongPassword, hash3)
     
     console.log('Verify wrong password with hash1:', verifyWrong1)
     console.log('Verify wrong password with hash2:', verifyWrong2)

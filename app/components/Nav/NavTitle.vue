@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import {
-  SidebarMenu,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar'
-import { useSidebar } from '@/components/ui/sidebar/utils'
-import Image from '~/components/Image.vue'
+import { useSidebar } from '#shadcn/sidebar/utils'
 
 const colorMode = useColorMode()
 const { toggleSidebar } = useSidebar()

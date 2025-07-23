@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { PinInput, PinInputGroup, PinInputSlot } from '@/components/ui/pin-input'
 
 definePageMeta({
-  layout: 'fullscreen'
+  layout: 'fullscreen',
+  middleware: 'guest'
 })
 
 const route = useRoute()

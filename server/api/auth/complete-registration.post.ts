@@ -1,6 +1,5 @@
 import EmailVerificationToken from "../../models/EmailVerificationToken"
 import { hashPasswordCustom } from "../../utils/auth"
-import BakaLogger from "../../utils/BakaLogger"
 import Users from "../../models/Users"
 
 const logger = BakaLogger.child({ service: 'CompleteRegistration' })
@@ -74,14 +73,20 @@ export default defineEventHandler(async (event) => {
       userId: user._id 
     })
 
+    // verify and return user info
+    const userInfo = await Users.getUserInfo(user._id.toString())
+
+    if (!userInfo) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Failed to get user info'
+      })
+    }
+
     return {
       success: true,
       message: 'Registration completed successfully',
-      user: {
-        _id: user._id,
-        userName: user.userName,
-        nickName: user.nickName
-      }
+      user: userInfo
     }
   } catch (error) {
     logger.error('Failed to complete registration', { userName, error })

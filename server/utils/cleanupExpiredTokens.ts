@@ -1,5 +1,4 @@
 import PasswordResetToken from '../models/PasswordResetToken'
-import BakaLogger from './BakaLogger'
 import EmailVerificationToken from '../models/EmailVerificationToken'
 
 const logger = BakaLogger.child({ service: 'CleanupExpiredTokens' })

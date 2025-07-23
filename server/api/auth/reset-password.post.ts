@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import { UserAuth } from '../../models'
 import PasswordResetToken from '../../models/PasswordResetToken'
-import BakaLogger from '../../utils/BakaLogger'
 import { hashPasswordCustom } from '../../utils/auth'
 
 const bodySchema = z.object({

@@ -1,6 +1,5 @@
 import EmailVerificationToken from "../../models/EmailVerificationToken"
 import UserAuth from "../../models/UserAuth"
-import BakaLogger from "../../utils/BakaLogger"
 
 const logger = BakaLogger.child({ service: 'CheckEmailStatus' })
 

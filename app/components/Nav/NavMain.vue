@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarSeparator,
-} from '@/components/ui/sidebar'
+import { motion } from "motion-v"
 
 defineProps<{
   data: {
@@ -19,8 +12,17 @@ defineProps<{
     }[]
   }[]
 }>()
+const { isOnTop } = useScrollBar()
+const route = useRoute()
+const router = useRouter()
 
-const { isOnTop } = useScroll()
+const nextPath = useState('nextPath', () => route.path)
+
+
+router.beforeEach((to, from, next) => {
+  nextPath.value = to.path
+  next()
+})
 </script>
 
 <template>
@@ -31,10 +33,17 @@ const { isOnTop } = useScroll()
       <SidebarMenu>
         <SidebarMenuItem v-for="item in group.items" :key="item.title">
           <NuxtLink :to="item.url">
-            <SidebarMenuButton :id="item.url" class="menu-btn" :tooltip="item.title">
+            <SidebarMenuButton :id="item.url" class="menu-btn" :tooltip="item.title" :class="{'nav-active': item.url == nextPath}">
               <Icon v-if="item.icon" :name="item.icon" size="17" class="nav-icon group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:p-2.5! shrink-0" />
               <span class="ml-2 text-sm">{{ item.title }}</span>
             </SidebarMenuButton>
+            <motion.div
+              v-if="item.url == nextPath"
+              layout-id="nav-highlighter"
+              class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
+              :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
+              :initial="false"
+            />
           </NuxtLink>
         </SidebarMenuItem>
       </SidebarMenu>

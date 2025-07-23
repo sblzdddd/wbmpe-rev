@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer'
-import BakaLogger from './BakaLogger'
 import crypto from 'crypto'
 
 const logger = BakaLogger.child({service: 'EmailSender'})

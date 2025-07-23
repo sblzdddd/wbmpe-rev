@@ -96,6 +96,15 @@ const userSchema = new mongoose.Schema({
       }
       return user as unknown as SimpleUser;
     },
+    getBasicUserInfo: async (userId: string): Promise<Omit<UserInfo, 'createdPlaylists' | 'favorites' | 'recent'>> => {
+      const user = await Users.findById(userId)
+        .select('-__v -createdPlaylists -favorites -recent -createdAt -updatedAt')
+        .lean();
+      if (!user) {
+        throw new Error('User not found');
+      }
+      return user as unknown as Omit<UserInfo, 'createdPlaylists' | 'favorites' | 'recent'>;
+    },
     getUserInfo: async (userId: string): Promise<UserInfo> => {
       const user = await Users.findById(userId)
         .populate({path: 'createdPlaylists', select: '_id name coverUrl songs'})
@@ -161,6 +170,76 @@ const userSchema = new mongoose.Schema({
       await Playlists.bulkWrite(ops);
 
       return userObject;
+    },
+    getUserPlaylists: async (userId: string) => {
+      const user = await Users.findById(userId)
+        .populate({path: 'createdPlaylists', select: '_id name coverUrl songs'})
+        .populate({path: 'favorites', select: 'coverUrl'})
+        .populate({path: 'recent', select: 'coverUrl'})
+        .select('createdPlaylists favorites recent')
+        .lean();
+      if (!user) {
+        throw new Error('User not found');
+      }
+      
+      const userObject = user as any;
+      if(userObject.favorites) {
+        userObject.favorites.coverUrl = await Playlists.getLastSongCoverUrl(userObject.favorites._id);
+      }
+      if(userObject.recent) {
+        userObject.recent.coverUrl = await Playlists.getLastSongCoverUrl(userObject.recent._id);
+      }
+      // get cover urls for playlists that don't have them
+      const playlistsNeedingCovers = userObject.createdPlaylists.filter((p: any) => !p.coverUrl);
+
+      const songIds = playlistsNeedingCovers
+        .map((p: any) => p.songs?.[0]?.song)
+        .filter(Boolean); // remove undefined
+
+      // populate songs with album cover urls
+      const songs = await Songs.find({ _id: { $in: songIds } })
+        .select('_id album')
+        .populate({ path: 'album', select: 'coverUrl' })
+        .lean();
+
+      // create map of song ids to album cover urls
+      const songCoverMap = new Map(
+        songs.map((song: any) => [song._id.toString(), song.album?.coverUrl || null])
+      );
+
+      // create map of playlist ids to cover urls
+      const playlistsNeedingUpdate: Record<string, string> = {};
+
+      // update playlists with cover urls
+      const playlistsWithCovers = userObject.createdPlaylists.map((p: any) => {
+        if (!p.coverUrl) {
+          const firstSongId = p.songs?.[0]?.song?.toString();
+          if (firstSongId && songCoverMap.has(firstSongId)) {
+            p.coverUrl = songCoverMap.get(firstSongId);
+            playlistsNeedingUpdate[p._id] = p.coverUrl;
+          }
+        }
+        // remove songs field
+        delete p.songs;
+        return p;
+      });
+      
+      userObject.createdPlaylists = playlistsWithCovers;
+
+      // update playlists with cover urls so that they don't need to be populated again
+      const ops = Object.keys(playlistsNeedingUpdate).map((id: string) => ({
+        updateOne: {
+          filter: { _id: id },
+          update: { $set: { coverUrl: playlistsNeedingUpdate[id] } }
+        }
+      }));
+      await Playlists.bulkWrite(ops);
+
+      return {
+        createdPlaylists: userObject.createdPlaylists,
+        favorites: userObject.favorites,
+        recent: userObject.recent
+      };
     }
   }
 });

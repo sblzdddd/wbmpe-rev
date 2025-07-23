@@ -1,83 +1,69 @@
 <script setup lang="ts">
-import {
-  Folder,
-  Forward,
-  MoreHorizontal,
-  Trash2,
-} from 'lucide-vue-next'
+import { motion } from "motion-v"
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from '@/components/ui/sidebar'
+const route = useRoute()
+const router = useRouter()
 
 defineProps<{
   data: {
     name: string
     url: string
     icon: string
+    canEdit: boolean
   }[]
 }>()
 
-const { isMobile } = useSidebar()
+const isOnTop = ref(true)
+const nextPath = useState('nextPath', () => route.path)
+
+router.beforeEach((to, from, next) => {
+  nextPath.value = to.path
+  next()
+})
 </script>
 
 <template>
-  <SidebarGroup class="group-data-[collapsible=icon]:hidden">
-    <SidebarGroupLabel>Playlist</SidebarGroupLabel>
+  <SidebarSeparator class="m-0 opacity-0 group-data-[collapsible=icon]:opacity-100" :class="{'!opacity-0': isOnTop}" />
+  <SidebarGroup>
+    <SidebarGroupLabel class="pl-4 mb-2 group-data-[collapsible=icon]:hidden">My Playlists</SidebarGroupLabel>
     <SidebarMenu>
       <SidebarMenuItem v-for="item in data" :key="item.name">
-        <SidebarMenuButton as-child>
-          <a :href="item.url">
-            <Icon :name="item.icon" size="16" />
-            <span class="ml-2 text-sm">{{ item.name }}</span>
-          </a>
-        </SidebarMenuButton>
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <SidebarMenuAction show-on-hover>
-              <MoreHorizontal />
-              <span class="sr-only">More</span>
-            </SidebarMenuAction>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            class="w-48 rounded-lg"
-            :side="isMobile ? 'bottom' : 'right'"
-            :align="isMobile ? 'end' : 'start'"
-          >
-            <DropdownMenuItem>
-              <Folder class="text-muted-foreground" />
-              <span>View Project</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Forward class="text-muted-foreground" />
-              <span>Share Project</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Trash2 class="text-muted-foreground" />
-              <span>Delete Project</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-      <SidebarMenuItem>
-        <SidebarMenuButton class="text-sidebar-foreground/70">
-          <MoreHorizontal class="text-sidebar-foreground/70" />
-          <span>More</span>
-        </SidebarMenuButton>
+        <NuxtLink :to="item.url">
+          <ContextMenu>
+            <ContextMenuTrigger>
+              <SidebarMenuButton :id="item.url" class="menu-btn" :tooltip="item.name" :class="{'nav-active': item.url == nextPath}">
+                <Icon v-if="item.icon" :name="item.icon" size="17" class="nav-icon group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:p-2.5! shrink-0" />
+                <span class="ml-2 text-sm">{{ item.name }}</span>
+              </SidebarMenuButton>
+            </ContextMenuTrigger>
+            <ContextMenuContent
+              class="w-48 rounded-lg"
+              side="bottom"
+              align="end"
+            >
+              <ContextMenuItem v-if="item.canEdit">
+                <Icon name="lucide:edit" size="17" class="text-muted-foreground" />
+                <span>Edit Playlist</span>
+              </ContextMenuItem>
+              <ContextMenuItem>
+                <Icon name="lucide:share" size="17" class="text-muted-foreground" />
+                <span>Share Playlist</span>
+              </ContextMenuItem>
+              <ContextMenuSeparator v-if="item.canEdit" />
+              <ContextMenuItem v-if="item.canEdit">
+                <Icon name="lucide:trash" size="17" class="text-muted-foreground" />
+                <span>Delete Playlist</span>
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+          <motion.div 
+            v-if="item.url == nextPath" 
+            layout
+            layout-id="nav-highlighter" 
+            class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
+            :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
+          />
+        </NuxtLink>
       </SidebarMenuItem>
     </SidebarMenu>
   </SidebarGroup>

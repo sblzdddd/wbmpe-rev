@@ -4,6 +4,12 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
 
+  alias: {
+    '#types': '../types',
+    '#shadcn': '../app/components/ui',
+    '#composables': '../app/composables',
+  },
+
   runtimeConfig: {
     mongodbUri: process.env.MONGODB_URI, // Expose MONGODB_URI to runtime config
     oauth: {
@@ -47,7 +53,6 @@ export default defineNuxtConfig({
   },
 
   devtools: { enabled: true, timeline: { enabled: true } },
-  srcDir: 'src',
   css: ['~/assets/css/tailwind.css'],
 
   vite: {
@@ -68,8 +73,19 @@ export default defineNuxtConfig({
     'nuxt-auth-utils',
     'nuxt-security',
     '@sentry/nuxt/module',
-    '@pinia/nuxt'
+    '@pinia/nuxt',
+    'motion-v/nuxt'
   ],
+
+  
+  imports: {
+    presets: [
+      {
+        from: 'animejs',
+        imports: ['animate', 'createSpring', 'createTimeline', {name: 'Timeline', type: true}]
+      }
+    ]
+  },
 
   security: {
     nonce: true, // Enables HTML nonce support in SSR mode
@@ -80,7 +96,7 @@ export default defineNuxtConfig({
     },
     headers: {
       contentSecurityPolicy: {
-        'img-src': ["'self'", 'data:', 'https://avatars.githubusercontent.com', 'https://lh3.googleusercontent.com']
+        'img-src': ["'self'", 'data:', 'https://avatars.githubusercontent.com', 'https://lh3.googleusercontent.com', 'https://img.paulzzh.com/', 'https://p2.music.126.net']
       }
     }
   },

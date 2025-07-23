@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue'
-import { createSpring, createTimeline, type Timeline, animate } from 'animejs'
-import { useAuth } from '~/composables/useAuth'
-import { useDialog, DialogType } from '~/composables/useDialog'
+import { DialogType } from "#composables/useDialog"
 
 const colorMode = useColorMode()
 const { openDialog } = useDialog()
@@ -33,8 +30,8 @@ const primaryBGLight = "0f172bff"
 const contentBGLight = "ffffff80"
 
 const spring = createSpring({
-  stiffness: 170,
-  damping: 26,
+  stiffness: 200,
+  damping: 50,
   velocity: 18,
 })
 
@@ -123,7 +120,7 @@ const openUserPanel = async () => {
   console.log(backdropEndWidth, backdropEndHeight)
 
   const imageEndPosition = {right: 150, top: 28}
-  const nameEndPosition = {right: 92, top: 36}
+  const nameEndPosition = {right: 130 - nameRelativePosition.width * 1.3, top: 36}
 
   userPanelAvatar.style.transformOrigin = `top right`
   userPanelName.style.transformOrigin = `top right`
@@ -154,13 +151,14 @@ const openUserPanel = async () => {
     top: `${imageEndPosition.top}px`,
     ease: "outQuart",
     duration: 350,
-  }, 50)
+  }, 0)
   timeline.add(userPanelName, {
     scale: 1.3,
+    fontWeight: 500,
     right: `${nameEndPosition.right}px`,
     top: `${nameEndPosition.top}px`,
     ease: spring
-  }, 50)
+  }, 0)
   timeline.add(".user-panel-header, .user-panel-content", {
     opacity: 1,
     ease: spring
@@ -196,7 +194,7 @@ const closeUserPanel = async (callback: () => void = () => {}) => {
   console.log(backdropEndWidth, backdropEndHeight)
 
   const imageStartPosition = {right: 150, top: 28}
-  const nameStartPosition = {right: 92, top: 36}
+  const nameStartPosition = {right: 130 - nameRelativePosition.width * 1.3, top: 36}
 
   userPanelAvatar.style.transformOrigin = `top right`
   userPanelName.style.transformOrigin = `top right`
@@ -224,13 +222,14 @@ const closeUserPanel = async (callback: () => void = () => {}) => {
     right: `${imageRelativePosition.right}px`,
     top: `${imageRelativePosition.top}px`,
     ease: spring,
-  }, 50)
+  }, 0)
   timeline.add(userPanelName, {
     scale: 1,
+    fontWeight: 100,
     right: `${nameRelativePosition.right}px`,
     top: `${nameRelativePosition.top}px`,
     ease: spring,
-  }, 50)
+  }, 0)
   timeline.add(userPanelBackdrop, {
     scale: 1,
     width: `${size}px`,
@@ -239,42 +238,65 @@ const closeUserPanel = async (callback: () => void = () => {}) => {
     top: "0px",
     backgroundColor: `#${colorMode.value == "dark" ? primaryBGDark : primaryBGLight}`,
     ease: spring,
-  }, 100)
+  }, 0)
 }
 
 const onToggleClicked = () => {
   if(!showUserPanel.value) {toggleUserPanel()} 
 }
+
+// Outside click detection
+const handleOutsideClick = (event: MouseEvent) => {
+  if (!showUserPanel.value) return
+  
+  const target = event.target as HTMLElement
+  const userPanelRoot = document.querySelector('.user-panel-root') as HTMLElement
+  const userPanelToggle = document.querySelector('.user-panel-toggle') as HTMLElement
+  
+  // Check if click is outside the panel and toggle button
+  if (userPanelRoot && userPanelToggle && 
+      !userPanelRoot.contains(target) && 
+      !userPanelToggle.contains(target)) {
+    closeUserPanel()
+  }
+}
+
+// Add/remove event listeners
+onMounted(() => {
+  document.addEventListener('click', handleOutsideClick)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleOutsideClick)
+})
 </script>
 
 <template>
   <div v-if="isAuthenticated && user" class="flex items-center gap-2">
-    <div class="user-info-root text-sm flex items-center gap-2">
+    <div class="user-info-root">
       <template v-if="showUserInfo">
-        <div class="user-avatar w-5 h-5 rounded-full flex items-center justify-center overflow-hidden">
-          <Image v-if="user.avatarUrl" :src="user.avatarUrl" alt="avatar" img-class="w-5 h-5" />
-          <div v-else class="w-5 h-5 bg-primary" />
+        <div class="user-avatar">
+          <Image :src="user.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" img-class="w-5 h-5" />
         </div>
-        <span class="user-name text-xs">{{ user.nickName || user.userName }}</span>
+        <span class="user-name">{{ user.nickName || user.userName }}</span>
       </template>
 
-      <div class="user-panel-toggle rounded-full w-7 h-7 relative flex items-center justify-center bg-primary" :class="{'cursor-pointer': !showUserPanel}" @click="onToggleClicked">
-        <Icon name="lucide:align-justify" size="14" class="z-20 text-white pointer-events-none transition-all duration-200" :class="{'!text-black': colorMode.value == 'light' && showUserPanel}" />
-        <div v-show="showUserPanelDOM" class="user-panel-root absolute top-0 right-0 flex flex-col rounded-lg">
-          <div class="user-panel-backdrop absolute top-0 right-0 z-0 rounded-[17px] backdrop-blur-lg shadow-2xl" />
-          <div class="user-panel-header flex justify-end gap-2">
-            <Widget-ThemeSwitcher />
-            <Button variant="ghost" size="icon" class="w-7 h-7" @click.stop="toggleUserPanel">
+      <div class="user-panel-toggle" :class="{'user-panel-toggle--interactive': !showUserPanel}" @click="onToggleClicked">
+        <Icon name="lucide:align-justify" size="14" class="user-panel-toggle-icon" :class="{'user-panel-toggle-icon--light-open': colorMode.value == 'light' && showUserPanel}" />
+        <div v-show="showUserPanelDOM" class="user-panel-root">
+          <div class="user-panel-backdrop" />
+          <div class="user-panel-header">
+            <Widget-ThemeSwitcher class="rounded-full" />
+            <Button variant="ghost" size="icon" class="w-7 h-7 rounded-full" @click.stop="toggleUserPanel">
               <Icon name="lucide:align-justify" size="14" />
             </Button>
           </div>
-          <div class="user-panel-avatar absolute w-5 h-5 rounded-full flex items-center justify-center overflow-hidden" style="transform-origin: top right;">
-            <Image v-if="user.avatarUrl" :src="user.avatarUrl" alt="avatar" img-class="w-5 h-5" />
-            <div v-else class="w-5 h-5 bg-primary" />
+          <div class="user-panel-avatar">
+            <Image :src="user.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" img-class="w-5 h-5" />
           </div>
-          <span class="user-panel-name text-xs absolute scale-100" style="transform-origin: top right;">{{ user.nickName || user.userName }}</span>
-          <div class="user-panel-content p-2.5 flex flex-col relative">
-            <div class="user-panel-user-info flex items-center gap-2 ml-23 mt-8 mb-4.5 relative">
+          <span class="user-panel-name">{{ user.nickName || user.userName }}</span>
+          <div class="user-panel-content">
+            <div class="user-panel-user-info">
               <Button variant="outline" size="sm" class="h-8 rounded-full">
                 <Icon name="lucide:user" size="16" /> Profile
               </Button>
@@ -282,10 +304,10 @@ const onToggleClicked = () => {
                 <Icon name="lucide:log-out" size="16" />
               </Button>
             </div>
-            <div class="user-panel-inbox flex flex-col items-start gap-2 py-2 px-1 border-t border-border">
-              <div class="flex justify-between w-full items-center">
-                <p class="text-sm inline-flex items-center gap-2"><Icon name="lucide:inbox" size="16" /> Inbox</p>
-                <button class="bg-none cursor-pointer text-xs opacity-50 flex items-center gap-1"><Icon name="lucide:check" size="16" /> Mark all as read</button>
+            <div class="user-panel-inbox">
+              <div class="user-panel-inbox-header">
+                <p class="user-panel-inbox-title"><Icon name="lucide:inbox" size="16" /> Inbox</p>
+                <button class="user-panel-inbox-mark-read"><Icon name="lucide:check" size="16" /> Mark all as read</button>
               </div>
             </div>
           </div>
@@ -300,7 +322,95 @@ const onToggleClicked = () => {
 </template>
 
 <style scoped>
-/* Optional: Add any additional styles if needed */
+@reference "../../assets/css/tailwind.css";
+
+/* User info root styles */
+.user-info-root {
+  @apply text-sm flex items-center gap-2;
+}
+
+/* User avatar styles */
+.user-avatar {
+  @apply w-5 h-5 rounded-full hidden lg:flex items-center justify-center overflow-hidden;
+}
+
+/* User name styles */
+.user-name {
+  @apply text-xs font-light hidden lg:block;
+}
+
+/* User panel toggle styles */
+.user-panel-toggle {
+  @apply rounded-full w-7 h-7 relative flex items-center justify-center bg-primary;
+}
+
+.user-panel-toggle--interactive {
+  @apply cursor-pointer;
+}
+
+.user-panel-toggle-icon {
+  @apply z-20 text-white pointer-events-none transition-all duration-200;
+}
+
+.user-panel-toggle-icon--light-open {
+  @apply !text-black;
+}
+
+/* User panel root styles */
+.user-panel-root {
+  @apply absolute top-0 right-0 flex flex-col rounded-lg;
+}
+
+/* User panel backdrop styles */
+.user-panel-backdrop {
+  @apply absolute top-0 right-0 z-0 rounded-[17px] backdrop-blur-lg shadow-2xl;
+}
+
+/* User panel header styles */
+.user-panel-header {
+  @apply flex justify-end gap-2;
+}
+
+/* User panel avatar styles */
+.user-panel-avatar {
+  @apply absolute w-5 h-5 rounded-full flex items-center justify-center overflow-hidden;
+  transform-origin: top right;
+}
+
+/* User panel name styles */
+.user-panel-name {
+  @apply text-xs absolute scale-100;
+  transform-origin: top right;
+}
+
+/* User panel content styles */
+.user-panel-content {
+  @apply p-2.5 flex flex-col relative;
+}
+
+/* User panel user info styles */
+.user-panel-user-info {
+  @apply flex items-center gap-2 ml-23 mt-8 mb-4.5 relative;
+}
+
+/* User panel inbox styles */
+.user-panel-inbox {
+  @apply flex flex-col items-start gap-2 py-2 px-1 border-t border-border;
+}
+
+.user-panel-inbox-header {
+  @apply flex justify-between w-full items-center;
+}
+
+.user-panel-inbox-title {
+  @apply text-sm inline-flex items-center gap-2;
+}
+
+.user-panel-inbox-mark-read {
+  @apply bg-none cursor-pointer text-xs opacity-50 flex items-center gap-1;
+}
+
+/* Animation styles */
 .user-panel-enter-active,
 .user-panel-leave-active {
   transition: all 0.3s ease;

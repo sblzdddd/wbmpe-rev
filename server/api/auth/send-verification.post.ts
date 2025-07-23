@@ -1,7 +1,6 @@
 import { sendEmailVerificationCode, generateVerificationCode } from "../../utils/emailSender"
 import EmailVerificationToken from "../../models/EmailVerificationToken"
 import UserAuth from "../../models/UserAuth"
-import BakaLogger from "../../utils/BakaLogger"
 
 const logger = BakaLogger.child({ service: 'SendVerification' })
 

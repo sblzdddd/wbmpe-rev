@@ -1,15 +1,10 @@
-import { ref, computed } from 'vue'
+import type { UserInfo } from '~~/types/User'
 
-interface User {
-  id: string
-  email: string
-  userName: string
-  nickName?: string
-  avatarUrl?: string
-}
+// Basic user info without playlists for auth
+type BasicUserInfo = Omit<UserInfo, 'createdPlaylists' | 'favorites' | 'recent'>
 
 interface AuthResponse {
-  user: User
+  user: BasicUserInfo
 }
 
 interface ApiError {
@@ -19,7 +14,7 @@ interface ApiError {
   }
 }
 
-const user = ref<User | null>(null)
+const user = ref<BasicUserInfo | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 
@@ -90,7 +85,7 @@ export const useAuth = () => {
 
   const checkAuth = async () => {
     try {
-      const response = await $fetch<AuthResponse>('/api/user/me')
+      const response = await $fetch<{ user: BasicUserInfo }>('/api/user/me')
       user.value = response.user
       return { success: true, user: response.user }
     } catch (err: unknown) {

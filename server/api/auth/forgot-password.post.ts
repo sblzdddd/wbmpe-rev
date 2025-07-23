@@ -2,7 +2,6 @@ import { z } from 'zod'
 import { UserAuth } from '../../models'
 import PasswordResetToken from '../../models/PasswordResetToken'
 import { sendPasswordResetEmail, generateResetToken } from '../../utils/emailSender'
-import BakaLogger from '../../utils/BakaLogger'
 
 const bodySchema = z.object({
   email: z.string().email()

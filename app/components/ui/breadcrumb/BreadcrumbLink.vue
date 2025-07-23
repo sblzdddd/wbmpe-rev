@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import type { HTMLAttributes } from 'vue'
 import { Primitive, type PrimitiveProps } from 'reka-ui'
 import { cn } from '@/lib/utils'
 

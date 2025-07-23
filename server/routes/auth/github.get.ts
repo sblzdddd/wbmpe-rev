@@ -1,5 +1,4 @@
 import { Users, UserAuth } from '../../models'
-import BakaLogger from '../../utils/BakaLogger'
 
 const logger = BakaLogger.child({ service: 'GitHubOAuth' })
 
