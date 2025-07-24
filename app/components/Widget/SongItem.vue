@@ -33,10 +33,6 @@ const playSong = () => {
   console.log('Playing song:', props.song.name)
 }
 
-const getImageSrc = () => {
-  return props.song.album.coverUrl || "https://picsum.photos/100/100?random=" + props.song.album._id
-}
-
 const isPlaying = false // TODO: Connect to actual player state
 
 const formatDuration = (seconds: number) => {
@@ -62,7 +58,7 @@ const formatDuration = (seconds: number) => {
       </button>
     </div>
     <div class="flex gap-2 items-center grow pr-6">
-      <Image :src="getImageSrc()" img-class="w-9 h-9 rounded-sm" :alt="song.name" />
+      <Picture :src="props.song.album.coverUrl" class="block w-9 h-9 rounded-sm" :img-attrs="{class: 'w-9 h-9 rounded-sm'}" :modifiers="{resize: {s: 100}}" :alt="song.name" />
       <div class="grow pb-0.5 flex flex-col items-left h-full gap-1">
         <div class="flex justify-start">
           <a class="songItem-title">{{ song.name }}</a>

@@ -2,21 +2,15 @@
   <div :class="paddingClass">
     <div class="flex flex-col my-16 mx-16">
       <div class="flex gap-7 mb-12">
-        <Image v-if="playlist?.data?.coverUrl" :src="playlist?.data?.coverUrl" img-class="w-40 h-40 rounded-sm" :alt="`Playlist ${id}`" />
-        <div v-else class="w-40 h-40 rounded-sm bg-gray overflow-hidden">
-          <div class="w-full h-full flex items-start flex-col justify-start gap-[2px] rotate-z-[-24deg] translate-y-[-56px] translate-x-[20px]">
-            <div class="w-full h-40 flex items-center justify-center gap-[2px]">
-              <img v-if="BackgroundImages[0]" :src="BackgroundImages[0]" class="w-40 h-40 object-cover shadow-xs" :alt="`Playlist ${id}`" >
-              <img v-if="BackgroundImages[1]" :src="BackgroundImages[1]" class="w-40 h-40 object-cover shadow-xs" :alt="`Playlist ${id}`" >
-            </div>
-            <div class="w-full h-20 flex items-center justify-center gap-[2px]">
-              <img v-if="BackgroundImages[2]" :src="BackgroundImages[2]" class="w-20 h-20 object-cover shadow-xs" :alt="`Playlist ${id}`" >
-              <img v-if="BackgroundImages[3]" :src="BackgroundImages[3]" class="w-20 h-20 object-cover shadow-xs" :alt="`Playlist ${id}`" >
-              <img v-if="BackgroundImages[4]" :src="BackgroundImages[4]" class="w-20 h-20 object-cover shadow-xs" :alt="`Playlist ${id}`" >
-              <div class="!min-w-20 !min-h-20 bg-muted-foreground rounded-sm" />
-            </div>
-          </div>
-        </div>
+        <Picture 
+          v-if="playlist?.data?.coverUrl" 
+          :src="playlist?.data?.coverUrl" 
+          class="size-40 min-w-40 min-h-40 rounded-sm overflow-hidden" 
+          :modifiers="{resize: {s: 320}}" 
+          :alt="`Playlist ${id}`"
+          :img-attrs="{class: 'w-full h-full object-cover'}"
+        />
+        <Playlist-CoverImageTile v-else :background-images="BackgroundImages" />
         <div class="flex flex-col grow gap-2">
           <h1 class="text-2xl font-bold">{{ playlist?.data?.name }}</h1>
           <div class="flex gap-2 text-sm text-muted-foreground">
@@ -85,7 +79,6 @@
 </template>
 
 <script setup lang="ts">
-import Image from '~/components/Image.vue';
 import { Button } from '@/components/ui/button';
 import type { PlaylistResponse } from '#types/Playlist';
 import SongItem from '@/components/Widget/SongItem.vue';
@@ -96,7 +89,7 @@ const route = useRoute();
 const id = route.params.id;
 
 const { paddingClass } = useContentPadding();
-const backgroundStore = useBackground(); 
+const { setBackground } = useBackground(); 
 
 const sortMode = ref<'index' | 'title' | 'album' | 'duration' | 'like'>('index');
 const sortOrder = ref<'asc' | 'desc'>('asc');
@@ -148,9 +141,9 @@ watch([() => sortMode.value, () => sortOrder.value], async ([newSortMode, newSor
     }
   }, { replace: true });
   isUpdatingFromRoute.value = false;
-}, {deep: true, immediate: true})
+}, {deep: true})
 
-const { error } = await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
+const { data: playlist, error } = await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
   key: `playlist-page-${id}`,
   default: () => ({
     data: {
@@ -176,10 +169,14 @@ const { error } = await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
         songs: []
       }
     }
-  })
+  }),
+  onResponse({ response }) {
+    // Set background during SSR when data is received
+    if (response._data?.data?.coverUrl) {
+      setBackground(response._data.data.coverUrl, 0.55, 0, 40);
+    }
+  }
 })
-
-const { data: playlist } = useNuxtData<PlaylistResponse>(`playlist-page-${id}`)
 
 if (error.value) {
   // Check if there's browser history to go back
@@ -198,23 +195,13 @@ if (error.value) {
 
 const BackgroundImages = ref<string[]>([]);
 
+// Keep the watcher as fallback for client-side updates
 watch(() => playlist.value?.data, (newVal) => {
   if(newVal?.coverUrl) {
-    backgroundStore.setBackground(newVal.coverUrl, 0.55, 32, 40);
-  } else if (newVal?.songList.songs && newVal?.songList.songs.length > 0) {
-    for(let i = 0; i < 6; i++) {
-      const coverUrl = newVal?.songList.songs[i]?.song.album.coverUrl
-      if (coverUrl) {
-        BackgroundImages.value.push(coverUrl);
-      }
-    }
-    if(BackgroundImages.value.length > 0) {
-      const randomIndex = Math.floor(Math.random() * BackgroundImages.value.length);
-      const coverUrl = BackgroundImages.value[randomIndex];
-      if (coverUrl) {
-        backgroundStore.setBackground(coverUrl, 0.35, 32, 40);
-      }
-    }
+    setBackground(newVal.coverUrl, 0.55, 0, 40);
+  }
+  else if (newVal?.songList.songs && newVal?.songList.songs.length > 0) {
+    setBackground(newVal?.songList.songs[0]?.song.album.coverUrl || "", 0.55, 0, 40);
   }
 }, {immediate: true})
 </script>

@@ -1,10 +1,6 @@
 <script setup lang="ts">
-
-import { Button } from '@/components/ui/button';
-import Image from '~/components/Image.vue';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import type { PlaylistResponse } from '#types/Playlist';
+import type { InternalApi } from 'nitropack';
 
 const route = useRoute();
 const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
@@ -20,7 +16,7 @@ if (!rawId) {
 
 const id = rawId as string;
 
-const backgroundStore = useBackground(); 
+const { setBackground, resetBackground } = useBackground(); 
 
 // Edit form state
 const editForm = ref({
@@ -61,17 +57,51 @@ const hasChanges = computed(() => {
   );
 });
 
+// Image upload state
+const isUploadingImage = ref(false);
+const uploadError = ref('');
+
 // Form handlers
-const handleImageUpload = (event: Event) => {
+const handleImageUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0];
-  if (file) {
-    // TODO: Implement actual image upload to your backend
-    // For now, we'll create a temporary URL
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      editForm.value.coverUrl = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+  if (!file) return;
+
+  // Validate file
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+  if (!allowedTypes.includes(file.type)) {
+    uploadError.value = 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.';
+    return;
+  }
+
+  if (file.size > maxSize) {
+    uploadError.value = 'File size too large. Maximum size is 5MB.';
+    return;
+  }
+
+  uploadError.value = '';
+  isUploadingImage.value = true;
+
+  try {
+    // Create FormData for upload
+    const formData = new FormData();
+    formData.append('cover', file);
+
+    // Upload to specific playlist cover endpoint
+    const response = await $fetch<InternalApi['/api/playlist/:id/cover']['post']>(`/api/playlist/${id}/cover`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (response.success) {
+      editForm.value.coverUrl = response.data.coverUrl;
+    }
+  } catch (err: unknown) {
+    console.error('Image upload failed:', err);
+    uploadError.value = err instanceof Error ? err.message : 'Failed to upload image. Please try again.';
+  } finally {
+    isUploadingImage.value = false;
   }
 };
 
@@ -101,22 +131,32 @@ const updatePlaylist = async (e: Event) => {
   updateError.value = '';
   
   try {
-    // TODO: Implement actual API call to update playlist
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated delay
-    
-    // Update the local data
-    if (playlist.value?.data) {
-      playlist.value.data.name = editForm.value.name;
-      playlist.value.data.description = editForm.value.description;
-      playlist.value.data.coverUrl = editForm.value.coverUrl;
-      playlist.value.data.isPublic = editForm.value.isPublic;
+    // Call the playlist update API
+    const response = await $fetch<{success: boolean, data: {_id: string, name: string, description: string, coverUrl: string, isPublic: boolean}}>(`/api/playlist/${id}`, {
+      method: 'PUT',
+      body: {
+        name: editForm.value.name,
+        description: editForm.value.description,
+        coverUrl: editForm.value.coverUrl,
+        isPublic: editForm.value.isPublic
+      }
+    });
+
+    if (response.success) {
+      // Update the local data
+      if (playlist.value?.data) {
+        playlist.value.data.name = editForm.value.name;
+        playlist.value.data.description = editForm.value.description;
+        playlist.value.data.coverUrl = editForm.value.coverUrl;
+        playlist.value.data.isPublic = editForm.value.isPublic;
+      }
+      
+      // Show success message
+      console.log('Playlist updated successfully');
     }
-    
-    // Show success message or navigate
-    console.log('Playlist updated successfully');
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('Failed to update playlist:', err);
-    updateError.value = 'Failed to update playlist. Please try again.';
+    updateError.value = err instanceof Error ? err.message : 'Failed to update playlist. Please try again.';
   } finally {
     isUpdating.value = false;
   }
@@ -147,9 +187,9 @@ const deletePlaylist = async () => {
 
 watch(() => editForm.value.coverUrl, (newVal) => {
   if(newVal) {
-    backgroundStore.setBackground(newVal, 0.35, 32, 40);
+    setBackground(newVal, 0.35, 32, 40);
   } else {
-    backgroundStore.resetBackground();
+    resetBackground();
   }
 })
 </script>
@@ -166,9 +206,9 @@ watch(() => editForm.value.coverUrl, (newVal) => {
         <div class="flex gap-4 items-start">
           <div class="relative">
             <Image 
-              v-if="editForm.coverUrl || playlist?.data?.coverUrl" 
-              :src="editForm.coverUrl || playlist?.data?.coverUrl || ''" 
-              img-class="w-32 h-32 rounded-sm object-cover" 
+              v-if="editForm.coverUrl" 
+              :src="editForm.coverUrl || ''"
+              class="size-32 rounded-sm object-cover overflow-hidden"
               :alt="`Playlist ${id}`" 
             />
             <div v-else class="w-32 h-32 rounded-sm bg-muted border-2 border-dashed border-muted-foreground/25 flex items-center justify-center">
@@ -191,10 +231,18 @@ watch(() => editForm.value.coverUrl, (newVal) => {
               type="file"
               accept="image/*"
               class="w-fit"
+              :disabled="isUploadingImage"
               @change="handleImageUpload"
             />
-            <p class="text-xs text-muted-foreground">
-              Recommended: 300x300px, JPG or PNG
+            <div v-if="isUploadingImage" class="flex items-center gap-2 text-xs text-blue-600">
+              <Icon name="line-md:loading-twotone-loop" size="12" />
+              Uploading image...
+            </div>
+            <div v-else-if="uploadError" class="text-xs text-red-500">
+              {{ uploadError }}
+            </div>
+            <p v-else class="text-xs text-muted-foreground">
+              Recommended: 300x300px, JPG or PNG (max 5MB)
             </p>
           </div>
         </div>
@@ -247,10 +295,10 @@ watch(() => editForm.value.coverUrl, (newVal) => {
           Privacy
         </Label>
         <div class="flex gap-4">
-          <Checkbox id="terms1" />
+          <Checkbox id="is-public" v-model:checked="editForm.isPublic" />
           <div class="grid gap-1.5 leading-none">
             <label
-              for="terms1"
+              for="is-public"
               class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
               Make playlist public
@@ -298,8 +346,8 @@ watch(() => editForm.value.coverUrl, (newVal) => {
               <Button 
                 type="button" 
                 variant="destructive" 
-                @click="confirmDelete"
                 :disabled="isDeleting"
+                @click="confirmDelete"
               >
                 <Icon v-if="isDeleting" name="line-md:loading-twotone-loop" size="16" />
                 <Icon v-else name="lucide:trash-2" size="16" />

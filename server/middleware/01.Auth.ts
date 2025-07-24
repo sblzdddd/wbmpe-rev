@@ -7,24 +7,20 @@ export default defineEventHandler(async (event) => {
   // Get the request URL
   const url = getRequestURL(event)
   
-  // Define protected API endpoints that require authentication
-  const loginOnlyEndpoints = [
-    '/api/user/me',
-    '/api/user/playlists',
-    // '/api/albums',
-    // '/api/artists',
-    // '/api/songs',
-    // '/api/explore',
-    // '/api/home'
+  // Define endpoints that require authentication for specific methods only
+  const methodSpecificEndpoints = [
+    { path: '/api/playlist/', methods: ['PUT', 'POST', 'DELETE'] }, // Protect update/create/delete operations only
+    { path: '/api/user', methods: ['GET', 'POST'] },
+    { path: '/api/upload', methods: ['POST'] },
   ]
   
-  // Check if the current endpoint should be protected
-  const isLoginOnlyEndpoint = loginOnlyEndpoints.some(endpoint => 
-    url.pathname.startsWith(endpoint)
+  // Check if this is a method-specific protected endpoint
+  const requiresAuth = methodSpecificEndpoints.some(({ path, methods }) => 
+    url.pathname.startsWith(path) && methods.includes(event.method || 'GET')
   )
   
   // Skip authentication check for non-protected endpoints
-  if (!isLoginOnlyEndpoint) {
+  if (!requiresAuth) {
     return
   }
   

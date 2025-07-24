@@ -273,7 +273,7 @@ onUnmounted(() => {
     <div class="user-info-root">
       <template v-if="showUserInfo">
         <div class="user-avatar">
-          <Image :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" img-class="w-5 h-5" />
+          <Image :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" :img-attrs="{class: 'w-5 h-5'}" />
         </div>
         <span class="user-name">{{ user.data.value.nickName || user.data.value.userName }}</span>
       </template>
@@ -289,7 +289,7 @@ onUnmounted(() => {
             </Button>
           </div>
           <div class="user-panel-avatar">
-            <Image :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" img-class="w-5 h-5" />
+            <Image :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" :img-attrs="{class: 'w-5 h-5'}" />
           </div>
           <span class="user-panel-name">{{ user.data.value.nickName || user.data.value.userName }}</span>
           <div class="user-panel-content">

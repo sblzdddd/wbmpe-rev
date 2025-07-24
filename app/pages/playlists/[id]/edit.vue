@@ -61,6 +61,7 @@ if (!rawId) {
 const id = rawId as string;
 
 const { paddingClass } = useContentPadding();
+const { setBackground, backgroundSrc } = useBackground();
 
 const currentHoverIndex = ref<number>(-1);
 
@@ -96,7 +97,7 @@ watch([() => route.query.tab], async ([newTab]) => {
   isUpdatingFromRoute.value = false;
 }, {deep: true, immediate: true})
 
-await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
+const { data: playlist, error } = await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
   key: `playlist-page-${id}`,
   default: () => ({
     data: {
@@ -122,10 +123,39 @@ await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
         songs: []
       }
     }
-  })
+  }),
+  onResponse({ response }) {
+    // Set background during SSR when data is received
+    if (response._data?.data?.coverUrl) {
+      setBackground(response._data.data.coverUrl, 0.55, 32, 40);
+    }
+  }
 })
 
-const { data: playlist } = useNuxtData<PlaylistResponse>(`playlist-page-${id}`)
+if (error.value) {
+  // Check if there's browser history to go back
+  if (import.meta.client && window.history.length > 1) {
+    // Go back to the previous page
+    window.history.back();
+  } else {
+    throw createError({
+      statusCode: error.value.statusCode || 500,
+      statusMessage: error.value.statusMessage || "Internal Server Error",
+      message: error.value.message || "An unknown error occurred",
+      fatal: false
+    })
+  }
+}
+
+// Keep the watcher as fallback for client-side updates
+watch(() => playlist.value?.data, (newVal) => {
+  if(newVal?.coverUrl) {
+    setBackground(newVal.coverUrl, 0.35, 32, 40);
+  }
+  else if (newVal?.songList.songs && newVal?.songList.songs.length > 0) {
+    setBackground(newVal?.songList.songs[0]?.song.album.coverUrl || "", 0.35, 32, 40);
+  }
+}, {immediate: true})
 
 </script>
 <style scoped>

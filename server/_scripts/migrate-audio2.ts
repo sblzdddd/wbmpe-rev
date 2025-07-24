@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { MONGODB_URI, ALIYUN_OSS_REGION, ALIYUN_OSS_ACEESSKEYID, ALIYUN_OSS_ACEESSKEYSECRET, ALIYUN_OSS_BUCKET } from "./baka";
-import StreamsTemp from "../models/StreamsTemp";
+import StreamsTemp from "./StreamsTemp";
 import OSS from "ali-oss"
 import { resolveDownloadPath, fileExists } from "../utils/audioAnalyzer";
 import path from "path";
@@ -88,7 +88,7 @@ try {
         throw new Error(`  Album not found: ${song.album}`);
       }
       
-      const coverRemotePath = `https://${ALIYUN_OSS_BUCKET}.${ALIYUN_OSS_REGION}.aliyuncs.com/cover/${stream._id.toString()}.jpg`;
+      const coverRemotePath = `cdn://cover/${stream._id.toString()}.jpg`;
       const coverUrl = `cover/${stream._id.toString()}.jpg`;
       try {
         await client.put(coverUrl, coverPath, {

@@ -88,6 +88,12 @@ export default defineNuxtConfig({
     ]
   },
 
+  image: {
+    aliyun: {
+      baseURL: process.env.NUXT_IMAGE_ALIYUN_BASE_URL || 'https://no-cdn-you-baka.site'
+    }
+  },
+
   security: {
     nonce: true, // Enables HTML nonce support in SSR mode
     ssg: {
@@ -97,7 +103,7 @@ export default defineNuxtConfig({
     },
     headers: {
       contentSecurityPolicy: {
-        'img-src': ["'self'", 'data:', 'https://avatars.githubusercontent.com', 'https://lh3.googleusercontent.com', 'https://img.paulzzh.com/', 'https://p2.music.126.net']
+        'img-src': ["'self'", 'data:', 'https://avatars.githubusercontent.com', 'https://lh3.googleusercontent.com', 'https://img.paulzzh.com/', 'https://p2.music.126.net', process.env.NUXT_IMAGE_ALIYUN_BASE_URL || '']
       }
     }
   },

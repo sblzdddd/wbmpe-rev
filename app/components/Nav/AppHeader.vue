@@ -14,8 +14,8 @@ const { paddingClass } = useContentPadding()
     :class="`${isOnTop ? '' : 'bg-sidebar border-b-[1.5px] h-[65px]'} ${paddingClass}`"
   >
     <div v-if="!open" class="flex items-center gap-1 mr-2">
-      <Image v-if="colorMode.value === 'dark'" src="/images/logo/logo-dark_256.png" alt="logo" img-class="min-w-36 min-h-7.5" />
-      <Image v-else src="/images/logo/logo-light_256.png" alt="logo" img-class="min-w-36 min-h-7.5" />
+      <Image v-if="colorMode.value === 'dark'" src="/images/logo/logo-dark_256.png" alt="logo" class="min-w-37 min-h-7.5" />
+      <Image v-else src="/images/logo/logo-light_256.png" alt="logo" class="min-w-37 min-h-7.5" />
     </div>
     <!-- <Button variant="ghost" size="icon" class="h-7 w-7 hidden lg:block">
       <Icon name="lucide:chevron-left" size="20" />

@@ -1,14 +1,10 @@
 import mongoose from "mongoose";
-import { MONGODB_URI, ALIYUN_OSS_REGION, ALIYUN_OSS_ACEESSKEYID, ALIYUN_OSS_ACEESSKEYSECRET, ALIYUN_OSS_BUCKET } from "./baka";
+import { ALIYUN_OSS_REGION, ALIYUN_OSS_ACEESSKEYID, ALIYUN_OSS_ACEESSKEYSECRET, ALIYUN_OSS_BUCKET } from "./baka";
 import OSS from "ali-oss"
 
-await mongoose.connect(MONGODB_URI);
-console.log('Connected to MongoDB');
 
-const db = mongoose.connection;
 
 try {
-  await db.asPromise();
   const client = new OSS({
     // 从环境变量中获取访问凭证。运行本代码示例之前，请确保已设置环境变量OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET。
     accessKeyId: ALIYUN_OSS_ACEESSKEYID,
@@ -27,10 +23,6 @@ try {
     'x-oss-storage-class': 'Standard',
     // 指定Object的访问权限。
     'x-oss-object-acl': 'private',
-    // 通过文件URL访问文件时，指定以附件形式下载文件，下载后的文件名称定义为example.txt。
-    'Content-Disposition': 'attachment; filename="example.txt"',
-    // 设置Object的标签，可同时设置多个标签。
-    'x-oss-tagging': 'Tag1=1&Tag2=2',
     // 指定PutObject操作时是否覆盖同名目标Object。此处设置为true，表示禁止覆盖同名Object。
     'x-oss-forbid-overwrite': 'true',
   };
@@ -40,9 +32,13 @@ try {
     });
     console.log(result);
     console.log(1)
-  } catch (error) {
-    console.error(error);
-    console.log(error.code == "FileAlreadyExists")
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    if(error.code == "FileAlreadyExists") {
+      console.log("File already exists");
+    } else {
+      console.error(error);
+    }
   }
 
 } catch (error) {

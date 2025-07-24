@@ -98,13 +98,7 @@ const playlistsSchema = new mongoose.Schema({
       ]);
       
       const coverUrl = result[0]?.coverUrl;
-      if(coverUrl) {
-        await Playlists.updateOne({ _id: playlistId }, { coverUrl });
-      }
       return coverUrl;
-    },
-    async updatePlaylistCoverUrl(playlistId: string, coverUrl: string): Promise<void> {
-      await Playlists.updateOne({ _id: playlistId }, { coverUrl });
     },
   }
 });

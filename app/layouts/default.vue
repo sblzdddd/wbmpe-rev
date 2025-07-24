@@ -7,11 +7,14 @@ import AppBackdrop from '@/components/Background/AppBackdrop.vue'
 
 const router = useRouter();
 const backgroundStore = useBackground();
+const { setLastPath } = useRouterHistory()
 
 router.beforeEach((to, from, next) => {
   if (to.path === '/') {
     backgroundStore.resetBackground();
   }
+  setLastPath(from.path)
+  console.log('from', from.path, 'to', to.path)
   next();
 });
 
@@ -43,6 +46,7 @@ defineOptions({
 .page-enter-from,
 .page-leave-to {
   opacity: 0;
+  transform: translateY(10px);
 }
 
 .page-wrapper {
@@ -52,7 +56,7 @@ defineOptions({
 
 .layout-enter-active,
 .layout-leave-active {
-  transition: all 0.15s ease-out;
+  transition: all 0.05s ease-out;
 }
 
 .layout-enter-from,

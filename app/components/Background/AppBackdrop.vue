@@ -1,23 +1,137 @@
 <script setup lang="ts">
-import { useBackground } from '@/composables/useBackground'
+const { backgroundSrc, opacity, imageBlur, imageHeight, refreshKey } = useBackground()
 
-const { backgroundSrc, opacity, onImageLoad, imageBlur, imageHeight } = useBackground()
-const colorMode = useColorMode()
+// Cross-fade state management
+const isTransitioning = ref(false)
 
+let lastDominator = 'A'
+
+// Initialize values based on current state
+onMounted(() => {
+  console.log('onMounted')
+  const current = document.getElementById(`backdrop-A`) as HTMLImageElement
+  const next = document.getElementById(`backdrop-B`) as HTMLImageElement
+  if(!current || !next) return
+  current.style.height = `${imageHeight.value}%`
+  next.style.height = `${imageHeight.value}%`
+  current.style.opacity = "0"
+  next.style.opacity = "0"
+  current.src = backgroundSrc.value
+  next.src = backgroundSrc.value
+})
+
+watch(backgroundSrc, (newSrc, oldSrc) => {
+  console.log('backgroundSrc', newSrc, oldSrc)
+  const current = document.getElementById(`backdrop-${lastDominator}`) as HTMLImageElement
+  const next = document.getElementById(`backdrop-${lastDominator === 'A' ? 'B' : 'A'}`) as HTMLImageElement
+  if(!current || !next) return
+  current.style.opacity = opacity.value.toString()
+  next.style.opacity = '0'
+  if(!oldSrc) {
+    current.style.height = `100%`
+    next.style.height = `100%`
+  }
+  if (newSrc && newSrc !== oldSrc) {
+    // Start cross-fade transition
+    isTransitioning.value = true
+    // The new image will load in the background
+    console.log('Starting cross-fade transition from', oldSrc, 'to', newSrc)
+    next.src = newSrc
+  } else if (!newSrc) {
+    // No image, reset everything
+    animate(current, {
+      opacity: 0,
+      filter: 'blur(0px)',
+      duration: 500,
+      easing: 'ease-in-out'
+    })
+    animate(next, {
+      opacity: 0,
+      filter: 'blur(0px)',
+      duration: 500,
+      easing: 'ease-in-out'
+    })
+    console.log('NO BACKGROUND SRC')
+  }
+})
+
+const onNextImageLoad = async (dominator: string) => {
+  if (isTransitioning.value) {
+    if(lastDominator === dominator) return
+    console.log('onNextImageLoad')
+    await nextTick()
+    const current = document.getElementById(`backdrop-${lastDominator}`) as HTMLImageElement
+    const next = document.getElementById(`backdrop-${lastDominator === 'A' ? 'B' : 'A'}`) as HTMLImageElement
+    if(!current || !next) return
+    const timeline = createTimeline({onComplete: () => {
+      lastDominator = lastDominator === 'A' ? 'B' : 'A'
+      isTransitioning.value = false
+    }})
+
+    console.log('current', current, 'next', next, 'imageHeight', imageHeight.value)
+
+    timeline.add(current, {
+      opacity: 0,
+      height: `${imageHeight.value}%`,
+      duration: 500,
+      easing: 'ease-in-out'
+    },0)
+
+    timeline.add(next, {  
+      opacity: opacity.value,
+      height: `${imageHeight.value}%`,
+      duration: 500,
+      easing: 'ease-in-out'
+    },0)
+  }
+}
+
+async function waitForFlagToBeFalse(checkFn: () => boolean, interval = 100) {
+  while (checkFn()) {
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+}
+
+watch(refreshKey, async () => {
+  await waitForFlagToBeFalse(() => isTransitioning.value)
+  const current = document.getElementById(`backdrop-${lastDominator}`) as HTMLImageElement
+  const next = document.getElementById(`backdrop-${lastDominator === 'A' ? 'B' : 'A'}`) as HTMLImageElement
+  if(refreshKey.value > 0) {
+    if(!current || !next) return
+    animate(current, {
+      opacity: opacity.value,
+      filter: `blur(${imageBlur.value}px)`,
+      scale: imageBlur.value > 0 ? imageBlur.value/200+1 : 1,
+      height: `${imageHeight.value}%`,
+      duration: 500,
+      easing: 'ease-in-out'
+    })
+  }
+})
 </script>
 
 <template>
-  <img 
-    class="left-0 absolute top-0 w-full z-[-1] mask transition-opacity duration-500 ease-in-out object-cover object-top"
+  <!-- Current/Main background image -->
+  <img
+    id="backdrop-A"
+    class="left-0 absolute top-0 w-full z-[-1] mask object-cover object-center"
     :style="{
-      height: `${imageHeight}%`,
-      opacity: opacity * (colorMode.value === 'dark' ? 1 : 0.5),
-      scale: imageBlur > 0 ? imageBlur/200+1 : 1,
-      maskImage: 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 100%)', 
-      filter: `blur(${imageBlur}px)`,
+      opacity: 0,
+      maskImage: 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 100%)',
     }"
-    :src="backgroundSrc" 
     alt="Background"
-    @load="onImageLoad"
+    @load="onNextImageLoad('A')"
+  >
+  
+  <!-- Next background image (for cross-fade transition) -->
+  <img
+    id="backdrop-B"
+    class="left-0 absolute top-0 w-full z-[-1] mask object-cover object-center"
+    :style="{
+      opacity: 0,
+      maskImage: 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 100%)',
+    }"
+    alt="Background"
+    @load="onNextImageLoad('B')"
   >
 </template>
