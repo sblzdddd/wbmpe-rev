@@ -14,7 +14,7 @@
             layout
             :layout-id="layoutId" 
             :initial="false"
-            class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
+            class="absolute inset-0 bg-black/10 dark:bg-white/15 rounded-md" 
             :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
           />
         </Button>

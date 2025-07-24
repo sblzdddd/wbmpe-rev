@@ -18,19 +18,19 @@ export default defineEventHandler(async (event) => {
     const playlistId = id as string;
 
     if (!isValidObjectIdString(playlistId)) {
-      logger.warn('PlaylistUpdateAPI: Invalid playlist ID', { playlistId });
+      logger.warn(`PlaylistUpdateAPI: Invalid playlist ID ${playlistId}`);
       throw createError({
         statusCode: 404,
         statusMessage: 'Playlist not found'
       });
     }
 
-    logger.info('PlaylistUpdateAPI: Updating playlist', { playlistId, userId });
+    logger.info(`PlaylistUpdateAPI: Updating playlist ${playlistId}`);
 
     // Find playlist and verify ownership
     const playlist = await Playlists.findById(playlistId);
     if (!playlist) {
-      logger.warn('PlaylistUpdateAPI: Playlist not found', { playlistId });
+      logger.warn(`PlaylistUpdateAPI: Playlist ${playlistId} not found`);
       throw createError({
         statusCode: 404,
         statusMessage: 'Playlist not found'
@@ -113,11 +113,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    logger.info('PlaylistUpdateAPI: Playlist updated successfully', { 
-      playlistId, 
-      userId,
-      updatedFields: Object.keys(updateData)
-    });
+    logger.info(`PlaylistUpdateAPI: Playlist ${playlistId} updated successfully`);
 
     return {
       success: true,

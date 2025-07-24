@@ -4,6 +4,12 @@ import { useSidebar } from '#shadcn/sidebar/utils'
 const colorMode = useColorMode()
 const { toggleSidebar } = useSidebar()
 
+// Create a computed that safely handles SSR
+const logoSrc = computed(() => {
+  return colorMode.value === 'dark' 
+    ? '/images/logo/logo-dark_256.png' 
+    : '/images/logo/logo-light_256.png'
+})
 </script>
 
 <template>
@@ -14,8 +20,13 @@ const { toggleSidebar } = useSidebar()
         <Button variant="ghost" size="icon" class="ml-0.5" @click.stop="toggleSidebar()">
           <Icon name="lucide:menu" size="20" />
         </Button>
-        <Image v-if="colorMode.value === 'dark'" src="/images/logo/logo-dark_256.png" alt="logo" :img-attrs="{class: 'w-36 mr-auto group-data-[collapsible=icon]:hidden'}" />
-        <Image v-else src="/images/logo/logo-light_256.png" alt="logo" :img-attrs="{class: 'w-36 mr-auto group-data-[collapsible=icon]:hidden'}" />
+        <ClientOnly fallback-tag="div">
+          <Image :src="logoSrc" alt="logo" :img-attrs="{class: 'w-36 mr-auto group-data-[collapsible=icon]:hidden'}" />
+          <template #fallback>
+            <!-- Fallback for SSR - use a neutral logo -->
+            <Image src="/images/logo/logo-light_256.png" alt="logo" :img-attrs="{class: 'w-36 mr-auto group-data-[collapsible=icon]:hidden'}" />
+          </template>
+        </ClientOnly>
       </div>
     </SidebarMenuItem>
   </SidebarMenu>

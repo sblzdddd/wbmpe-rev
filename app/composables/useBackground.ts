@@ -1,65 +1,68 @@
-
+import type { backgroundSettings } from "@/lib/background_settings"
 
 export function useBackground() {
-  const backgroundSrc = useState<string>("backdropSrc", () => "")
-  const opacity = useState<number>("backdropOpacity", () => 0)
-  const imageBlur = useState<number>("backdropBlur", () => 0)
-  const imageHeight = useState<number>("backdropHeight", () => 0)
-  const isImageLoaded = useState('isBackdropLoaded', () => false)
-  const refreshKey = useState('backdropRefreshKey', () => 0)
+  // Grouped background state
+  const backgroundState = useState('background', () => ({
+    src: "",
+    opacity: 0,
+    blur: 0,
+    height: 0,
+    isLoaded: false,
+    refreshKey: 0
+  }))
   
   const img = useImage()
 
-  const currentBackground = computed(() => backgroundSrc.value)
   
-  const setBackground = (src: string, setOpacity: number = 1, blur: number = 0, height: number = 50) => {
+  const setBackground = (src: string, settings: backgroundSettings) => {
+    const { opacity: setOpacity, blur, height } = settings
     if (!src) {
       resetBackground()
       return
     }
 
     if(src == "original") {
-      opacity.value = setOpacity
-      imageBlur.value = blur
-      imageHeight.value = height
-      isImageLoaded.value = true
-      refreshKey.value++
+      backgroundState.value.opacity = setOpacity
+      backgroundState.value.blur = blur
+      backgroundState.value.height = height
+      backgroundState.value.isLoaded = true
+      backgroundState.value.refreshKey++
       return
     }
     // Process the image URL consistently for both SSR and client
     const processedSrc = img(src.replace('cdn://', '/'), {}, {provider: src.startsWith('cdn://') ? 'aliyun':'ipx'})
 
-    if(backgroundSrc.value == processedSrc) {
-      opacity.value = setOpacity
-      imageBlur.value = blur
-      imageHeight.value = height
-      isImageLoaded.value = true
-      refreshKey.value++
+    if(backgroundState.value.src == processedSrc) {
+      backgroundState.value.opacity = setOpacity
+      backgroundState.value.blur = blur
+      backgroundState.value.height = height
+      backgroundState.value.isLoaded = true
+      backgroundState.value.refreshKey++
       return
     }
     
-    backgroundSrc.value = processedSrc
+    backgroundState.value.src = processedSrc
     
-    console.log('set Background:', backgroundSrc.value)
-    opacity.value = setOpacity
-    imageBlur.value = blur
-    imageHeight.value = height
+    console.log('set Background:', backgroundState.value.src)
+    backgroundState.value.opacity = setOpacity
+    backgroundState.value.blur = blur
+    backgroundState.value.height = height
   }
   
   const resetBackground = () => {
-    opacity.value = 0
-    imageBlur.value = 0
-    refreshKey.value++
+    backgroundState.value.opacity = 0
+    backgroundState.value.blur = 0
+    backgroundState.value.refreshKey++
   }
   
   return {
     // State
-    backgroundSrc,
-    opacity,
-    currentBackground,
-    imageBlur,
-    imageHeight,
-    refreshKey,
+    src: computed(() => backgroundState.value.src),
+    opacity: computed(() => backgroundState.value.opacity),
+    blur: computed(() => backgroundState.value.blur),
+    height: computed(() => backgroundState.value.height),
+    isLoaded: computed(() => backgroundState.value.isLoaded),
+    refreshKey: computed(() => backgroundState.value.refreshKey),
     // Actions
     setBackground,
     resetBackground

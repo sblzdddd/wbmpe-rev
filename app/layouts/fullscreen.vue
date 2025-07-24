@@ -11,6 +11,12 @@ const opacity = ref(0)
 const colorMode = useColorMode()
 const router = useRouter()
 
+// Create a computed that safely handles SSR
+const logoSrc = computed(() => {
+  return colorMode.value === 'dark' 
+    ? '/images/logo/logo-dark_1024.png' 
+    : '/images/logo/logo-light_1024.png'
+})
 </script>
 <template>
   <div class="fullscreen-layout">
@@ -20,8 +26,13 @@ const router = useRouter()
       src="/images/bg.jpg"
     >
     <div :style="{ opacity: opacity }" class="absolute top-0 left-[20vh] w-[100vh] z-[-1] rotate-90 transition-opacity duration-1000 ease-in-out" style="transform-origin: top left;">
-      <Image v-if="colorMode.value === 'dark'" src="/images/logo/logo-dark_1024.png" img-class="w-full" alt="logo" @load="opacity = 0.2" />
-      <Image v-else src="/images/logo/logo-light_1024.png" img-class="w-full" alt="logo" @load="opacity = 0.2" />
+      <ClientOnly fallback-tag="div">
+        <Image :src="logoSrc" img-class="w-full" alt="logo" @load="opacity = 0.2" />
+        <template #fallback>
+          <!-- Fallback for SSR - use a neutral logo -->
+          <Image src="/images/logo/logo-light_1024.png" img-class="w-full" alt="logo" @load="opacity = 0.2" />
+        </template>
+      </ClientOnly>
     </div>
     <div class="absolute top-0 left-0 flex p-4 gap-2">
       <Button variant="ghost" size="icon" class="w-10 h-10" @click="router.push('/')">

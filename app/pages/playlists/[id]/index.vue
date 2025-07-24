@@ -3,8 +3,8 @@
     <div class="flex flex-col my-16 mx-16">
       <div class="flex gap-7 mb-12">
         <Picture 
-          v-if="playlist?.data?.coverUrl" 
-          :src="playlist?.data?.coverUrl" 
+          v-if="playlist.data.value?.data?.coverUrl" 
+          :src="playlist.data.value?.data?.coverUrl" 
           class="size-40 min-w-40 min-h-40 rounded-sm overflow-hidden" 
           :modifiers="{resize: {s: 320}}" 
           :alt="`Playlist ${id}`"
@@ -12,12 +12,12 @@
         />
         <Playlist-CoverImageTile v-else :background-images="BackgroundImages" />
         <div class="flex flex-col grow gap-2">
-          <h1 class="text-2xl font-bold">{{ playlist?.data?.name }}</h1>
+          <h1 class="text-2xl font-bold">{{ playlist.data.value?.data?.name }}</h1>
           <div class="flex gap-2 text-sm text-muted-foreground">
-            <p>{{ playlist?.data?.songList.length }} songs</p>
-            <p>created in {{ new Date(playlist?.data?.createdAt || '').toLocaleDateString() }}</p>
+            <p>{{ playlist.data.value?.data?.songList.length }} songs</p>
+            <p>created in {{ new Date(playlist.data.value?.data?.createdAt || '').toLocaleDateString() }}</p>
           </div>
-          <p class="text-sm text-muted-foreground">{{ playlist?.data?.description }}</p>
+          <p class="text-sm text-muted-foreground">{{ playlist.data.value?.data?.description }}</p>
           <div class="grow" />
           <div class="flex items-start justify-start gap-2">
             <Button variant="default"><Icon name="lucide:play" class="w-4 h-4" /> Play All</Button>
@@ -49,9 +49,9 @@
             <div :class="{'active': sortMode === 'like', 'asc': sortOrder === 'asc'}" @click="sortMode = 'like'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'">Like <Icon v-if="sortMode === 'like'" name="lucide:chevron-down" /></div>
             <div :class="{'active': sortMode === 'duration', 'asc': sortOrder === 'asc'}" @click="sortMode = 'duration'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'">Duration <Icon v-if="sortMode === 'duration'" name="lucide:chevron-down" /></div>
           </div>
-          <div v-if="playlist?.data?.songList.songs && playlist?.data?.songList.songs.length > 0" class="flex flex-col">
+          <div v-if="playlist.data.value?.data?.songList.songs && playlist.data.value?.data?.songList.songs.length > 0" class="flex flex-col">
             <SongItem
-              v-for="(song, index) in playlist?.data?.songList.songs"
+              v-for="(song, index) in playlist.data.value?.data?.songList.songs"
               :id="index"
               :key="song._id"
               :song="song.song"
@@ -84,6 +84,7 @@ import type { PlaylistResponse } from '#types/Playlist';
 import SongItem from '@/components/Widget/SongItem.vue';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TabPages } from '@/components/ui/tabs';
+import { BACKGROUND } from '@/lib/background_settings';
 
 const route = useRoute();
 const id = route.params.id;
@@ -100,7 +101,7 @@ const currentHoverIndex = ref<number>(-1);
 const tabsConfig = computed(() => [
   {
     key: 'songs',
-    label: `${playlist.value?.data?.songList.length || 0} Songs`,
+    label: `${playlist.data.value?.data?.songList.length || 0} Songs`,
     to: '?tab=songs',
     slot: 'songs'
   },
@@ -143,7 +144,7 @@ watch([() => sortMode.value, () => sortOrder.value], async ([newSortMode, newSor
   isUpdatingFromRoute.value = false;
 }, {deep: true})
 
-const { data: playlist, error } = await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
+const { error } = await useFetch(`/api/playlist/${id}`, {
   key: `playlist-page-${id}`,
   default: () => ({
     data: {
@@ -173,10 +174,12 @@ const { data: playlist, error } = await useFetch<PlaylistResponse>(`/api/playlis
   onResponse({ response }) {
     // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {
-      setBackground(response._data.data.coverUrl, 0.55, 0, 40);
+      setBackground(response._data.data.coverUrl, BACKGROUND.playlist);
     }
   }
 })
+
+const playlist = useNuxtData<PlaylistResponse>(`playlist-page-${id}`);
 
 if (error.value) {
   // Check if there's browser history to go back
@@ -196,12 +199,12 @@ if (error.value) {
 const BackgroundImages = ref<string[]>([]);
 
 // Keep the watcher as fallback for client-side updates
-watch(() => playlist.value?.data, (newVal) => {
-  if(newVal?.coverUrl) {
-    setBackground(newVal.coverUrl, 0.55, 0, 40);
+watch(() => playlist.data.value, (newVal) => {
+  if(newVal?.data?.coverUrl) {
+    setBackground(newVal.data.coverUrl, BACKGROUND.playlist);
   }
-  else if (newVal?.songList.songs && newVal?.songList.songs.length > 0) {
-    setBackground(newVal?.songList.songs[0]?.song.album.coverUrl || "", 0.55, 0, 40);
+  else if (newVal?.data?.songList.songs && newVal?.data?.songList.songs.length > 0) {
+    setBackground(newVal?.data?.songList.songs[0]?.song.album.coverUrl || "", BACKGROUND.playlist);
   }
 }, {immediate: true})
 </script>

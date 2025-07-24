@@ -9,7 +9,7 @@
         </NuxtLink>
         Edit Playlist
         <NuxtLink :to="`/playlists/${id}`" class="text-primary">
-          {{ playlist?.data?.name || 'Unknown' }}
+          {{ playlist.data.value?.data?.name || 'Unknown' }}
         </NuxtLink>
       </h1>
       
@@ -19,13 +19,13 @@
         default-tab="general"
       >
         <template #general>
-          <Forms-PlaylistEdit />
+          <Playlist-EditForm />
         </template>
 
         <template #reorder>
-          <div v-if="playlist?.data?.songList.songs && playlist?.data?.songList.songs.length > 0" class="flex flex-col">
-            <SongItem
-              v-for="(song, index) in playlist?.data?.songList.songs"
+          <div v-if="playlist.data.value?.data?.songList.songs && playlist.data.value?.data?.songList.songs.length > 0" class="flex flex-col">
+            <Playlist-SortItem
+              v-for="(song, index) in playlist.data.value?.data?.songList.songs"
               :id="index"
               :key="song._id"
               :song="song.song"
@@ -43,8 +43,8 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import type { PlaylistResponse } from '#types/Playlist';
-import SongItem from '@/components/Widget/SongItem.vue';
 import { TabPages } from '@/components/ui/tabs';
+import { BACKGROUND } from '@/lib/background_settings';
 
 const route = useRoute();
 const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
@@ -61,7 +61,7 @@ if (!rawId) {
 const id = rawId as string;
 
 const { paddingClass } = useContentPadding();
-const { setBackground, backgroundSrc } = useBackground();
+const { setBackground } = useBackground();
 
 const currentHoverIndex = ref<number>(-1);
 
@@ -97,7 +97,7 @@ watch([() => route.query.tab], async ([newTab]) => {
   isUpdatingFromRoute.value = false;
 }, {deep: true, immediate: true})
 
-const { data: playlist, error } = await useFetch<PlaylistResponse>(`/api/playlist/${id}`, {
+const { error } = await useFetch(`/api/playlist/${id}`, {
   key: `playlist-page-${id}`,
   default: () => ({
     data: {
@@ -127,10 +127,12 @@ const { data: playlist, error } = await useFetch<PlaylistResponse>(`/api/playlis
   onResponse({ response }) {
     // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {
-      setBackground(response._data.data.coverUrl, 0.55, 32, 40);
+      setBackground(response._data.data.coverUrl, BACKGROUND.playlist_edit);
     }
   }
 })
+
+const playlist = useNuxtData<PlaylistResponse>(`playlist-page-${id}`);
 
 if (error.value) {
   // Check if there's browser history to go back
@@ -148,36 +150,17 @@ if (error.value) {
 }
 
 // Keep the watcher as fallback for client-side updates
-watch(() => playlist.value?.data, (newVal) => {
-  if(newVal?.coverUrl) {
-    setBackground(newVal.coverUrl, 0.35, 32, 40);
+watch(() => playlist.data.value, (newVal) => {
+  if(newVal?.data?.coverUrl) {
+    setBackground(newVal.data.coverUrl, BACKGROUND.playlist_edit);
   }
-  else if (newVal?.songList.songs && newVal?.songList.songs.length > 0) {
-    setBackground(newVal?.songList.songs[0]?.song.album.coverUrl || "", 0.35, 32, 40);
+  else if (newVal?.data?.songList.songs && newVal?.data?.songList.songs.length > 0) {
+    setBackground(newVal?.data?.songList.songs[0]?.song.album.coverUrl || "", BACKGROUND.playlist_edit);
   }
 }, {immediate: true})
 
 </script>
 <style scoped>
 @reference '../../../assets/css/tailwind.css';
-.list-header {
-  @apply grid pl-4 text-xs h-8 items-center mb-4 border-b border-black/10 dark:border-white/10;
-  grid-template-columns: [index] 38px [first] minmax(120px, 4fr) [var1] minmax(120px, 3fr) [var2] 40px [last] 60px;
-}
-.list-header > div:not(.not-sortable), .sort-item {
-  @apply flex items-center h-full gap-1 cursor-pointer 
-  text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white border-b border-transparent;
-  transition: color 0.3s ease-out;
 
-  &.active {
-    @apply text-primary border-primary;
-    transition: border-color 0.3s ease-out;
-    & span {
-      @apply transition-transform duration-300 ease-in-out;
-    }
-    &.asc span {
-      @apply rotate-180;
-    }
-  }
-}
 </style>

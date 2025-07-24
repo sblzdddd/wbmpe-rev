@@ -58,7 +58,7 @@ const formatDuration = (seconds: number) => {
       </button>
     </div>
     <div class="flex gap-2 items-center grow pr-6">
-      <Picture :src="props.song.album.coverUrl" class="block w-9 h-9 rounded-sm" :img-attrs="{class: 'w-9 h-9 rounded-sm'}" :modifiers="{resize: {s: 100}}" :alt="song.name" />
+      <Picture :src="props.song.album.coverUrl" class="block size-9 min-w-9 min-h-9 rounded-sm" :img-attrs="{class: 'w-9 h-9 rounded-sm'}" :modifiers="{resize: {s: 100}}" :alt="song.name" />
       <div class="grow pb-0.5 flex flex-col items-left h-full gap-1">
         <div class="flex justify-start">
           <a class="songItem-title">{{ song.name }}</a>
@@ -97,7 +97,7 @@ const formatDuration = (seconds: number) => {
 <style scoped>
 @reference '../../assets/css/tailwind.css';
 .songItem {
-  @apply flex lg:grid items-center text-left text-sm py-1.5 px-4 relative hover:bg-black/15 dark:hover:bg-white/15
+  @apply flex lg:grid items-center text-left text-sm py-1.5 px-4 relative hover:bg-black/5 dark:hover:bg-white/15
   lg:rounded-md;
   border-color: transparent;
   grid-template-columns: [index] 40px [first] minmax(120px, 4fr) [var1] minmax(120px, 3fr) [var2] 40px [last] 50px;

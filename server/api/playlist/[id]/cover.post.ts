@@ -1,6 +1,7 @@
 import Playlists from "../../../models/Playlists";
 import { isValidObjectIdString } from '../../../utils/IdValidator';
 import { imageUploadService } from '../../../utils/imageUpload';
+import { makeid } from "../../../utils/auth";
 
 const logger = BakaLogger.child({ service: 'PlaylistCoverAPI' });
 
@@ -97,11 +98,12 @@ export default defineEventHandler(async (event) => {
 
     // Delete old cover if it exists
     if (playlist.coverUrl) {
+      logger.info('PlaylistCoverAPI: Old cover URL found');
       await imageUploadService.deleteImage(playlist.coverUrl);
     }
 
     // Upload new cover to OSS
-    const uploadResult = await imageUploadService.uploadPlaylistCover(buffer, filename, playlistId);
+    const uploadResult = await imageUploadService.uploadPlaylistCover(buffer, `${filename}-${makeid(10)}`, playlistId);
 
     // Update playlist with new cover URL
     const updatedPlaylist = await Playlists.findByIdAndUpdate(

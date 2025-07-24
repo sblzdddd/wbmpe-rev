@@ -6,6 +6,13 @@ const { isOnTop } = useScrollBar()
 const route = useRoute()
 const { open } = useSidebar()
 const { paddingClass } = useContentPadding()
+
+// Create a computed that safely handles SSR
+const logoSrc = computed(() => {
+  return colorMode.value === 'light' 
+    ? '/images/logo/logo-light_256.png' 
+    : '/images/logo/logo-dark_256.png'
+})
 </script>
 
 <template>
@@ -14,8 +21,13 @@ const { paddingClass } = useContentPadding()
     :class="`${isOnTop ? '' : 'bg-sidebar border-b-[1.5px] h-[65px]'} ${paddingClass}`"
   >
     <div v-if="!open" class="flex items-center gap-1 mr-2">
-      <Image v-if="colorMode.value === 'dark'" src="/images/logo/logo-dark_256.png" alt="logo" class="min-w-37 min-h-7.5" />
-      <Image v-else src="/images/logo/logo-light_256.png" alt="logo" class="min-w-37 min-h-7.5" />
+      <ClientOnly fallback-tag="div" class="min-w-37 min-h-7.5">
+        <Image :src="logoSrc" alt="logo" class="min-w-37 min-h-7.5" />
+        <template #fallback>
+          <!-- Fallback for SSR - use a neutral logo or placeholder -->
+          <Image src="/images/logo/logo-light_256.png" alt="logo" class="min-w-37 min-h-7.5" />
+        </template>
+      </ClientOnly>
     </div>
     <!-- <Button variant="ghost" size="icon" class="h-7 w-7 hidden lg:block">
       <Icon name="lucide:chevron-left" size="20" />

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { motion } from "motion-v"
+import type { RoutePath } from "#types/Utils/RoutePath"
 
 defineProps<{
   data: {
@@ -11,7 +12,8 @@ defineProps<{
 }>()
 
 const { isOnTop } = useScrollBar()
-const nextPath = useState('nextPath')
+
+const routePath = useState<RoutePath>('routePath')
 </script>
 
 <template>
@@ -23,7 +25,7 @@ const nextPath = useState('nextPath')
         <NuxtLink :to="item.url">
           <ContextMenu>
             <ContextMenuTrigger>
-              <SidebarMenuButton :id="item.url" class="menu-btn" :tooltip="item.name" :class="{'nav-active': item.url == nextPath}">
+              <SidebarMenuButton :id="item.url" class="menu-btn" :tooltip="item.name" :class="{'nav-active': item.url == routePath.next}">
                 <Icon v-if="item.icon" :name="item.icon" size="17" class="nav-icon group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:p-2.5! shrink-0" />
                 <span class="ml-2 text-sm">{{ item.name }}</span>
               </SidebarMenuButton>
@@ -46,7 +48,22 @@ const nextPath = useState('nextPath')
             </ContextMenuContent>
           </ContextMenu>
           <motion.div 
-            v-if="item.url == (nextPath as string || '').replace('/edit', '')" 
+            v-if="item.url == routePath.next" 
+            layout
+            layout-id="nav-highlighter" 
+            class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
+            :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
+          />
+        </NuxtLink>
+      </SidebarMenuItem>
+      <SidebarMenuItem>
+        <NuxtLink to="/playlists/create">
+          <SidebarMenuButton class="menu-btn" :tooltip="'Create Playlist'" :class="{'nav-active': routePath.next == '/playlists/create'}">
+            <Icon name="lucide:plus" size="17" class="nav-icon group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:p-2.5! shrink-0" />
+            <span class="ml-2 text-sm">Create Playlist</span>
+          </SidebarMenuButton>
+          <motion.div 
+            v-if="routePath.next == '/playlists/create'" 
             layout
             layout-id="nav-highlighter" 
             class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 

@@ -87,4 +87,14 @@ export function getSaltRoundsFromHash(hash: string): number {
     logger.error('Error parsing salt rounds from hash:', error)
     return 12 // default fallback
   }
-} 
+}
+
+export function makeid(length: number) {
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for ( let i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}

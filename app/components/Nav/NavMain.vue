@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { motion } from "motion-v"
+import type { RoutePath } from "#types/Utils/RoutePath"
 
 defineProps<{
   data: {
@@ -13,16 +14,9 @@ defineProps<{
   }[]
 }>()
 const { isOnTop } = useScrollBar()
-const route = useRoute()
-const router = useRouter()
 
-const nextPath = useState('nextPath', () => route.path)
+const routePath = useState<RoutePath>('routePath')
 
-
-router.beforeEach((to, from, next) => {
-  nextPath.value = to.path
-  next()
-})
 </script>
 
 <template>
@@ -33,12 +27,12 @@ router.beforeEach((to, from, next) => {
       <SidebarMenu>
         <SidebarMenuItem v-for="item in group.items" :key="item.title">
           <NuxtLink :to="item.url">
-            <SidebarMenuButton :id="item.url" class="menu-btn" :tooltip="item.title" :class="{'nav-active': item.url == nextPath}">
+            <SidebarMenuButton :id="item.url" class="menu-btn" :tooltip="item.title" :class="{'nav-active': item.url == routePath.next}">
               <Icon v-if="item.icon" :name="item.icon" size="17" class="nav-icon group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:p-2.5! shrink-0" />
               <span class="ml-2 text-sm">{{ item.title }}</span>
             </SidebarMenuButton>
             <motion.div
-              v-if="item.url == nextPath"
+              v-if="item.url == routePath.next"
               layout-id="nav-highlighter"
               class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
               :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"

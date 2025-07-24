@@ -85,6 +85,7 @@ export class ImageUploadService {
         'x-oss-storage-class': 'Standard',
         'x-oss-object-acl': 'private',
         'Content-Type': this.getContentType(fileExtension),
+        'x-oss-forbid-overwrite': 'false',
       };
 
       await this.client.put(ossPath, buffer, { headers });

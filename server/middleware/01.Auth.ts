@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   
   // Define endpoints that require authentication for specific methods only
   const methodSpecificEndpoints = [
-    { path: '/api/playlist/', methods: ['PUT', 'POST', 'DELETE'] }, // Protect update/create/delete operations only
+    { path: '/api/playlist', methods: ['PUT', 'POST', 'DELETE'] }, // Protect update/create/delete operations only
     { path: '/api/user', methods: ['GET', 'POST'] },
     { path: '/api/upload', methods: ['POST'] },
   ]

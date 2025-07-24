@@ -103,9 +103,14 @@ export default defineNuxtConfig({
     },
     headers: {
       contentSecurityPolicy: {
-        'img-src': ["'self'", 'data:', 'https://avatars.githubusercontent.com', 'https://lh3.googleusercontent.com', 'https://img.paulzzh.com/', 'https://p2.music.126.net', process.env.NUXT_IMAGE_ALIYUN_BASE_URL || '']
+        'img-src': ["'self'", 'data:', 'blob:', 'https://avatars.githubusercontent.com', 'https://lh3.googleusercontent.com', 'https://img.paulzzh.com/', 'https://*.music.126.net', process.env.NUXT_IMAGE_ALIYUN_BASE_URL || '']
       }
     }
+  },
+  colorMode: {
+    classSuffix: '',
+    storage: 'cookie',
+    storageKey: 'baka-theme',
   },
 
   // pwa: {
@@ -187,10 +192,6 @@ export default defineNuxtConfig({
       // Run `cleanup:password-reset-token` task every hour
       '0 * * * *': ['cleanup:tokens']
     }
-  },
-
-  colorMode: {
-    classSuffix: ''
   },
 
   shadcn: {

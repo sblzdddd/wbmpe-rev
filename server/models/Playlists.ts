@@ -14,6 +14,7 @@ export type PlaylistDocument = {
   description: string;
   owner: ObjectId;
   songs: CollectionSongItemDocument[];
+  isPublic: boolean;
 } & TimeMetadata
 
 
@@ -61,6 +62,10 @@ const playlistsSchema = new mongoose.Schema({
     },
     async createNewRecentPlaylist(owner: ObjectId|null=null): Promise<PlaylistDocument> {
       const playlist = await Playlists.create({playlistType: 'recent', name: 'Recently Played', description: '', coverUrl: '', owner, songs: []})
+      return playlist.toObject() as unknown as PlaylistDocument;
+    },
+    async createNewPlaylist(owner: ObjectId, name: string, description: string, coverUrl: string, isPublic: boolean): Promise<PlaylistDocument> {
+      const playlist = await Playlists.create({playlistType: 'playlist', name, description, coverUrl, owner, songs: [], isPublic})
       return playlist.toObject() as unknown as PlaylistDocument;
     },
     async getCreatedPlaylistInfo(playlistId: string): Promise<PlaylistMeta> {

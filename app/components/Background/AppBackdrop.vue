@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { backgroundSrc, opacity, imageBlur, imageHeight, refreshKey } = useBackground()
+const { src, opacity, blur, height, refreshKey } = useBackground()
 
 // Cross-fade state management
 const isTransitioning = ref(false)
@@ -8,20 +8,18 @@ let lastDominator = 'A'
 
 // Initialize values based on current state
 onMounted(() => {
-  console.log('onMounted')
   const current = document.getElementById(`backdrop-A`) as HTMLImageElement
   const next = document.getElementById(`backdrop-B`) as HTMLImageElement
   if(!current || !next) return
-  current.style.height = `${imageHeight.value}%`
-  next.style.height = `${imageHeight.value}%`
+  current.style.height = `${height.value}%`
+  next.style.height = `${height.value}%`
   current.style.opacity = "0"
   next.style.opacity = "0"
-  current.src = backgroundSrc.value
-  next.src = backgroundSrc.value
+  current.src = src.value
+  next.src = src.value
 })
 
-watch(backgroundSrc, (newSrc, oldSrc) => {
-  console.log('backgroundSrc', newSrc, oldSrc)
+watch(src, (newSrc, oldSrc) => {
   const current = document.getElementById(`backdrop-${lastDominator}`) as HTMLImageElement
   const next = document.getElementById(`backdrop-${lastDominator === 'A' ? 'B' : 'A'}`) as HTMLImageElement
   if(!current || !next) return
@@ -35,7 +33,6 @@ watch(backgroundSrc, (newSrc, oldSrc) => {
     // Start cross-fade transition
     isTransitioning.value = true
     // The new image will load in the background
-    console.log('Starting cross-fade transition from', oldSrc, 'to', newSrc)
     next.src = newSrc
   } else if (!newSrc) {
     // No image, reset everything
@@ -51,14 +48,12 @@ watch(backgroundSrc, (newSrc, oldSrc) => {
       duration: 500,
       easing: 'ease-in-out'
     })
-    console.log('NO BACKGROUND SRC')
   }
 })
 
 const onNextImageLoad = async (dominator: string) => {
   if (isTransitioning.value) {
     if(lastDominator === dominator) return
-    console.log('onNextImageLoad')
     await nextTick()
     const current = document.getElementById(`backdrop-${lastDominator}`) as HTMLImageElement
     const next = document.getElementById(`backdrop-${lastDominator === 'A' ? 'B' : 'A'}`) as HTMLImageElement
@@ -68,18 +63,16 @@ const onNextImageLoad = async (dominator: string) => {
       isTransitioning.value = false
     }})
 
-    console.log('current', current, 'next', next, 'imageHeight', imageHeight.value)
-
     timeline.add(current, {
       opacity: 0,
-      height: `${imageHeight.value}%`,
+      height: `${height.value}%`,
       duration: 500,
       easing: 'ease-in-out'
     },0)
 
     timeline.add(next, {  
       opacity: opacity.value,
-      height: `${imageHeight.value}%`,
+      height: `${height.value}%`,
       duration: 500,
       easing: 'ease-in-out'
     },0)
@@ -100,9 +93,9 @@ watch(refreshKey, async () => {
     if(!current || !next) return
     animate(current, {
       opacity: opacity.value,
-      filter: `blur(${imageBlur.value}px)`,
-      scale: imageBlur.value > 0 ? imageBlur.value/200+1 : 1,
-      height: `${imageHeight.value}%`,
+      filter: `blur(${blur.value}px)`,
+      scale: blur.value > 0 ? blur.value/200+1 : 1,
+      height: `${height.value}%`,
       duration: 500,
       easing: 'ease-in-out'
     })

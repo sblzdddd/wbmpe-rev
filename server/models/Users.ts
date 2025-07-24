@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
-import Playlists from "./Playlists";
+import Playlists, { type PlaylistDocument } from "./Playlists";
 import UserAuth from "./UserAuth";
+import { imageUploadService } from "../utils/imageUpload";
 import type { SimpleUser, UserInfo, UserPlaylists } from "../../types/User/User";
 
 export type UserDocument = {
@@ -132,6 +133,49 @@ const userSchema = new mongoose.Schema({
         favorites: userObj.favorites,
         recent: userObj.recent
       };
+    },
+    createNewPlaylist: async (owner: ObjectId, name: string, description: string, coverUrl: string, isPublic: boolean): Promise<PlaylistDocument> => {
+      const user = await Users.findById(owner);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      const playlist = await Playlists.createNewPlaylist(owner, name, description, coverUrl, isPublic);
+      user.createdPlaylists.push(playlist._id as unknown as ObjectId);
+      await user.save();
+      return playlist as unknown as PlaylistDocument;
+    },
+    deletePlaylist: async (owner: ObjectId, playlistId: ObjectId): Promise<void> => {
+      const user = await Users.findById(owner);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      
+      const playlist = await Playlists.findById(playlistId);
+      if (!playlist) {
+        throw new Error('Playlist not found');
+      }
+
+      // Verify ownership
+      if (playlist.owner?.toString() !== owner.toString()) {
+        throw new Error('Unauthorized: User does not own this playlist');
+      }
+
+      // Delete cover image if it exists
+      if (playlist.coverUrl) {
+        try {
+          await imageUploadService.deleteImage(playlist.coverUrl);
+        } catch (error) {
+          console.warn('Failed to delete playlist cover image:', error);
+          // Continue with deletion even if cover deletion fails
+        }
+      }
+
+      // Remove playlist from user's createdPlaylists array
+      user.createdPlaylists.pull(playlistId);
+      await user.save();
+
+      // Delete the playlist from database
+      await Playlists.findByIdAndDelete(playlistId);
     }
   }
 });

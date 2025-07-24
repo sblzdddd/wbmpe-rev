@@ -4,17 +4,24 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar'
 import AppBackdrop from '@/components/Background/AppBackdrop.vue'
+import type { RoutePath } from "#types/Utils/RoutePath"
 
 const router = useRouter();
 const backgroundStore = useBackground();
-const { setLastPath } = useRouterHistory()
+
+const route = useRoute();
+
+const routePath = useState<RoutePath>('routePath', () => ({
+  last: '',
+  next: route.path
+}))
 
 router.beforeEach((to, from, next) => {
   if (to.path === '/') {
     backgroundStore.resetBackground();
   }
-  setLastPath(from.path)
-  console.log('from', from.path, 'to', to.path)
+  routePath.value.last = from.path
+  routePath.value.next = to.path
   next();
 });
 
