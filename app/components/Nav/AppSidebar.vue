@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { SidebarProps } from '#shadcn/sidebar'
-import type { PlaylistMeta } from '~~/types/Playlist';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
@@ -80,16 +79,6 @@ await useFetch('/api/user/playlists', {
 
 const { playlists } = useUserPlaylist()
 
-// Transform createdPlaylists to match NavPlaylist data structure
-const playlistData = computed(() => {
-  if (!playlists.data.value || !playlists.data.value.createdPlaylists) return undefined
-  return playlists.data.value.createdPlaylists.map((playlist: PlaylistMeta) => ({
-    name: playlist.name,
-    url: `/playlists/${playlist._id}`,
-    icon: 'lucide:list-music',
-    canEdit: true
-  }))
-})
 </script>
 
 <template>
@@ -99,7 +88,7 @@ const playlistData = computed(() => {
     </SidebarHeader>
     <SidebarContent class="gap-0">
       <NavMain :data="data.navMain" />
-      <NavPlaylist v-if="playlistData" :data="playlistData" />
+      <NavPlaylist v-if="playlists.data.value?.createdPlaylists" :data="playlists.data.value.createdPlaylists" />
     </SidebarContent>
     <!-- <SidebarFooter>
       <NavUser :user="data.user" />

@@ -54,35 +54,48 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
     const { name, description, coverUrl, isPublic } = body;
 
-    // Validate required fields
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Playlist name is required'
-      });
+    // Validate provided fields
+    if (name !== undefined) {
+      if (!name || typeof name !== 'string' || name.trim().length === 0) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Playlist name cannot be empty'
+        });
+      }
+
+      if (name.length > 24) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Playlist name must be 24 characters or less'
+        });
+      }
     }
 
-    if (name.length > 24) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Playlist name must be 24 characters or less'
-      });
-    }
-
-    if (description && description.length > 500) {
+    if (description !== undefined && description.length > 500) {
       throw createError({
         statusCode: 400,
         statusMessage: 'Description must be 500 characters or less'
       });
     }
 
-    // Update playlist data
+    // Build update data with only provided fields
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateData: any = {
-      name: name.trim(),
-      description: description || '',
-      isPublic: Boolean(isPublic)
-    };
+    const updateData: any = {};
+
+    // Only update name if provided
+    if (name !== undefined) {
+      updateData.name = name.trim();
+    }
+
+    // Only update description if provided
+    if (description !== undefined) {
+      updateData.description = description || '';
+    }
+
+    // Only update isPublic if provided
+    if (isPublic !== undefined) {
+      updateData.isPublic = Boolean(isPublic);
+    }
 
     // Handle cover URL update
     if (coverUrl !== undefined) {
@@ -143,7 +156,7 @@ export default defineEventHandler(async (event) => {
 defineRouteMeta({
   openAPI: {
     tags: ["Playlist"],
-    description: "Update a playlist's metadata",
+    description: "Update a playlist's metadata (partial updates supported)",
     parameters: [
       { in: "path", name: "id", required: true, schema: { type: 'string' } }
     ],
@@ -154,12 +167,12 @@ defineRouteMeta({
           schema: {
             type: 'object',
             properties: {
-              name: { type: 'string', description: 'Playlist name' },
-              description: { type: 'string', description: 'Playlist description' },
-              coverUrl: { type: 'string', description: 'Cover image URL (empty string to remove)' },
-              isPublic: { type: 'boolean', description: 'Whether the playlist is public' }
+              name: { type: 'string', description: 'Playlist name (optional for partial update)' },
+              description: { type: 'string', description: 'Playlist description (optional for partial update)' },
+              coverUrl: { type: 'string', description: 'Cover image URL (empty string to remove, optional for partial update)' },
+              isPublic: { type: 'boolean', description: 'Whether the playlist is public (optional for partial update)' }
             },
-            required: ['name']
+
           }
         }
       }

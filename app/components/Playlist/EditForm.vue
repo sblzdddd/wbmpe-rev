@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { PlaylistResponse } from '#types/Playlist';
 import { BACKGROUND } from '@/lib/background_settings';
+import type { InternalApi } from 'nitropack';
 
 const route = useRoute();
 const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
@@ -70,24 +71,23 @@ const optimisticUpdate = async (field: keyof typeof editForm.value) => {
   isUpdating.value = true;
   updateError.value = '';
   
+  const fieldValue = editForm.value[field];
+  
   try {
-    const response = await $fetch<{success: boolean, data: {_id: string, name: string, description: string, coverUrl: string, isPublic: boolean}}>(`/api/playlist/${id}`, {
+    const response = await $fetch<InternalApi['/api/playlist/:id']['put']>(`/api/playlist/${id}`, {
       method: 'PUT',
-      body: {
-        name: editForm.value.name,
-        description: editForm.value.description,
-        coverUrl: editForm.value.coverUrl,
-        isPublic: editForm.value.isPublic
-      },
+      body: { [field]: fieldValue },
       onRequest: () => {
-        if(!playlist.value) return;
-        playlist.value.data.coverUrl = editForm.value.coverUrl;
-        playlist.value.data.name = editForm.value.name;
-        playlist.value.data.description = editForm.value.description;
-        playlist.value.data.isPublic = editForm.value.isPublic;
+        if(!playlist.value?.data) return;
+        // Only update the specific field in the optimistic update
+        if (field === 'name') playlist.value.data.name = fieldValue as string;
+        else if (field === 'description') playlist.value.data.description = fieldValue as string;
+        else if (field === 'coverUrl') playlist.value.data.coverUrl = fieldValue as string;
+        else if (field === 'isPublic') playlist.value.data.isPublic = fieldValue as boolean;
       },
       onResponse: () => {
         refreshNuxtData(`playlist-page-${id}`);
+        refreshNuxtData('userPlaylists')
       },
     });
 
@@ -95,10 +95,24 @@ const optimisticUpdate = async (field: keyof typeof editForm.value) => {
       throw new Error('Update failed');
     }
 
+    // Update original values to reflect the successful change
+    if (field === 'name') originalValues.value.name = fieldValue as string;
+    else if (field === 'description') originalValues.value.description = fieldValue as string;
+    else if (field === 'coverUrl') originalValues.value.coverUrl = fieldValue as string;
+    else if (field === 'isPublic') originalValues.value.isPublic = fieldValue as boolean;
+
   } catch (err: unknown) {
     console.error(`Failed to update ${field}:`, err);
     
     updateError.value = err instanceof Error ? err.message : `Failed to update ${field}. Please try again.`;
+    
+    // Revert the optimistic update on failure
+    if (playlist.value?.data) {
+      if (field === 'name') playlist.value.data.name = originalValues.value.name;
+      else if (field === 'description') playlist.value.data.description = originalValues.value.description;
+      else if (field === 'coverUrl') playlist.value.data.coverUrl = originalValues.value.coverUrl;
+      else if (field === 'isPublic') playlist.value.data.isPublic = originalValues.value.isPublic;
+    }
     
     // Clear error after 3 seconds
     setTimeout(() => {
@@ -142,10 +156,8 @@ const handleImageUploading = (uploading: boolean) => {
 
 const handleCoverUpdate = (newCoverUrl: string) => {
   editForm.value.coverUrl = newCoverUrl;
-  if (playlist.value?.data) {
-    playlist.value.data.coverUrl = newCoverUrl;
-    originalValues.value.coverUrl = newCoverUrl;
-  }
+  // Trigger optimistic update for cover URL
+  optimisticUpdate('coverUrl');
 };
 
 // Cover removal is now handled by CoverUpload component

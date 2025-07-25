@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import type { SEOData } from '#types/Utils/SEO';
+
+const seoData = useState<SEOData>('seoData')
+
+seoData.value.title = 'Playlists'
+seoData.value.description = 'Playlists'
+seoData.value.ogTitle = 'Playlists'
 </script>
 
 <template>

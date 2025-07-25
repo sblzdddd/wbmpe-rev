@@ -38,6 +38,7 @@ export default defineNuxtConfig({
       pageTransition: {name: 'page', mode: 'out-in'},
       layoutTransition: {name: 'layout', mode: 'out-in'},
       head: {
+        title: 'WBMPE Rev',
         link: [
           { rel: 'icon', sizes: '64x64', href: '/favicon.ico' },
           { rel: 'icon', type: 'image/svg+xml', sizes: 'any', href: '/favicon.svg' },

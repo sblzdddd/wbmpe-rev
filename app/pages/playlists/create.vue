@@ -1,5 +1,13 @@
 <script setup lang="ts">
+import type { SEOData } from '#types/Utils/SEO';
+
 const { paddingClass } = useContentPadding();
+const seoData = useState<SEOData>('seoData')
+
+seoData.value.title = 'Create Playlist'
+seoData.value.description = 'Create a new playlist'
+seoData.value.ogTitle = 'Create Playlist'
+seoData.value.ogDescription = 'Create a new playlist'
 </script>
 
 <template>

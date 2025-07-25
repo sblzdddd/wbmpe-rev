@@ -22,7 +22,7 @@
           <Playlist-EditForm />
         </template>
 
-        <template #reorder>
+        <template #manage>
           <div v-if="playlist.data.value?.data?.songList.songs && playlist.data.value?.data?.songList.songs.length > 0" class="flex flex-col">
             <Playlist-SortItem
               v-for="(song, index) in playlist.data.value?.data?.songList.songs"
@@ -45,7 +45,9 @@ import { Button } from '@/components/ui/button';
 import type { PlaylistResponse } from '#types/Playlist';
 import { TabPages } from '@/components/ui/tabs';
 import { BACKGROUND } from '@/lib/background_settings';
+import type { SEOData } from '#types/Utils/SEO';
 
+const seoData = useState<SEOData>('seoData')
 const route = useRoute();
 const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
 
@@ -61,7 +63,7 @@ if (!rawId) {
 const id = rawId as string;
 
 const { paddingClass } = useContentPadding();
-const { setBackground } = useBackground();
+const { setBackground, resetBackground } = useBackground();
 
 const currentHoverIndex = ref<number>(-1);
 
@@ -73,10 +75,10 @@ const tabsConfig = [
     slot: 'general'
   },
   {
-    key: 'reorder',
-    label: 'Reorder Songs',
-    to: '?tab=reorder',
-    slot: 'reorder'
+    key: 'manage',
+    label: 'Manage Songs',
+    to: '?tab=manage',
+    slot: 'manage'
   }
 ]
 
@@ -129,6 +131,7 @@ const { error } = await useFetch(`/api/playlist/${id}`, {
     if (response._data?.data?.coverUrl) {
       setBackground(response._data.data.coverUrl, BACKGROUND.playlist_edit);
     }
+    seoData.value.title = `Edit Playlist ${response._data.data.name || 'Unknown'}`
   }
 })
 
@@ -151,11 +154,15 @@ if (error.value) {
 
 // Keep the watcher as fallback for client-side updates
 watch(() => playlist.data.value, (newVal) => {
+  seoData.value.title = `Edit Playlist ${newVal?.data?.name || 'Unknown'}`
   if(newVal?.data?.coverUrl) {
     setBackground(newVal.data.coverUrl, BACKGROUND.playlist_edit);
   }
   else if (newVal?.data?.songList.songs && newVal?.data?.songList.songs.length > 0) {
     setBackground(newVal?.data?.songList.songs[0]?.song.album.coverUrl || "", BACKGROUND.playlist_edit);
+  } else {
+    console.log('resetting background')
+    resetBackground();  
   }
 }, {immediate: true})
 

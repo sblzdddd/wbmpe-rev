@@ -85,12 +85,14 @@ import SongItem from '@/components/Widget/SongItem.vue';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TabPages } from '@/components/ui/tabs';
 import { BACKGROUND } from '@/lib/background_settings';
+import type { SEOData } from '#types/Utils/SEO';
 
+const seoData = useState<SEOData>('seoData')
 const route = useRoute();
 const id = route.params.id;
 
 const { paddingClass } = useContentPadding();
-const { setBackground } = useBackground(); 
+const { setBackground, resetBackground } = useBackground(); 
 
 const sortMode = ref<'index' | 'title' | 'album' | 'duration' | 'like'>('index');
 const sortOrder = ref<'asc' | 'desc'>('asc');
@@ -176,6 +178,7 @@ const { error } = await useFetch(`/api/playlist/${id}`, {
     if (response._data?.data?.coverUrl) {
       setBackground(response._data.data.coverUrl, BACKGROUND.playlist);
     }
+    seoData.value.title = `${response._data.data.name || 'Playlist'}`
   }
 })
 
@@ -200,11 +203,15 @@ const BackgroundImages = ref<string[]>([]);
 
 // Keep the watcher as fallback for client-side updates
 watch(() => playlist.data.value, (newVal) => {
+  seoData.value.title = `${newVal?.data?.name || 'Playlist'}`
   if(newVal?.data?.coverUrl) {
     setBackground(newVal.data.coverUrl, BACKGROUND.playlist);
   }
   else if (newVal?.data?.songList.songs && newVal?.data?.songList.songs.length > 0) {
     setBackground(newVal?.data?.songList.songs[0]?.song.album.coverUrl || "", BACKGROUND.playlist);
+  } else {
+    console.log('resetting background')
+    resetBackground();
   }
 }, {immediate: true})
 </script>

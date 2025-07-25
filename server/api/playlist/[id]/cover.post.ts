@@ -71,6 +71,8 @@ export default defineEventHandler(async (event) => {
 
     // Validate file type and size
     const filename = imageFile.filename || 'cover.jpg';
+    const filenameWithoutExtension = filename.split('.').slice(0, -1).join('.');
+    const extension = filename.split('.').pop();
     const buffer = imageFile.data;
 
     // Basic validation
@@ -103,7 +105,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Upload new cover to OSS
-    const uploadResult = await imageUploadService.uploadPlaylistCover(buffer, `${filename}-${makeid(10)}`, playlistId);
+    const uploadResult = await imageUploadService.uploadPlaylistCover(buffer, `${filenameWithoutExtension}-${makeid(10)}.${extension}`, playlistId);
 
     // Update playlist with new cover URL
     const updatedPlaylist = await Playlists.findByIdAndUpdate(

@@ -27,7 +27,7 @@ const routePath = useState<RoutePath>('routePath')
       <SidebarMenu>
         <SidebarMenuItem v-for="item in group.items" :key="item.title">
           <NuxtLink :to="item.url">
-            <SidebarMenuButton :id="item.url" class="menu-btn" :tooltip="item.title" :class="{'nav-active': item.url == routePath.next}">
+            <SidebarMenuButton :id="item.url" class="menu-btn group-data-[collapsible=icon]:p-2.5!" :tooltip="item.title" :class="{'nav-active': item.url == routePath.next}">
               <Icon v-if="item.icon" :name="item.icon" size="17" class="nav-icon group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:p-2.5! shrink-0" />
               <span class="ml-2 text-sm">{{ item.title }}</span>
             </SidebarMenuButton>
