@@ -10,7 +10,6 @@
 </template>
 <script setup lang="ts">
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { useDialog, DialogType } from '~/composables/useDialog'
 
 const { open, changeOpen } = useDialog()
 </script>

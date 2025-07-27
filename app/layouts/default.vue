@@ -28,6 +28,9 @@ router.beforeEach((to, from, next) => {
 defineOptions({
   name: "DefaultLayout",
 });
+
+
+
 </script>
 <template>
   <SidebarProvider>
@@ -39,9 +42,12 @@ defineOptions({
     <AppBackdrop />
     <Nav-AppSidebar />
     <SidebarInset class="bg-transparent">
-      <Nav-AppHeader />
-      <slot />
+      <Nav-AppHeader :container-attrs="{class: 'w-full md:w-9/10 lg:w-[calc(80%+80px)] mx-auto px-4 md:px-0'}" />
+      <div class="w-full md:w-9/10 lg:w-[calc(80%+80px)] mx-auto">
+        <slot />
+      </div>
     </SidebarInset>
+    <Player-PlayBar />
   </SidebarProvider>
 </template>
 <style lang="postcss">

@@ -5,6 +5,12 @@ import Playlists, { type PlaylistDocument } from "./Playlists";
 import UserAuth from "./UserAuth";
 import { imageUploadService } from "../utils/imageUpload";
 import type { SimpleUser, UserInfo, UserPlaylists } from "../../types/User/User";
+import CollectionSongItemSchema, { type CollectionSongItem } from "./CollectionSongItem";
+import BakaLogger from "../utils/BakaLogger";
+
+const logger = BakaLogger.child({
+  service: 'Users'
+});
 
 export type UserDocument = {
   _id: ObjectId;
@@ -15,6 +21,11 @@ export type UserDocument = {
   createdPlaylists: ObjectId[];
   favorites: ObjectId;
   recent: ObjectId;
+  currentQueue?: {
+    songs: CollectionSongItem[];
+    currentIndex: number;
+    currentTime: number;
+  };
 }
 
 const userSchema = new mongoose.Schema({
@@ -25,6 +36,11 @@ const userSchema = new mongoose.Schema({
   bio: {type: String, required: false},
   favorites: {type: ObjectId, ref: 'Playlists', required: true},
   recent: {type: ObjectId, ref: 'Playlists', required: true},
+  currentQueue: {
+    songs: [CollectionSongItemSchema],
+    currentIndex: {type: Number, default: 0},
+    currentTime: {type: Number, default: 0}
+  }
 }, {
   timestamps: true, // Adds createdAt and updatedAt fields
   statics: {
@@ -176,6 +192,53 @@ const userSchema = new mongoose.Schema({
 
       // Delete the playlist from database
       await Playlists.findByIdAndDelete(playlistId);
+    },
+    updateUserQueue: async (userId: string, songs: { songId: string }[], currentIndex: number, currentTime: number): Promise<void> => {
+      console.log('updateUserQueue', userId, songs, currentIndex, currentTime);
+      const user = await Users.findById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      user.currentQueue = {
+        songs: songs.map(item => ({
+          song: item.songId,
+        })),
+        currentIndex,
+        currentTime
+      };
+
+      await user.save();
+    },
+    getUserQueue: async (userId: string): Promise<{ songs: CollectionSongItem[]; currentIndex: number; currentTime: number }> => {
+      const user = await Users.findById(userId)
+        .populate({
+          path: 'currentQueue.songs.song',
+          populate: [
+            { path: 'album', select: 'name coverUrl' },
+            { path: 'artists', select: 'name' }
+          ]
+        })
+        .lean();
+        
+      if (!user || !user.currentQueue) {
+        logger.error('User not found or currentQueue not found');
+        return { songs: [], currentIndex: 0, currentTime: 0 };
+      }
+
+      const userObj = user as unknown as UserDocument;
+      if(!userObj.currentQueue) {
+        logger.error('User currentQueue not found');
+        return { songs: [], currentIndex: 0, currentTime: 0 };
+      }
+
+      const populatedQueue = userObj.currentQueue.songs;
+
+      return {
+        songs: populatedQueue,
+        currentIndex: userObj.currentQueue.currentIndex,
+        currentTime: userObj.currentQueue.currentTime
+      };
     }
   }
 });

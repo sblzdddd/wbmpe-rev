@@ -1,5 +1,5 @@
 
 export type TimeMetadata = {
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

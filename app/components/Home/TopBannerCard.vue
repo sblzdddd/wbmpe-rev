@@ -1,13 +1,13 @@
 <!-- eslint-disable vue/first-attribute-linebreak -->
 <template>
-  <div ref="bannerRef" v-bind="$attrs">
+  <div class="h-44 px-3 md:px-0" ref="bannerRef" v-bind="$attrs">
     <div class="banner__container">
       <Card v-for="item in banner" :key="item.title" :to="item.link"
             class="banner__slide h-full bg-cover bg-center mx-2 p-3 relative cursor-pointer"
             :style="`background-image: url(${item.image})`">
         <div class="banner__overlay absolute inset-0 hover:bg-black/50 transition-all duration-200 rounded-xl"/>
         <CardFooter class="px-1 mt-auto z-[10]">
-          <CardTitle class="text-white">{{ item.title }}</CardTitle>
+          <CardTitle class="text-white text-shadow-[0_1px_2px_rgb(0_0_0_/_0.5)]">{{ item.title }}</CardTitle>
         </CardFooter>
       </Card>
     </div>

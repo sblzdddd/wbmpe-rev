@@ -144,7 +144,7 @@ const removeCover = async () => {
           id="cover-upload"
           type="file"
           accept="image/*"
-          class="w-fit"
+          class="w-full"
           :disabled="disabled || isUploading"
           @change="handleImageUpload"
         />

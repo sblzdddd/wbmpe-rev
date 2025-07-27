@@ -6,6 +6,16 @@
   </NuxtLayout>
 </template>
 <script setup lang="ts">
+
+await useFetch('/api/user/queue', {
+  key: 'queue',
+  default: () => ({
+    songs: [],
+    currentTime: 0,
+    currentIndex: -1
+  })
+})
+
 const seoData = useState('seoData', () => ({
   title: 'WBMPE Rev',
   description: 'WBMPE Rev',

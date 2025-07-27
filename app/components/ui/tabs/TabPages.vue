@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Tab buttons -->
-    <div class="w-full flex gap-2 mb-6">
+    <div class="w-full flex gap-2 mb-6" v-bind="tabContainerAttrs">
       <NuxtLink 
         v-for="tab in tabs" 
         :key="tab.key" 
@@ -46,10 +46,12 @@ interface Props {
   layoutId?: string
   activeTab?: string
   defaultTab?: string
+  tabContainerAttrs?: unknown
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  layoutId: 'tab-highlighter'
+  layoutId: 'tab-highlighter',
+  tabContainerAttrs: () => ({})
 })
 
 const route = useRoute()

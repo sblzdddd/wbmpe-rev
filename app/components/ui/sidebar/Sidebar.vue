@@ -55,7 +55,7 @@ const { isOnTop } = useScrollBar()
 
   <div
     v-else
-    class="group peer text-sidebar-foreground hidden md:block"
+    class="group peer text-sidebar-foreground hidden lg:block"
     data-slot="sidebar"
     :data-state="state"
     :data-collapsible="state === 'collapsed' ? collapsible : ''"
@@ -75,7 +75,7 @@ const { isOnTop } = useScrollBar()
     />
     <div
       :class="cn(
-        'fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) md:flex',
+        'fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) lg:flex',
         side === 'left'
           ? 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]'
           : 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]',

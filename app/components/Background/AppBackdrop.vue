@@ -107,7 +107,7 @@ watch(refreshKey, async () => {
   <!-- Current/Main background image -->
   <img
     id="backdrop-A"
-    class="left-0 absolute top-0 w-full z-[-1] mask object-cover object-center"
+    class="left-0 absolute top-0 w-screen z-[-1] mask object-cover object-center"
     :style="{
       opacity: 0,
       maskImage: 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 100%)',
@@ -119,7 +119,7 @@ watch(refreshKey, async () => {
   <!-- Next background image (for cross-fade transition) -->
   <img
     id="backdrop-B"
-    class="left-0 absolute top-0 w-full z-[-1] mask object-cover object-center"
+    class="left-0 absolute top-0 w-screen z-[-1] mask object-cover object-center"
     :style="{
       opacity: 0,
       maskImage: 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 100%)',

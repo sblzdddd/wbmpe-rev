@@ -208,7 +208,7 @@ watch(() => editForm.value.coverUrl, (newVal) => {
         mode="upload"
         :disabled="isUpdating"
         @uploading="handleImageUploading"
-        @update:modelValue="handleCoverUpdate"
+        @update:model-value="handleCoverUpdate"
       />
 
       <!-- Playlist Name -->
@@ -265,7 +265,7 @@ watch(() => editForm.value.coverUrl, (newVal) => {
             Red Zone
           </Label>
           <div class="p-4 border border-red-200 dark:border-red-800 rounded-md bg-red-50 dark:bg-red-950/20">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
               <div>
                 <h3 class="font-medium text-red-800 dark:text-red-200">Delete Playlist</h3>
                 <p class="text-sm text-red-600 dark:text-red-400 mt-1">

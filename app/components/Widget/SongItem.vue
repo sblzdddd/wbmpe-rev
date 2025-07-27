@@ -7,15 +7,6 @@ const props = defineProps({
     type: Number,
     required: true
   },
-  listType: {
-    type: Number,
-    required: false,
-    default: 0
-  },
-  id: {
-    type: Number,
-    required: true
-  },
   song: {
     type: Object as () => Song,
     required: true
@@ -28,12 +19,19 @@ const props = defineProps({
 })
 
 
-const playSong = () => {
-  // TODO: Implement play functionality
-  console.log('Playing song:', props.song.name)
+const { addToQueue, currentSong, isPlaying } = usePlayer()
+
+const playSong = async () => {
+  await addToQueue(props.song, true) // Play immediately
 }
 
-const isPlaying = false // TODO: Connect to actual player state
+const isCurrentSong = computed(() => {
+  return currentSong.value?._id === props.song._id
+})
+
+const isPlayingThis = computed(() => {
+  return isCurrentSong.value && isPlaying.value
+})
 
 const formatDuration = (seconds: number) => {
   const minutes = Math.floor(seconds / 60)
@@ -45,15 +43,15 @@ const formatDuration = (seconds: number) => {
 <template>
   <div
     class="songItem"
-    :class="`${isPlaying ? 'active' : 'hover-highlight'}`"
+    :class="`${isPlayingThis ? 'active' : 'hover-highlight'} ${index % 2 === 1 ? 'bg-black/3 dark:bg-white/3' : ''}`"
     @dblclick="playSong()"
     @click="playSong()"
   >
-    <div class="flex justify-start w-full">
-      <p v-if="!isHovering" class="songItem-index" :class="{ 'not_stored': false }">
+    <div class="hidden md:flex justify-start w-full">
+      <p class="songItem-index" :class="{ 'not_stored': false }">
         {{ index + 1 }}
       </p>
-      <button v-else class="p-0 flex justify-center text-muted-foreground hover:text-black dark:hover:text-white hover:scale-105 active:scale-95 active:opacity-80 cursor-pointer" @click.stop="">
+      <button class="songItem-play" @click.stop="">
         <Icon name="material-symbols:play-arrow-rounded" size="24" />
       </button>
     </div>
@@ -81,14 +79,14 @@ const formatDuration = (seconds: number) => {
         </Button>
       </div>
     </div>
-    <div class="flex justify-start">
+    <div class="hidden md:flex justify-start">
       <span class="songItem-album">{{ song.album.name }}</span>
     </div>
     
     <Button variant="ghost" size="sm" class="size-8 p-0" @click.stop="">
       <Icon name="lucide:heart" size="16" class="text-muted-foreground" />
     </Button>
-    <div class="hidden lg:flex w-full items-center justify-end pr-1 text-muted-foreground">
+    <div class="hidden md:flex w-full items-center justify-end pr-1 text-muted-foreground">
       {{ formatDuration(song.duration) }}
     </div>
   </div>
@@ -97,8 +95,8 @@ const formatDuration = (seconds: number) => {
 <style scoped>
 @reference '../../assets/css/tailwind.css';
 .songItem {
-  @apply flex lg:grid items-center text-left text-sm py-1.5 px-4 relative hover:bg-black/5 dark:hover:bg-white/15
-  lg:rounded-md;
+  @apply flex md:grid items-center text-left text-sm py-1.5 px-4 relative hover:bg-black/10 dark:hover:bg-white/15
+  md:rounded-md;
   border-color: transparent;
   grid-template-columns: [index] 40px [first] minmax(120px, 4fr) [var1] minmax(120px, 3fr) [var2] 40px [last] 50px;
   .song-actions {
@@ -107,6 +105,12 @@ const formatDuration = (seconds: number) => {
   &:hover {
     .song-actions {
       @apply flex;
+    }
+    .songItem-play {
+      @apply flex;
+    }
+    .songItem-index {
+      @apply hidden;
     }
   }
 }
@@ -129,7 +133,7 @@ const formatDuration = (seconds: number) => {
 }
 
 .songItem-album {
-  @apply absolute lg:static lg:opacity-100 !w-auto text-black/80 dark:text-white/80 text-xs;
+  @apply !w-auto text-black/80 dark:text-white/80 text-xs;
 }
 
 .songItem-title {
@@ -142,6 +146,10 @@ const formatDuration = (seconds: number) => {
 
 .songItem-index {
   @apply text-left lg:!px-1.5 lg:ml-0 ml-1 px-1 font-mono;
+}
+
+.songItem-play {
+  @apply p-0 hidden justify-center text-muted-foreground hover:text-black dark:hover:text-white hover:scale-105 active:scale-95 active:opacity-80 cursor-pointer;
 }
 
 .not_stored {

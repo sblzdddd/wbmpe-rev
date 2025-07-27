@@ -1,42 +1,36 @@
 <template>
-  <div :class="paddingClass">
-    <div class="flex flex-col mt-8 mb-16 mx-16">
-      <h1 class="text-2xl font-bold mb-6 inline-flex items-center gap-2">
-        <NuxtLink :to="`/playlists/${id}`">
-          <Button variant="ghost" size="icon">
-            <Icon name="lucide:arrow-left" size="26" />
-          </Button>
-        </NuxtLink>
-        Edit Playlist
-        <NuxtLink :to="`/playlists/${id}`" class="text-primary">
-          {{ playlist.data.value?.data?.name || 'Unknown' }}
-        </NuxtLink>
-      </h1>
-      
-      <TabPages 
-        :tabs="tabsConfig"
-        layout-id="playlist-tab-highlighter"
-        default-tab="general"
-      >
-        <template #general>
-          <Playlist-EditForm />
-        </template>
+  <div class="flex flex-col my-2 lg:my-12 mx-auto w-full" :class="{'lg:!w-[90%]': !open}">
+    <h1 class="text-2xl font-bold mb-6 inline-flex items-center gap-2">
+      <NuxtLink :to="`/playlists/${id}`">
+        <Button variant="ghost" size="icon">
+          <Icon name="lucide:arrow-left" size="26" />
+        </Button>
+      </NuxtLink>
+      Edit Playlist
+      <NuxtLink :to="`/playlists/${id}`" class="text-primary">
+        {{ playlist.data.value?.data?.name || 'Unknown' }}
+      </NuxtLink>
+    </h1>
+    
+    <TabPages 
+      :tabs="tabsConfig"
+      layout-id="playlist-tab-highlighter"
+      default-tab="general"
+    >
+      <template #general>
+        <Playlist-EditForm />
+      </template>
 
-        <template #manage>
-          <div v-if="playlist.data.value?.data?.songList.songs && playlist.data.value?.data?.songList.songs.length > 0" class="flex flex-col">
-            <Playlist-SortItem
-              v-for="(song, index) in playlist.data.value?.data?.songList.songs"
-              :id="index"
-              :key="song._id"
-              :song="song.song"
-              :index="index"
-              :is-hovering="currentHoverIndex === index"
-              @mouseenter="currentHoverIndex = index"
-            />
-          </div>
-        </template>
-      </TabPages>
-    </div>
+      <template #manage>
+        <WindowVirtualizer v-if="playlist.data.value?.data?.songList.songs" v-slot="{ item, index }" :data="playlist.data.value?.data?.songList.songs" :item-size="44" :overscan="10" :ssr-count="10">
+          <Playlist-SortItem
+            :id="item.song._id"
+            :song="item.song"
+            :index="index"
+          />
+        </WindowVirtualizer>
+      </template>
+    </TabPages>
   </div>
 </template>
 
@@ -46,10 +40,14 @@ import type { PlaylistResponse } from '#types/Playlist';
 import { TabPages } from '@/components/ui/tabs';
 import { BACKGROUND } from '@/lib/background_settings';
 import type { SEOData } from '#types/Utils/SEO';
+import { WindowVirtualizer } from '~/components/ui/Virtua';
+import { useSidebar } from '~/components/ui/sidebar';
 
 const seoData = useState<SEOData>('seoData')
 const route = useRoute();
 const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
+
+const { open } = useSidebar();
 
 if (!rawId) {
   throw createError({
@@ -62,10 +60,7 @@ if (!rawId) {
 
 const id = rawId as string;
 
-const { paddingClass } = useContentPadding();
 const { setBackground, resetBackground } = useBackground();
-
-const currentHoverIndex = ref<number>(-1);
 
 const tabsConfig = [
   {

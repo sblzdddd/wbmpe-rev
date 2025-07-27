@@ -57,6 +57,13 @@ export default defineNuxtConfig({
   devtools: { enabled: true, timeline: { enabled: true } },
   css: ['~/assets/css/tailwind.css'],
 
+  // Development server configuration
+  devServer: {
+    host: '0.0.0.0', // Allow external connections
+    port: 3000,
+    https: false // Explicitly disable HTTPS
+  },
+
   vite: {
     plugins: [
       tailwindcss(),
@@ -73,14 +80,16 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     // '@vite-pwa/nuxt',
     'nuxt-auth-utils',
-    'nuxt-security',
-    '@sentry/nuxt/module',
-    '@pinia/nuxt',
+    // 'nuxt-security',
+    // '@sentry/nuxt/module',
     'motion-v/nuxt'
   ],
 
   
   imports: {
+    dirs: [
+      'composables/**'
+    ],
     presets: [
       {
         from: 'animejs',
@@ -95,19 +104,19 @@ export default defineNuxtConfig({
     }
   },
 
-  security: {
-    nonce: true, // Enables HTML nonce support in SSR mode
-    ssg: {
-      meta: true, // Enables CSP as a meta tag in SSG mode
-      hashScripts: true, // Enables CSP hash support for scripts in SSG mode
-      hashStyles: false // Disables CSP hash support for styles in SSG mode (recommended)
-    },
-    headers: {
-      contentSecurityPolicy: {
-        'img-src': ["'self'", 'data:', 'blob:', 'https://avatars.githubusercontent.com', 'https://lh3.googleusercontent.com', 'https://img.paulzzh.com/', 'https://*.music.126.net', process.env.NUXT_IMAGE_ALIYUN_BASE_URL || '']
-      }
-    }
-  },
+  // security: {
+  //   nonce: true, // Enables HTML nonce support in SSR mode
+  //   ssg: {
+  //     meta: true, // Enables CSP as a meta tag in SSG mode
+  //     hashScripts: true, // Enables CSP hash support for scripts in SSG mode
+  //     hashStyles: false // Disables CSP hash support for styles in SSG mode (recommended)
+  //   },
+  //   headers: {
+  //     contentSecurityPolicy: {
+  //       'img-src': ["'self'", 'data:', 'blob:', 'https://avatars.githubusercontent.com', 'https://lh3.googleusercontent.com', 'https://img.paulzzh.com/', 'https://*.music.126.net', process.env.NUXT_IMAGE_ALIYUN_BASE_URL || '']
+  //     }
+  //   }
+  // },
   colorMode: {
     classSuffix: '',
     storage: 'cookie',
@@ -206,12 +215,12 @@ export default defineNuxtConfig({
     componentDir: './app/components/ui',
   },
 
-  sentry: {
-    sourceMapsUploadOptions: {
-      org: 'sblzdddd',
-      project: 'wbmp-rev'
-    }
-  },
+  // sentry: {
+  //   sourceMapsUploadOptions: {
+  //     org: 'sblzdddd',
+  //     project: 'wbmp-rev'
+  //   }
+  // },
 
   sourcemap: {
     client: 'hidden'

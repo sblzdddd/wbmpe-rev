@@ -1,12 +1,7 @@
 
 import type { InternalApi } from 'nitropack'
+import type { ApiError } from '#types/Utils/ApiError'
 
-interface ApiError {
-  data?: {
-    statusCode: number
-    message?: string
-  }
-}
 const loading = ref(false)
 const error = ref<string | null>(null)
 

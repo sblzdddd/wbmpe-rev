@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { DialogType } from "#composables/useDialog"
 
 const colorMode = useColorMode()
 const { openDialog } = useDialog()
@@ -312,9 +311,9 @@ onUnmounted(() => {
       </div>
     </div>
   </div>
-  <Button v-else variant="ghost" size="icon" class="h-8 w-20 mr-2" @click.stop="openDialog?.call(null, DialogType.LOGIN)">
-    <Icon name="lucide:user" size="16" /> 
-    <span class="text-xs mb-0.5">Login</span>
+  <Button v-else variant="ghost" size="icon" class="h-8 md:w-20 pl-2 md:pl-0" @click.stop="openDialog?.call(null, DialogType.LOGIN)">
+    <Icon name="lucide:log-in" size="16" /> 
+    <span class="hidden md:block text-xs mb-0.5">Login</span>
   </Button>
 </template>
 
@@ -328,12 +327,12 @@ onUnmounted(() => {
 
 /* User avatar styles */
 .user-avatar {
-  @apply w-5 h-5 rounded-full hidden lg:flex items-center justify-center overflow-hidden;
+  @apply w-5 h-5 rounded-full hidden md:flex items-center justify-center overflow-hidden;
 }
 
 /* User name styles */
 .user-name {
-  @apply text-xs font-light hidden lg:block;
+  @apply text-xs font-light hidden md:block;
 }
 
 /* User panel toggle styles */

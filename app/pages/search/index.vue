@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import Image from '~/components/Image.vue'
+import type { SEOData } from '#types/Utils/SEO';
+
+const seoData = useState<SEOData>('seoData')
+
+seoData.value.title = 'Search - WBMPE Rev'
+seoData.value.description = 'Search - WBMPE Rev'
+seoData.value.ogTitle = 'Search - WBMPE Rev'
 
 const search = ref('')
 </script>

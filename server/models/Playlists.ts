@@ -44,7 +44,7 @@ const playlistsSchema = new mongoose.Schema({
               { path: 'album', select: 'name coverUrl' }  // add album name (with _id)
             ],
           })
-          .select('-__v -songs._id')   // remote song item object id and playlist versioning
+          .select('-__v')   // remote song item object id and playlist versioning
           .lean();
         
         // Return the playlist with paginated songs
