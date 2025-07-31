@@ -1,10 +1,9 @@
 import type { Song } from '#types/Song'
 import type { InternalApi } from 'nitropack'
 import type { ApiError } from '#types/Utils/ApiError'
-import type { CollectionSongItem } from '~~/server/models/CollectionSongItem'
 
 export type QueueState = {
-  songs: CollectionSongItem[],
+  songs: Song[],
   currentIndex: number,
   currentTime: number
 }
@@ -25,90 +24,166 @@ const defaultQueueState: QueueState | UpdateQueueRequest = {
 
 export const useQueue = () => {
   const { data: queueState } = useNuxtData<InternalApi['/api/user/queue']['get']>('queue')
+  const qState = useState<{new: QueueState, old: QueueState}>('qState', () => ({
+    new: queueState.value || defaultQueueState as QueueState, 
+    old: queueState.value || defaultQueueState as QueueState
+  }))
+
+  // Update new and original queue state
+  const updateQueueState = () => {
+    if (!queueState.value) {
+      console.error('Queue state not found')
+      queueState.value = defaultQueueState as QueueState
+    }
+    qState.value.new = structuredClone(toRaw(queueState.value)) as QueueState
+    qState.value.old = structuredClone(toRaw(queueState.value)) as QueueState
+  }
 
   // Save queue to server
-  const saveQueueToServer = async (newState: QueueState, oldState: QueueState): Promise<UpdateQueueResponse> => {
+  const saveQueueToServer = async (): Promise<UpdateQueueResponse> => {
+    
+    // Helper function to compare song arrays
+    const songsChanged = (newSongs: Song[], oldSongs: Song[]): boolean => {
+      if (newSongs.length !== oldSongs.length) return true;
+      return newSongs.some((song, index) => {
+        const oldSong = oldSongs[index];
+        return !oldSong || song._id !== oldSong._id;
+      });
+    };
+
+    // Build request body with only changed fields
+    const body: {
+      songs?: { songId: string }[];
+      currentIndex?: number;
+      currentTime?: number;
+    } = {};
+    
+    if (songsChanged(qState.value.new.songs, qState.value.old.songs)) {
+      body.songs = qState.value.new.songs.map(song => ({songId: song._id}));
+    }
+    if (qState.value.new.currentIndex !== qState.value.old.currentIndex) body.currentIndex = qState.value.new.currentIndex;
+    if (qState.value.new.currentTime !== qState.value.old.currentTime) body.currentTime = qState.value.new.currentTime;
+
+    console.log('body', body)
+
+    // If nothing changed, return early
+    if (Object.keys(body).length === 0) {
+      return { success: true, message: "No changes to save" };
+    }
     
     const response = await $fetch<UpdateQueueResponse>('/api/user/queue', {
       method: 'PUT',
-      body: {
-        songs: newState.songs.map(song => ({
-          songId: song.song._id,
-        })),
-        currentIndex: newState.currentIndex,
-        currentTime: newState.currentTime
-      },
-      onRequest: () => {
-        queueState.value = newState;
-      },
-      onResponse: () => {
-        refreshNuxtData('queue')
-      },
-      onResponseError: () => {
-        queueState.value = oldState;
-      }
+      body,
+      onRequest: () => {queueState.value = qState.value.new},
+      onResponse: () => refreshNuxtData('queue'),
+      onResponseError: () => {queueState.value = qState.value.old}
     }).catch((err: ApiError) => {
       console.error('Failed to save queue:', err)
-      return undefined
-    }).finally(() => {
-      queueState.value = oldState;
-    });
-    if (!response) {
-      throw new Error('Failed to save queue')
-    }
+      return {success: false, message: 'Failed to save queue' + err}
+    })
     return response
   }
 
   // Add song to queue
   const addToQueue = async (song: Song, playImmediately = false): Promise<UpdateQueueResponse> => {
     console.log('addToQueue', song, playImmediately)
-    const newQueueState = queueState.value || defaultQueueState as QueueState
-    const originalQueueState = queueState.value || defaultQueueState as QueueState
-    console.log('newQueueState', newQueueState, 'originalQueueState', originalQueueState)
+    updateQueueState()
 
-    if (playImmediately || newQueueState.songs.length === 0) {
-      newQueueState.songs.unshift({_id: song._id, song: song})
-      newQueueState.currentIndex = 0
+    // Check if song already exists in queue
+    const existingIndex = qState.value.new.songs.findIndex(queueSong => queueSong._id === song._id)
+    console.log('existingIndex', existingIndex)
+    if (existingIndex !== -1) {
+      // Song already exists in queue
+      if (playImmediately) {
+        console.log('existing song found', existingIndex)
+        // If playing immediately, move to the existing song
+        qState.value.new.currentIndex = existingIndex
+      } else {
+        return { message: 'Song already in queue', success: true }
+      }
     } else {
-      newQueueState.songs.push({_id: song._id, song: song})
+      if (playImmediately || qState.value.new.songs.length === 0) {
+        qState.value.new.songs.unshift(song)
+        qState.value.new.currentIndex = 0
+      } else {
+        qState.value.new.songs.push(song)
+      }
     }
-    console.log('newQueueState', newQueueState, 'originalQueueState', originalQueueState)
-    return await saveQueueToServer(newQueueState, originalQueueState)
+    console.log('qState.value.new', qState.value.new)
+    const response = await saveQueueToServer()
+    if(!response?.success) {
+      console.error('Failed to save queue', response)
+    }
+    return response
   }
 
   // Add multiple songs to queue
-  const addPlaylistToQueue = async (songs: Song[], playImmediately = false): Promise<UpdateQueueResponse> => {
-    const newQueueState = queueState.value || defaultQueueState as QueueState
-    const originalQueueState = queueState.value || defaultQueueState as QueueState
+  const addPlaylistToQueue = async (songs: Song[], playImmediatelyId: string | null = null): Promise<UpdateQueueResponse> => {
+    console.log('addPlaylistToQueue', songs, playImmediatelyId)
+    updateQueueState()
 
-    if (playImmediately || newQueueState.songs.length === 0) {
-      newQueueState.songs = [...songs.map(song => ({_id: song._id, song: song})), ...newQueueState.songs]
-      newQueueState.currentIndex = 0
-    } else {
-      newQueueState.songs.push(...songs.map(song => ({_id: song._id, song: song})))
+    // Filter out songs that already exist in the queue
+    const existingSongIds = new Set(qState.value.new.songs.map(queueSong => queueSong._id))
+    const newSongs = songs.filter(song => !existingSongIds.has(song._id))
+    
+    // If no new songs to add, return early
+    if (newSongs.length === 0) {
+      console.log('all songs already in queue')
+      if (playImmediatelyId) {
+        const index = qState.value.new.songs.findIndex(song => song._id === playImmediatelyId)
+        if (index !== -1) {
+          qState.value.new.currentIndex = index
+          return await saveQueueToServer()
+        }
+        console.error('Could not find song to play while all songs present')
+        return { message: 'Could not find song to play while all songs present', success: false }
+      }
+      return { message: 'All songs already in queue', success: true }
     }
 
-    return await saveQueueToServer(newQueueState, originalQueueState)
+    if (playImmediatelyId !== null || qState.value.new.songs.length === 0) {
+      qState.value.new.songs = [...newSongs, ...qState.value.new.songs]
+      qState.value.new.currentIndex = playImmediatelyId ? qState.value.new.songs.findIndex(song => song._id === playImmediatelyId) : 0
+      if (qState.value.new.currentIndex === -1) {
+        qState.value.new.currentIndex = 0
+      }
+    } else {
+      qState.value.new.songs.push(...newSongs)
+    }
+
+    return await saveQueueToServer()
   }
 
   // Jump to specific queue position
   const setCurrentIndex = async (index: number): Promise<UpdateQueueResponse> => {
-    const newQueueState = queueState.value || defaultQueueState as QueueState
-    const originalQueueState = queueState.value || defaultQueueState as QueueState
+    updateQueueState()
 
-    if (index < 0 || index >= newQueueState.songs.length) return { message: 'Index out of bounds', success: false }
+    if (index < 0 || index >= qState.value.new.songs.length) return { message: 'Index out of bounds', success: false }
     
-    newQueueState.currentIndex = index
-    return await saveQueueToServer(newQueueState, originalQueueState)
+    qState.value.new.currentIndex = index
+    return await saveQueueToServer()
   }
-  const getCurrentSong = () => {
-    return queueState.value?.songs[queueState.value?.currentIndex || 0]?.song || null
-  }
+  const getCurrentSong = () => queueState.value?.songs[queueState.value?.currentIndex || 0] || null
 
   // Get next song index
-  const getNextIndex = (repeat: 'none' | 'one' | 'all' = 'none') => {
+  const getNextIndex = (repeat: 'none' | 'one' | 'all' = 'none', isRandom = false) => {
     if (!queueState.value) return
     if (queueState.value?.songs.length === 0) return -1
+
+    if (isRandom) {
+      // For random mode, pick a random index different from current
+      const availableIndices = Array.from(
+        { length: queueState.value.songs.length }, 
+        (_, i) => i
+      ).filter(i => i !== (queueState.value?.currentIndex ?? 0))
+      
+      if (availableIndices.length === 0) {
+        // Only one song, stay on current
+        return queueState.value?.currentIndex ?? 0
+      }
+      
+      return availableIndices[Math.floor(Math.random() * availableIndices.length)]
+    }
 
     let nextIndex = queueState.value.currentIndex + 1
 
@@ -126,13 +201,30 @@ export const useQueue = () => {
   }
 
   // Get previous song index
-  const getPreviousIndex = (repeat: 'none' | 'one' | 'all' = 'none') => {
+  const getPreviousIndex = (repeat: 'none' | 'one' | 'all' = 'none', isRandom = false) => {
     if (!queueState.value) return
     if (queueState.value?.songs.length === 0) return -1
 
+    if (isRandom) {
+      // For random mode, pick a random index different from current
+      const availableIndices = Array.from(
+        { length: queueState.value.songs.length }, 
+        (_, i) => i
+      ).filter(i => i !== (queueState.value?.currentIndex ?? 0))
+      
+      if (availableIndices.length === 0) {
+        // Only one song, stay on current
+        return queueState.value?.currentIndex ?? 0
+      }
+      
+      return availableIndices[Math.floor(Math.random() * availableIndices.length)]
+    }
+
     let prevIndex = queueState.value.currentIndex - 1
 
-    if (prevIndex < 0) {
+    if (repeat === 'one') {
+      prevIndex = queueState.value.currentIndex
+    } else if (prevIndex < 0) {
       if (repeat === 'all') {
         prevIndex = queueState.value.songs.length - 1
       } else {
@@ -144,67 +236,64 @@ export const useQueue = () => {
   }
 
   // Move to next song in queue
-  const moveToNext = async (repeat: 'none' | 'one' | 'all' = 'none'): Promise<UpdateQueueResponse> => {
+  const moveToNext = async (repeat: 'none' | 'one' | 'all' = 'none', isRandom = false): Promise<UpdateQueueResponse> => {
     if (!queueState.value) { throw new Error('Queue state not found')}
-    const nextIndex = getNextIndex(repeat)
+    const nextIndex = getNextIndex(repeat, isRandom)
     if (nextIndex === -1) return { message: 'No next song', success: false }
 
-    const newQueueState = queueState.value || defaultQueueState as QueueState
-    const originalQueueState = queueState.value || defaultQueueState as QueueState
+    updateQueueState()
 
     if (nextIndex === undefined) { throw new Error('Next index not found')}
-    newQueueState.currentIndex = nextIndex
-    return await saveQueueToServer(newQueueState, originalQueueState)
+    qState.value.new.currentIndex = nextIndex
+    return await saveQueueToServer()
   }
 
   // Move to previous song in queue
-  const moveToPrevious = async (repeat: 'none' | 'one' | 'all' = 'none'): Promise<UpdateQueueResponse> => {
+  const moveToPrevious = async (repeat: 'none' | 'one' | 'all' = 'none', isRandom = false): Promise<UpdateQueueResponse> => {
     if (!queueState.value) throw new Error('Queue state not found')
-    const prevIndex = getPreviousIndex(repeat)
+    const prevIndex = getPreviousIndex(repeat, isRandom)
     if (prevIndex === -1) return { message: 'No previous song', success: false }
 
-    const newQueueState = queueState.value || defaultQueueState as QueueState
-    const originalQueueState = queueState.value || defaultQueueState as QueueState
+    updateQueueState()
 
     if (prevIndex === undefined) { throw new Error('Previous index not found')}
-    newQueueState.currentIndex = prevIndex
-    return await saveQueueToServer(newQueueState, originalQueueState)
+    qState.value.new.currentIndex = prevIndex
+    return await saveQueueToServer()
   }
 
   // Remove song from queue
   const removeFromQueue = async (queueId: string): Promise<{ needsNewSong: boolean, newSong: Song | null }> => {
     if (!queueState.value) { throw new Error('Queue state not found')}
-    const newQueueState = queueState.value || defaultQueueState as QueueState
-    const originalQueueState = queueState.value || defaultQueueState as QueueState
+    updateQueueState()
 
-    const index = newQueueState.songs.findIndex(song => song._id === queueId)
+    const index = qState.value.new.songs.findIndex(song => song._id === queueId)
     if (index === -1) return { needsNewSong: false, newSong: null }
 
-    newQueueState.songs.splice(index, 1)
+    qState.value.new.songs.splice(index, 1)
 
     const needsNewSong = false
     let newSong: Song | null = null
 
     // Adjust current index if necessary
-    if (index < newQueueState.currentIndex) {
-      newQueueState.currentIndex--
-    } else if (index === newQueueState.currentIndex) {
+    if (index < qState.value.new.currentIndex) {
+      qState.value.new.currentIndex--
+    } else if (index === qState.value.new.currentIndex) {
       // Current song was removed, need to play next or stop
       console.log('needsNewSong', needsNewSong)
       
-      if (newQueueState.songs.length > 0) {
-        if (newQueueState.currentIndex >= newQueueState.songs.length) {
-          newQueueState.currentIndex = 0
+      if (qState.value.new.songs.length > 0) {
+        if (qState.value.new.currentIndex >= qState.value.new.songs.length) {
+          qState.value.new.currentIndex = 0
         }
-        newSong = newQueueState.songs[newQueueState.currentIndex]?.song || null
+        newSong = qState.value.new.songs[qState.value.new.currentIndex] || null
       } else {
         // No more songs in queue
-        newQueueState.currentIndex = -1
+        qState.value.new.currentIndex = -1
         newSong = null
       }
     }
 
-    await saveQueueToServer(newQueueState, originalQueueState)
+    await saveQueueToServer()
     
     return { needsNewSong, newSong: newSong as Song | null }
   }
@@ -212,12 +301,12 @@ export const useQueue = () => {
   // Clear queue
   const clearQueue = async (): Promise<UpdateQueueResponse> => {
     if (!queueState.value) { throw new Error('Queue state not found')}
-    const newQueueState = queueState.value || defaultQueueState as QueueState
-    const originalQueueState = queueState.value || defaultQueueState as QueueState
+    updateQueueState()
 
-    newQueueState.songs = []
-    newQueueState.currentIndex = -1
-    await saveQueueToServer(newQueueState, originalQueueState)
+    qState.value.new.songs = []
+    qState.value.new.currentIndex = 0
+    qState.value.new.currentTime = 0
+    await saveQueueToServer()
     return { message: 'Queue cleared', success: true }
   }
 
@@ -227,11 +316,10 @@ export const useQueue = () => {
     if (!queueState.value) { throw new Error('Queue state not found')}
     if (import.meta.server) return { message: 'Queue state not found', success: false }
 
-    const newQueueState = queueState.value || defaultQueueState as QueueState
-    const originalQueueState = queueState.value || defaultQueueState as QueueState
+    updateQueueState()
 
-    newQueueState.currentTime = currentTime
-    await saveQueueToServer(newQueueState, originalQueueState)
+    qState.value.new.currentTime = currentTime
+    await saveQueueToServer()
     return { message: 'Queue saved', success: true }
   }
 
@@ -259,7 +347,7 @@ export const useQueue = () => {
     currentSong: computed(() => {
       const index = queueState.value?.currentIndex ?? 0
       return index >= 0 && index < (queueState.value?.songs?.length ?? 0) 
-        ? queueState.value?.songs[index] 
+        ? queueState.value?.songs[index] as Song | null
         : null
     }),
     queue: computed(() => queueState.value?.songs || []),

@@ -11,6 +11,9 @@ const createForm = ref({
   isPublic: true
 });
 
+// Add ref for the selected cover file
+const selectedCoverFile = ref<File | null>(null);
+
 const createError = ref('');
 const isCreating = ref(false);
 
@@ -34,13 +37,24 @@ const validateForm = () => {
   return true;
 };
 
+// Handle file selection from CoverUpload component
+const handleFileSelected = (file: File | null) => {
+  selectedCoverFile.value = file;
+};
+
 const handleSubmit = async (event: Event) => {
   event.preventDefault();
   
   if (!validateForm()) return;
   
   try {
-    const response = await useUserPlaylist().createPlaylist(createForm.value.name, createForm.value.description, createForm.value.isPublic, createForm.value.coverUrl);
+    // Pass the actual file object instead of coverUrl
+    const response = await useUserPlaylist().createPlaylist(
+      createForm.value.name, 
+      createForm.value.description, 
+      createForm.value.isPublic, 
+      selectedCoverFile.value // Pass the File object instead of coverUrl string
+    );
     await navigateTo(`/playlists/${response._id}`);
   } catch (err: unknown) {
     console.error('Failed to create playlist:', err);
@@ -69,6 +83,7 @@ watch(() => createForm.value.coverUrl, (newVal) => {
     <Playlist-CoverUpload 
       v-model="createForm.coverUrl" 
       mode="preview"
+      @file-selected="handleFileSelected"
     />
 
     <!-- Playlist Name -->

@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { useDialog, DialogType } from '~/composables/useDialog'
 
 const props = defineProps<{
   isPage?: boolean

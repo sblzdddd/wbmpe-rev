@@ -1,11 +1,22 @@
-const isOnTop = ref(true)
+
 
 export const useScrollBar = () => {
-  if(typeof window === 'undefined') return {isOnTop: true}
+  const scrollbarState = useState('scrollbarState', () => ({
+    isOnTop: false,
+    scrollY: 0,
+  }))
+  if(typeof window === 'undefined') return {isOnTop: computed(() => scrollbarState.value.isOnTop), scrollY: computed(() => scrollbarState.value.scrollY)}
   window.addEventListener('scroll', () => {
-    isOnTop.value = window.scrollY === 0
+    scrollbarState.value.isOnTop = window.scrollY === 0
+    scrollbarState.value.scrollY = window.scrollY
   })
+  if(import.meta.client) {
+    onMounted(() => {
+      scrollbarState.value.isOnTop = window.scrollY === 0
+    })
+  }
   return {
-    isOnTop,
+    isOnTop: computed(() => scrollbarState.value.isOnTop),
+    scrollY: computed(() => scrollbarState.value.scrollY),
   }
 }

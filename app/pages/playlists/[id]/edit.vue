@@ -42,6 +42,7 @@ import { BACKGROUND } from '@/lib/background_settings';
 import type { SEOData } from '#types/Utils/SEO';
 import { WindowVirtualizer } from '~/components/ui/Virtua';
 import { useSidebar } from '~/components/ui/sidebar';
+import { fallbackPlaylist } from '~/lib/fallback_data';
 
 const seoData = useState<SEOData>('seoData')
 const route = useRoute();
@@ -96,31 +97,7 @@ watch([() => route.query.tab], async ([newTab]) => {
 
 const { error } = await useFetch(`/api/playlist/${id}`, {
   key: `playlist-page-${id}`,
-  default: () => ({
-    data: {
-      _id: "",
-      playlistType: "playlist" as const,
-      coverUrl: "",
-      name: "",
-      description: "",
-      createdAt: "",
-      updatedAt: "",
-      isPublic: false,
-      owner: {
-        _id: "",
-        userName: "",
-        nickName: "",
-        avatarUrl: "",
-        bio: ""
-      },
-      songList: {
-        length: 0,
-        page: 0,
-        max_page: 0,
-        songs: []
-      }
-    }
-  }),
+  default: () => (fallbackPlaylist),
   onResponse({ response }) {
     // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {

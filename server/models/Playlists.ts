@@ -46,7 +46,10 @@ const playlistsSchema = new mongoose.Schema({
           })
           .select('-__v')   // remote song item object id and playlist versioning
           .lean();
-        
+        if(playlist?.playlistType === 'favorites' && playlist.songs.length > 0) {
+          // revert the list
+          (playlist as any).songs = [...playlist.songs].reverse()
+        }
         // Return the playlist with paginated songs
         const result = JSON.parse(JSON.stringify(playlist)) as unknown as FullPlaylist;
         

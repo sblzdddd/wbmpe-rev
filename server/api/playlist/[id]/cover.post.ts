@@ -83,6 +83,8 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    console.log(buffer.subarray(0, 3).toString('hex'))
+
     // Validate image type based on buffer
     const isValidImage = buffer.length > 0 && (
       buffer.subarray(0, 3).toString('hex') === 'ffd8ff' || // JPEG

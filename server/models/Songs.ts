@@ -12,7 +12,7 @@ export type SongDocument = {
   src: string;
 } & TimeMetadata;
 
-const songSchema = new mongoose.Schema({
+export const SongSchema = new mongoose.Schema({
   addedBy: {type: ObjectId, ref: 'Users', required: false},   // userId
   album: {type: ObjectId, ref: 'Albums', required: true},   // albumId
   artists: [{type: ObjectId, ref: 'Artists'}],   // artistIds
@@ -23,5 +23,5 @@ const songSchema = new mongoose.Schema({
   timestamps: true, // Adds createdAt and updatedAt fields
 });
 
-const Songs = mongoose.model('Songs', songSchema);
+const Songs = mongoose.model('Songs', SongSchema);
 export default Songs;

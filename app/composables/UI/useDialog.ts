@@ -2,16 +2,18 @@
 export enum DialogType {
   LOGIN = 'login',
   RESET_PASSWORD = 'reset-password',
+  QUEUE = 'queue',
 }
 
 const open = ref<Record<DialogType, boolean>>({
   [DialogType.LOGIN]: false,
   [DialogType.RESET_PASSWORD]: false,
+  [DialogType.QUEUE]: false,
 })
 
 export const useDialog = () => {
   if(typeof window === 'undefined') return {
-    open: computed(() => ({ [DialogType.LOGIN]: false, [DialogType.RESET_PASSWORD]: false })),
+    open: computed(() => ({ [DialogType.LOGIN]: false, [DialogType.RESET_PASSWORD]: false, [DialogType.QUEUE]: false })),
     changeOpen: () => {},
     openDialog: () => {},
     closeDialog: () => {},

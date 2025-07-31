@@ -8,6 +8,7 @@ import type { RoutePath } from "#types/Utils/RoutePath"
 
 const router = useRouter();
 const backgroundStore = useBackground();
+const { paddingClass } = useContentPadding()
 
 const route = useRoute();
 
@@ -30,7 +31,6 @@ defineOptions({
 });
 
 
-
 </script>
 <template>
   <SidebarProvider>
@@ -42,8 +42,8 @@ defineOptions({
     <AppBackdrop />
     <Nav-AppSidebar />
     <SidebarInset class="bg-transparent">
-      <Nav-AppHeader :container-attrs="{class: 'w-full md:w-9/10 lg:w-[calc(80%+80px)] mx-auto px-4 md:px-0'}" />
-      <div class="w-full md:w-9/10 lg:w-[calc(80%+80px)] mx-auto">
+      <Nav-AppHeader :container-attrs="{class: 'w-full px-4 md:px-0 ' + paddingClass}" />
+      <div class="w-full mb-10" :class="paddingClass">
         <slot />
       </div>
     </SidebarInset>

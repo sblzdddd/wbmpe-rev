@@ -57,11 +57,12 @@ export default defineNuxtConfig({
   devtools: { enabled: true, timeline: { enabled: true } },
   css: ['~/assets/css/tailwind.css'],
 
-  // Development server configuration
+  
   devServer: {
-    host: '0.0.0.0', // Allow external connections
-    port: 3000,
-    https: false // Explicitly disable HTTPS
+    https: {
+      key: './.cert/server.key',
+      cert: './.cert/server.crt'
+    }
   },
 
   vite: {

@@ -1,14 +1,13 @@
 <script setup lang="ts">
+import { fallbackUserInfo } from '~/lib/fallback_data';
 
 const colorMode = useColorMode()
 const { openDialog } = useDialog()
-
+const { isOnTop } = useScrollBar()
 
 await useFetch('/api/user/me', {
   key: 'userInfo',
-  default: () => ({
-    user: undefined
-  })
+  default: () => (fallbackUserInfo)
 })
 const { user, logout } = useAuth()
 
@@ -32,9 +31,11 @@ const toggleUserPanel = () => {
 let timeline: Timeline;
 
 const primaryBGDark = "648dfeff"
-const contentBGDark = "02061880"
-const primaryBGLight = "0f172bff"
+const contentBGDark = "02061870"
+const contentBGDarkSolid = "0c1327"
+const primaryBGLight = "5f87f8ff"
 const contentBGLight = "ffffff80"
+const contentBGLightSolid = "ffffff"
 
 const spring = createSpring({
   stiffness: 200,
@@ -58,13 +59,35 @@ const getRelativePosition = (element: HTMLElement, container: HTMLElement) => {
 
 watch(() => colorMode.value, () => {
   if (showUserPanel.value) {
+    if(isOnTop.value) {
+      animate(".user-panel-backdrop", {
+        backgroundColor: `#${colorMode.value == "dark" ? contentBGDark : contentBGLight}`,
+        duration: 200,
+      })
+    } else {
+      animate(".user-panel-backdrop", {
+        backgroundColor: `#${colorMode.value == "dark" ? contentBGDarkSolid : contentBGLightSolid}`,
+        duration: 200,
+      })
+    }
+  } else {
+    animate(".user-panel-backdrop", {
+      backgroundColor: `#${colorMode.value == "dark" ? primaryBGDark : primaryBGLight}`,
+      duration: 200,
+    })
+  }
+})
+
+watch(() => isOnTop.value, () => {
+  if (!showUserPanel.value) return;
+  if(isOnTop.value) {
     animate(".user-panel-backdrop", {
       backgroundColor: `#${colorMode.value == "dark" ? contentBGDark : contentBGLight}`,
       duration: 200,
     })
   } else {
     animate(".user-panel-backdrop", {
-      backgroundColor: `#${colorMode.value == "dark" ? primaryBGDark : primaryBGLight}`,
+      backgroundColor: `#${colorMode.value == "dark" ? contentBGDarkSolid : contentBGLightSolid}`,
       duration: 200,
     })
   }
@@ -142,7 +165,7 @@ const openUserPanel = async () => {
     height: `${backdropEndHeight}px`,
     right: "0px",
     top: "0px",
-    backgroundColor: `#${colorMode.value == "dark" ? contentBGDark: contentBGLight}`,
+    backgroundColor: `#${isOnTop.value ? colorMode.value == "dark" ? contentBGDark: contentBGLight : colorMode.value == "dark" ? contentBGDarkSolid: contentBGLightSolid}`,
     ease: spring,
   }, 0)
   timeline.add(userPanelAvatar, {
@@ -280,7 +303,7 @@ onUnmounted(() => {
       <div class="user-panel-toggle" :class="{'user-panel-toggle--interactive': !showUserPanel}" @click="onToggleClicked">
         <Icon name="lucide:align-justify" size="14" class="user-panel-toggle-icon" :class="{'user-panel-toggle-icon--light-open': colorMode.value == 'light' && showUserPanel}" />
         <div v-show="showUserPanelDOM" class="user-panel-root">
-          <div class="user-panel-backdrop" />
+          <div class="user-panel-backdrop" :class="{'backdrop-blur-md': isOnTop}" />
           <div class="user-panel-header">
             <Widget-ThemeSwitcher class="rounded-full" />
             <Button variant="ghost" size="icon" class="w-7 h-7 rounded-full" @click.stop="toggleUserPanel">
@@ -359,7 +382,7 @@ onUnmounted(() => {
 
 /* User panel backdrop styles */
 .user-panel-backdrop {
-  @apply absolute top-0 right-0 z-0 rounded-[17px] backdrop-blur-lg shadow-2xl;
+  @apply absolute top-0 right-0 z-0 rounded-[17px] shadow-2xl;
 }
 
 /* User panel header styles */

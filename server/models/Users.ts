@@ -3,10 +3,11 @@ import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import Playlists, { type PlaylistDocument } from "./Playlists";
 import UserAuth from "./UserAuth";
-import { imageUploadService } from "../utils/imageUpload";
+// import { imageUploadService } from "../utils/imageUpload";
 import type { SimpleUser, UserInfo, UserPlaylists } from "../../types/User/User";
-import CollectionSongItemSchema, { type CollectionSongItem } from "./CollectionSongItem";
 import BakaLogger from "../utils/BakaLogger";
+import type { Song } from "#types/Song";
+import Songs from "./Songs";
 
 const logger = BakaLogger.child({
   service: 'Users'
@@ -22,7 +23,7 @@ export type UserDocument = {
   favorites: ObjectId;
   recent: ObjectId;
   currentQueue?: {
-    songs: CollectionSongItem[];
+    songs: Song[];
     currentIndex: number;
     currentTime: number;
   };
@@ -37,7 +38,7 @@ const userSchema = new mongoose.Schema({
   favorites: {type: ObjectId, ref: 'Playlists', required: true},
   recent: {type: ObjectId, ref: 'Playlists', required: true},
   currentQueue: {
-    songs: [CollectionSongItemSchema],
+    songs: [{type: ObjectId, ref: 'Songs'}],
     currentIndex: {type: Number, default: 0},
     currentTime: {type: Number, default: 0}
   }
@@ -142,6 +143,35 @@ const userSchema = new mongoose.Schema({
 
       return userObject as UserInfo;
     },
+    getFavoriteSongIds: async (userId: string): Promise<string[]> => {
+      const user = await Users.findById(userId)
+        .populate({path: 'favorites', select: 'songs'})
+        .select('favorites')
+        .lean();
+// oxlint-disable-next-line no-unsafe-optional-chaining
+      return (user?.favorites as {songs: {song: string}[]}).songs.map((song: any) => song.song) ?? [];
+    },
+    setFavoriteSong: async (userId: ObjectId, songId: ObjectId, set: boolean): Promise<void> => {
+      const user = await Users.findById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      const playlist = await Playlists.findById(user.favorites);
+      if (!playlist) {
+        throw new Error('Playlist not found');
+      }
+      const song = await Songs.findById(songId);
+      if (!song) {
+        throw new Error('Song not found');
+      }
+      if (set) {
+        playlist.songs.push({ song: song._id });
+      } else {
+        playlist.songs.pull({ song: songId });
+      }
+       console.log(playlist.songs.length)
+      await playlist.save();
+    },
     getUserPlaylists: async (userId: string): Promise<UserPlaylists> => {
       const userObj = await Users.getUserInfo(userId) as UserInfo;
       return {
@@ -193,27 +223,27 @@ const userSchema = new mongoose.Schema({
       // Delete the playlist from database
       await Playlists.findByIdAndDelete(playlistId);
     },
-    updateUserQueue: async (userId: string, songs: { songId: string }[], currentIndex: number, currentTime: number): Promise<void> => {
+    updateUserQueue: async (userId: string, songs: { songId: string }[] | null, currentIndex: number | null, currentTime: number | null): Promise<void> => {
       console.log('updateUserQueue', userId, songs, currentIndex, currentTime);
       const user = await Users.findById(userId);
       if (!user) {
         throw new Error('User not found');
       }
 
+      const userObj = user as unknown as UserDocument;
+
       user.currentQueue = {
-        songs: songs.map(item => ({
-          song: item.songId,
-        })),
-        currentIndex,
-        currentTime
+        songs: songs?.map(song => song.songId) ?? userObj.currentQueue?.songs ?? [],
+        currentIndex: currentIndex ?? userObj.currentQueue?.currentIndex ?? 0,
+        currentTime: currentTime ?? userObj.currentQueue?.currentTime ?? 0
       };
 
       await user.save();
     },
-    getUserQueue: async (userId: string): Promise<{ songs: CollectionSongItem[]; currentIndex: number; currentTime: number }> => {
+    getUserQueue: async (userId: string): Promise<{ songs: Song[]; currentIndex: number; currentTime: number }> => {
       const user = await Users.findById(userId)
         .populate({
-          path: 'currentQueue.songs.song',
+          path: 'currentQueue.songs',
           populate: [
             { path: 'album', select: 'name coverUrl' },
             { path: 'artists', select: 'name' }

@@ -19,10 +19,10 @@
         <p class="text-xs md:text-sm text-muted-foreground">{{ playlist.data.value?.data?.description }}</p>
         <div class="grow" />
         <div class="hidden md:flex items-start justify-start gap-2">
-          <Button variant="default" @click="playAll" :disabled="!songs || songs.length === 0">
+          <Button variant="default" :disabled="!songs || songs.length === 0" @click="playAll">
             <Icon name="lucide:play" class="w-4 h-4" /> Play All
           </Button>
-          <Button variant="outline" @click="addAllToQueue" :disabled="!songs || songs.length === 0">
+          <Button variant="outline" :disabled="!songs || songs.length === 0" @click="addAllToQueue">
             <Icon name="lucide:plus" class="w-4 h-4" /> Add to queue
           </Button>
           <NuxtLink :to="`/playlists/${id}/edit`">
@@ -32,10 +32,10 @@
       </div>
     </div>
     <div class="flex md:hidden items-start justify-start gap-2 px-4 w-full">
-      <Button variant="default" class="grow" @click="playAll" :disabled="!songs || songs.length === 0">
+      <Button variant="default" class="grow" :disabled="!songs || songs.length === 0" @click="playAll">
         <Icon name="lucide:play" class="w-4 h-4" /> Play All
       </Button>
-      <Button variant="outline" class="grow" @click="addAllToQueue" :disabled="!songs || songs.length === 0">
+      <Button variant="outline" class="grow" :disabled="!songs || songs.length === 0" @click="addAllToQueue">
         <Icon name="lucide:plus" class="w-4 h-4" /> Add to queue
       </Button>
       <NuxtLink class="grow" :to="`/playlists/${id}/edit`">
@@ -55,7 +55,7 @@
           <p class="block md:hidden">Sort by: </p>
           <Tooltip>
             <TooltipTrigger class="h-full">
-              <div class="sort-item" :class="{'active': sortMode === 'index', 'asc': sortOrder === 'asc'}" @click="sortMode = 'index'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'">No. <Icon class="block md:hidden" v-if="sortMode === 'index'" name="lucide:chevron-down" /></div>
+              <div class="sort-item" :class="{'active': sortMode === 'index', 'asc': sortOrder === 'asc'}" @click="sortMode = 'index'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'">No. <Icon v-if="sortMode === 'index'" class="block md:hidden" name="lucide:chevron-down" /></div>
             </TooltipTrigger>
             <TooltipContent>
               <p>Sort by index {{ sortOrder === 'asc' ? 'descending' : 'ascending' }}</p>
@@ -71,6 +71,7 @@
             <SongItem
               :song="item"
               :index="index"
+              @play="playSong"
             />
           </WindowVirtualizer>
         </div>
@@ -93,7 +94,6 @@
 
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import type { PlaylistResponse } from '#types/Playlist';
 import SongItem from '@/components/Widget/SongItem.vue';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TabPages } from '@/components/ui/tabs';
@@ -101,6 +101,8 @@ import { BACKGROUND } from '@/lib/background_settings';
 import type { SEOData } from '#types/Utils/SEO';
 import { useSidebar } from '~/components/ui/sidebar';
 import { WindowVirtualizer } from '~/components/ui/Virtua/'
+import { fallbackPlaylist } from '~/lib/fallback_data';
+
 
 const seoData = useState<SEOData>('seoData')
 const route = useRoute();
@@ -113,27 +115,8 @@ const { setBackground, resetBackground } = useBackground();
 const sortMode = ref<'index' | 'title' | 'album' | 'duration' | 'like'>('index');
 const sortOrder = ref<'asc' | 'desc'>('asc');
 
-const songs = computed(() => playlist.data.value?.data?.songList.songs.map((song, index) => ({
-  ...song.song,
-  id: song._id,
-  index: index
-})) || []);
-
-// Player functionality
-const { addPlaylistToQueue } = usePlayer()
-
-const playAll = async () => {
-  if (songs.value && songs.value.length > 0) {
-    await addPlaylistToQueue(songs.value, true) // Play immediately
-  }
-}
-
-const addAllToQueue = async () => {
-  if (songs.value && songs.value.length > 0) {
-    await addPlaylistToQueue(songs.value, false) // Add to queue
-  }
-}
-
+// Use the playlist page composable for common functionality
+const { playlist, songs, playAll, addAllToQueue, playSong } = usePlaylistPage(id);
 
 // Tab configuration
 const tabsConfig = computed(() => [
@@ -184,31 +167,7 @@ watch([() => sortMode.value, () => sortOrder.value], async ([newSortMode, newSor
 
 const { error } = await useFetch(`/api/playlist/${id}`, {
   key: `playlist-page-${id}`,
-  default: () => ({
-    data: {
-      _id: "",
-      playlistType: "playlist" as const,
-      coverUrl: "",
-      name: "",
-      description: "",
-      createdAt: "",
-      updatedAt: "",
-      isPublic: false,
-      owner: {
-        _id: "",
-        userName: "",
-        nickName: "",
-        avatarUrl: "",
-        bio: ""
-      },
-      songList: {
-        length: 0,
-        page: 0,
-        max_page: 0,
-        songs: []
-      }
-    }
-  }),
+  default: () => (fallbackPlaylist),
   onResponse({ response }) {
     // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {
@@ -217,8 +176,6 @@ const { error } = await useFetch(`/api/playlist/${id}`, {
     seoData.value.title = `${response._data.data.name || 'Playlist'}`
   }
 })
-
-const playlist = useNuxtData<PlaylistResponse>(`playlist-page-${id}`);
 
 if (error.value) {
   // Check if there's browser history to go back
@@ -253,6 +210,17 @@ watch(() => playlist.data.value, (newVal) => {
 </script>
 <style scoped>
 @reference '../../../assets/css/tailwind.css';
+.playlist-header {
+  @apply sticky top-[65.17px] z-10 py-4;
+  &:before {
+    @apply content-[''] absolute inset-0 z-5;
+  }
+  &.float-top {
+    &:before {
+      @apply bg-background/50 backdrop-blur-sm;
+    }
+  }
+}
 .list-header {
   @apply grid pl-4 text-xs h-8 items-center mb-4 border-b border-black/10 dark:border-white/10;
   grid-template-columns: [index] 38px [first] minmax(120px, 4fr) [var1] minmax(120px, 3fr) [var2] 40px [last] 60px;

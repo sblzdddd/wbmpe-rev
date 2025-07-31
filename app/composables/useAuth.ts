@@ -18,6 +18,7 @@ export const useAuth = () => {
       onResponse: () => {
         refreshNuxtData('userInfo')
         refreshNuxtData('userPlaylists')
+        refreshNuxtData('userFavorites')
       },
     }).catch((err: ApiError) => {
       error.value = JSON.stringify([{path: [err.data?.statusCode || 'Error'], message: err.data?.message || 'Login failed'}])
@@ -40,6 +41,7 @@ export const useAuth = () => {
       onResponse: () => {
         refreshNuxtData('userInfo')
         refreshNuxtData('userPlaylists')
+        refreshNuxtData('userFavorites')
       },
       onResponseError: () => {
         user.data.value = originalUserData;
@@ -63,6 +65,7 @@ export const useAuth = () => {
       onResponse: () => {
         refreshNuxtData('userInfo')
         refreshNuxtData('userPlaylists')
+        refreshNuxtData('userFavorites')
       },
     }).catch((err: ApiError) => {
       error.value = err.data?.message || 'Registration failed'

@@ -4,16 +4,19 @@
   <NuxtLayout>
     <NuxtPage/>
   </NuxtLayout>
+  <Player-QueueSidebar />
 </template>
 <script setup lang="ts">
+import { fallbackQueue } from './lib/fallback_data';
 
 await useFetch('/api/user/queue', {
   key: 'queue',
-  default: () => ({
-    songs: [],
-    currentTime: 0,
-    currentIndex: -1
-  })
+  default: () => (fallbackQueue)
+})
+
+await useFetch('/api/user/favorites', {
+  key: 'userFavorites',
+  default: () => []
 })
 
 const seoData = useState('seoData', () => ({

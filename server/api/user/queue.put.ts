@@ -13,36 +13,38 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event);
   const { songs, currentIndex, currentTime } = body;
 
-  // Validate input
-  if (!Array.isArray(songs)) {
+  // Validate input only if provided
+  if (songs !== undefined && songs !== null && !Array.isArray(songs)) {
     throw createError({
       statusCode: 400,
       statusMessage: "Queue must be an array"
     });
   }
 
-  if (typeof currentIndex !== 'number' || currentIndex < 0) {
+  if (currentIndex !== undefined && currentIndex !== null && currentIndex < 0) {
     throw createError({
       statusCode: 400,
       statusMessage: "Current index must be a non-negative number"
     });
   }
 
-  if (typeof currentTime !== 'number' || currentTime < 0) {
+  if (currentTime !== undefined && currentTime !== null && currentTime < 0) {
     throw createError({
       statusCode: 400,
       statusMessage: "Current time must be a non-negative number"
     });
   }
 
-  // Validate queue items
-  for (const item of songs) {
-    console.log('item', item);
-    if (!item.songId) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: "Each queue item must have songId"
-      });
+  // Validate queue items only if songs array is provided
+  if (songs && Array.isArray(songs)) {
+    for (const item of songs) {
+      console.log('item', item);
+      if (!item.songId) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: "Each queue item must have songId"
+        });
+      }
     }
   }
 

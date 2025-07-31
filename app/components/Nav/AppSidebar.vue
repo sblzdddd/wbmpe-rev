@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { SidebarProps } from '#shadcn/sidebar'
+import { fallbackUserPlaylists } from '~/lib/fallback_data';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
 })
+
 
 // This is sample data.
 const data = {
@@ -65,11 +67,7 @@ const data = {
 
 await useFetch('/api/user/playlists', {
   key: 'userPlaylists',
-  default: () => ({
-    playlists: {
-      createdPlaylists: []
-    }
-  })
+  default: () => (fallbackUserPlaylists)
 })
 
 const { playlists } = useUserPlaylist()
@@ -83,7 +81,12 @@ const { playlists } = useUserPlaylist()
     </SidebarHeader>
     <SidebarContent class="gap-0">
       <NavMain :data="data.navMain" />
-      <NavPlaylist v-if="playlists.data.value?.createdPlaylists" :data="playlists.data.value.createdPlaylists" />
+      <NavPlaylist 
+        v-if="playlists.data.value" 
+        :data="playlists.data.value.createdPlaylists" 
+        :favorites="playlists.data.value.favorites ?? null" 
+        :recent="playlists.data.value.recent ?? null" 
+      />
     </SidebarContent>
     <!-- <SidebarFooter>
       <NavUser :user="data.user" />

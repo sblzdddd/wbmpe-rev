@@ -26,7 +26,7 @@ const { isOnTop } = useScrollBar()
   <div
     v-if="collapsible === 'none'"
     data-slot="sidebar"
-    :class="cn('bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col', props.class)"
+    :class="cn('bg-sidebar/80 backdrop-blur-sm text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col', props.class)"
     v-bind="$attrs"
   >
     <slot />
@@ -38,7 +38,7 @@ const { isOnTop } = useScrollBar()
       data-slot="sidebar"
       data-mobile="true"
       :side="side"
-      class="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+      class="bg-sidebar/80 backdrop-blur-sm text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
       :style="{
         '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
       }"
@@ -91,7 +91,7 @@ const { isOnTop } = useScrollBar()
       <div
         data-sidebar="sidebar"
         class="group-data-[state=open]:bg-sidebar transition-all duration-200 group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
-        :class="isOnTop ? 'bg-transparent' : 'bg-sidebar'"
+        :class="isOnTop ? 'bg-transparent' : 'bg-sidebar/80 backdrop-blur-sm'"
       >
         <slot />
       </div>

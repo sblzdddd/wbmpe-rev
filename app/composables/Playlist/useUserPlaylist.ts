@@ -3,7 +3,7 @@ import type { InternalApi } from 'nitropack';
 export const useUserPlaylist = () => {
   const playlists = useNuxtData<InternalApi['/api/user/playlists']['get']>('userPlaylists');
   
-  const createPlaylist = async (name: string, description: string, isPublic: boolean, coverUrl: string) => {
+  const createPlaylist = async (name: string, description: string, isPublic: boolean, coverFile: File | null) => {
     try {
       // Create FormData for multipart upload
       const formData = new FormData();
@@ -12,8 +12,8 @@ export const useUserPlaylist = () => {
       formData.append('isPublic', isPublic.toString());
       
       // Add image file if selected
-      if (coverUrl) {
-        formData.append('cover', coverUrl);
+      if (coverFile) {
+        formData.append('cover', coverFile);
       }
 
       // Submit to API
@@ -24,7 +24,7 @@ export const useUserPlaylist = () => {
           playlists.data.value?.createdPlaylists.push({
             _id: '',
             name,
-            coverUrl,
+            coverUrl: '', // Will be updated when response comes back
             isPublic,
           })
         },

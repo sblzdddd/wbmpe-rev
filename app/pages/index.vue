@@ -4,6 +4,7 @@ import TopRecommend from "~/components/Home/TopRecommendCard.vue";
 import RecommendItem from '~/components/Home/RecommendRow.vue'
 import type { HomeResponse } from '~~/types/Home'
 import type { SEOData } from '#types/Utils/SEO';
+import { fallbackHomePage } from '~/lib/fallback_data';
 
 const seoData = useState<SEOData>('seoData')
 
@@ -13,14 +14,7 @@ seoData.value.ogTitle = 'Home - WBMPE Rev'
 
 const { data: homeData } = await useFetch<HomeResponse>('/api/home', {
   key: 'home-page',
-  default: () => ({
-    data: {
-      banner: [],
-      card_recom: [],
-      recom: [],
-      categories: []
-    }
-  })
+  default: () => (fallbackHomePage)
 })
 
 </script>

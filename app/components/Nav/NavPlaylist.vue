@@ -5,6 +5,8 @@ import type { PlaylistMeta } from "#types/Playlist"
 
 defineProps<{
   data: PlaylistMeta[]
+  favorites: PlaylistMeta | null
+  recent: PlaylistMeta | null
 }>()
 
 const { isOnTop } = useScrollBar()
@@ -17,6 +19,68 @@ const routePath = useState<RoutePath>('routePath')
   <SidebarGroup>
     <SidebarGroupLabel class="pl-4 mb-2 group-data-[collapsible=icon]:hidden">My Playlists</SidebarGroupLabel>
     <SidebarMenu>
+      <SidebarMenuItem v-if="favorites">
+        <NuxtLink :to="`/playlists/${favorites._id}`">
+          <ContextMenu>
+            <ContextMenuTrigger>
+              <SidebarMenuButton
+                :id="`/playlists/${favorites._id}`" class="menu-btn group-data-[collapsible=icon]:p-2.5!" :tooltip="favorites.name" 
+                :class="{'nav-active': `/playlists/${favorites._id}` == routePath.next}">
+                <Icon name="lucide:heart" size="17" class="nav-icon group-data-[collapsible=icon]:p-2.5! shrink-0" />
+                <span class="ml-2 text-sm">Favorites</span>
+              </SidebarMenuButton>
+            </ContextMenuTrigger>
+            <ContextMenuContent
+              class="w-48 rounded-lg"
+              side="bottom"
+              align="end"
+            >
+              <ContextMenuItem>
+                <Icon name="lucide:share" size="17" class="text-muted-foreground" />
+                <span>Share Playlist</span>
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+          <motion.div 
+            v-if="routePath.next.includes(`/playlists/${favorites._id}`)" 
+            layout
+            layout-id="nav-highlighter" 
+            class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
+            :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
+          />
+        </NuxtLink>
+      </SidebarMenuItem>
+      <SidebarMenuItem v-if="recent">
+        <NuxtLink :to="`/playlists/${recent._id}`">
+          <ContextMenu>
+            <ContextMenuTrigger>
+              <SidebarMenuButton
+                :id="`/playlists/${recent._id}`" class="menu-btn group-data-[collapsible=icon]:p-2.5!" :tooltip="recent.name" 
+                :class="{'nav-active': `/playlists/${recent._id}` == routePath.next}">
+                <Icon name="lucide:clock" size="17" class="nav-icon group-data-[collapsible=icon]:p-2.5! shrink-0" />
+                <span class="ml-2 text-sm">Recent</span>
+              </SidebarMenuButton>
+            </ContextMenuTrigger>
+            <ContextMenuContent
+              class="w-48 rounded-lg"
+              side="bottom"
+              align="end"
+            >
+              <ContextMenuItem>
+                <Icon name="lucide:share" size="17" class="text-muted-foreground" />
+                <span>Share Playlist</span>
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+          <motion.div 
+            v-if="routePath.next.includes(`/playlists/${recent._id}`)" 
+            layout
+            layout-id="nav-highlighter" 
+            class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
+            :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"
+          />
+        </NuxtLink>
+      </SidebarMenuItem>
       <SidebarMenuItem v-for="item in data" :key="item.name">
         <NuxtLink :to="`/playlists/${item._id}`">
           <ContextMenu>

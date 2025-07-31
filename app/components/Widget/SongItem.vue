@@ -18,11 +18,21 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits({
+  'play': (index:number, song: Song) => song
+})
 
-const { addToQueue, currentSong, isPlaying } = usePlayer()
+const { isPlaying, pause } = usePlayer()
+const { currentSong } = useQueue()
+
+const { isFavorite, toggleFavorite } = useFavorites()
 
 const playSong = async () => {
-  await addToQueue(props.song, true) // Play immediately
+  emit('play', props.index, props.song)
+}
+
+const pauseSong = async () => {
+  await pause()
 }
 
 const isCurrentSong = computed(() => {
@@ -45,14 +55,16 @@ const formatDuration = (seconds: number) => {
     class="songItem"
     :class="`${isPlayingThis ? 'active' : 'hover-highlight'} ${index % 2 === 1 ? 'bg-black/3 dark:bg-white/3' : ''}`"
     @dblclick="playSong()"
-    @click="playSong()"
   >
     <div class="hidden md:flex justify-start w-full">
       <p class="songItem-index" :class="{ 'not_stored': false }">
         {{ index + 1 }}
       </p>
-      <button class="songItem-play" @click.stop="">
+      <button v-if="!isPlaying.value || !isPlayingThis" class="songItem-play" @click.stop="playSong()">
         <Icon name="material-symbols:play-arrow-rounded" size="24" />
+      </button>
+      <button v-else class="songItem-pause" @click.stop="pauseSong()">
+        <Icon name="material-symbols:pause-rounded" size="24" />
       </button>
     </div>
     <div class="flex gap-2 items-center grow pr-6">
@@ -84,7 +96,11 @@ const formatDuration = (seconds: number) => {
     </div>
     
     <Button variant="ghost" size="sm" class="size-8 p-0" @click.stop="">
-      <Icon name="lucide:heart" size="16" class="text-muted-foreground" />
+      <Icon 
+        :name="isFavorite(song._id) ? 'material-symbols-light:favorite-rounded' : 'material-symbols-light:favorite-outline-rounded'" 
+        size="18" :class="isFavorite(song._id) ? 'text-red-500' : 'text-muted-foreground'" 
+        @click.stop="toggleFavorite(song._id)"
+      />
     </Button>
     <div class="hidden md:flex w-full items-center justify-end pr-1 text-muted-foreground">
       {{ formatDuration(song.duration) }}
@@ -95,31 +111,40 @@ const formatDuration = (seconds: number) => {
 <style scoped>
 @reference '../../assets/css/tailwind.css';
 .songItem {
-  @apply flex md:grid items-center text-left text-sm py-1.5 px-4 relative hover:bg-black/10 dark:hover:bg-white/15
+  @apply flex md:grid items-center text-left text-sm py-1.5 px-4 relative
   md:rounded-md;
   border-color: transparent;
   grid-template-columns: [index] 40px [first] minmax(120px, 4fr) [var1] minmax(120px, 3fr) [var2] 40px [last] 50px;
   .song-actions {
     @apply hidden items-center justify-center;
   }
+  &.hover-highlight {
+    @apply hover:bg-black/10 dark:hover:bg-white/15;
+  }
   &:hover {
     .song-actions {
       @apply flex;
     }
-    .songItem-play {
+    .songItem-play, .songItem-pause {
       @apply flex;
     }
     .songItem-index {
       @apply hidden;
     }
   }
-}
+  &.active {
+    @apply md:border-l-2 border-primary bg-primary/20 text-primary transition-[background-color] duration-200;
+    &:hover {
+      @apply bg-primary/30;
+    }
+    .songItem-play, .songItem-pause {
+      @apply flex text-primary;
+    }
+    .songItem-index {
+      @apply hidden;
+    }
+  }
 
-.songItem.active {
-  @apply border-l-2;
-  border-color: rgba(var(--v-theme-primary)) !important;
-  color: rgba(var(--v-theme-primary)) !important;
-  background-color: rgba(var(--v-theme-primary), 0.1) !important;
 }
 
 .songItem-title, .songItem-artist, .songItem-album {
@@ -148,7 +173,7 @@ const formatDuration = (seconds: number) => {
   @apply text-left lg:!px-1.5 lg:ml-0 ml-1 px-1 font-mono;
 }
 
-.songItem-play {
+.songItem-play, .songItem-pause {
   @apply p-0 hidden justify-center text-muted-foreground hover:text-black dark:hover:text-white hover:scale-105 active:scale-95 active:opacity-80 cursor-pointer;
 }
 

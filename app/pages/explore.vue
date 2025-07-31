@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ExploreResponse } from '#types/explore'
 import type { SEOData } from '#types/Utils/SEO';
+import { fallbackExplorePage } from '~/lib/fallback_data';
 
 const seoData = useState<SEOData>('seoData')
 
@@ -10,12 +11,7 @@ seoData.value.ogTitle = 'Explore - WBMPE Rev'
 
 const { data: exploreData } = await useFetch<ExploreResponse>('/api/explore', {
   key: 'explore-page',
-  default: () => ({
-    data: {
-      categories: [],
-      items: []
-    }
-  })
+  default: () => (fallbackExplorePage)
 })
 
 const route = useRoute()

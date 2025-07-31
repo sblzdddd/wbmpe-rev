@@ -22,6 +22,8 @@ const emit = defineEmits<Emits>()
 const uploadError = ref('')
 const isUploading = ref(false)
 const selectedFile = ref<File | null>(null)
+// Add internal preview URL for display purposes only
+const previewUrl = ref('')
 
 const handleImageUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
@@ -48,8 +50,10 @@ const handleImageUpload = async (event: Event) => {
   emit('fileSelected', file)
 
   if (props.mode === 'preview') {
-    // Create preview URL for create mode
-    emit('update:modelValue', URL.createObjectURL(file))
+    // In preview mode, create preview URL for display only
+    // Don't emit blob URL as modelValue - keep it empty for server submission
+    previewUrl.value = URL.createObjectURL(file)
+    // Don't emit modelValue for preview mode to avoid blob URL being submitted
   } else if (props.mode === 'upload' && props.playlistId) {
     // Upload to server for edit mode
     isUploading.value = true
@@ -95,6 +99,7 @@ const removeCover = async () => {
   } else {
     // For preview mode, just remove locally
     emit('update:modelValue', '');
+    previewUrl.value = '';
   }
   
   selectedFile.value = null;
@@ -108,6 +113,21 @@ const removeCover = async () => {
     fileInput.value = '';
   }
 }
+
+// Cleanup blob URL when component unmounts to prevent memory leaks
+onUnmounted(() => {
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+})
+
+// Computed property to determine what image URL to display
+const displayImageUrl = computed(() => {
+  if (props.mode === 'preview') {
+    return previewUrl.value || props.modelValue
+  }
+  return props.modelValue
+})
 </script>
 
 <template>
@@ -119,8 +139,8 @@ const removeCover = async () => {
     <div class="flex gap-4 items-start">
       <div class="relative">
         <Image 
-          v-if="modelValue" 
-          :src="modelValue"
+          v-if="displayImageUrl" 
+          :src="displayImageUrl"
           class="size-32 rounded-sm object-cover overflow-hidden"
           alt="Playlist cover preview" 
         />
@@ -128,7 +148,7 @@ const removeCover = async () => {
           <Icon name="lucide:image" size="32" class="text-muted-foreground/50" />
         </div>
         <Button 
-          v-if="modelValue"
+          v-if="displayImageUrl"
           type="button" 
           variant="outline" 
           size="sm" 
