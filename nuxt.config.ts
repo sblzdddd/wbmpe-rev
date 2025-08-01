@@ -58,12 +58,12 @@ export default defineNuxtConfig({
   css: ['~/assets/css/tailwind.css'],
 
   
-  devServer: {
-    https: {
-      key: './.cert/server.key',
-      cert: './.cert/server.crt'
-    }
-  },
+  // devServer: {
+    // https: {
+    //   key: './.cert/server.key',
+    //   cert: './.cert/server.crt'
+    // }
+  // },
 
   vite: {
     plugins: [

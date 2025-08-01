@@ -31,6 +31,13 @@ const playlistsSchema = new mongoose.Schema({
   methods: {
   },
   statics: {
+    async hasReadAccess(playlistId: string, userId: string|null): Promise<boolean> {
+      const playlist = await Playlists.findById(playlistId)
+      if(!playlist) {
+        return false
+      }
+      return playlist.owner?.toString() === userId || playlist.isPublic
+    },
     async findFullPlaylistData(playlistId: string): Promise<FullPlaylist> {
       try {
         // Get the playlist data

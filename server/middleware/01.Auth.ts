@@ -19,17 +19,15 @@ export default defineEventHandler(async (event) => {
     url.pathname.startsWith(path) && methods.includes(event.method || 'GET')
   )
   
-  // Skip authentication check for non-protected endpoints
-  if (!requiresAuth) {
-    return
-  }
-  
   try {
     // Get current user from session
     const session = await getUserSession(event)
     // Check if session has actual user data (not just a session ID)
     // A valid session should have id, pwdHash
     if (!session || !session.userId || typeof session.userId !== 'string' || (!session.pwdHash && !session.githubId && !session.googleId)) {
+      if(!requiresAuth) {
+        return
+      }
       logger.warn('Auth middleware: Invalid session data:', session)
       await clearUserSession(event)
       throw createError({
@@ -49,6 +47,9 @@ export default defineEventHandler(async (event) => {
     }
 
     if(!userAuth) {
+      if(!requiresAuth) {
+        return
+      }
       logger.warn('Auth middleware: User auth not found in database')
       // clear the invalid session
       await clearUserSession(event)

@@ -1,6 +1,9 @@
+import Playlists from "~~/server/models/Playlists";
 import Users from "../../../models/Users";
 import { isValidObjectIdString } from '../../../utils/IdValidator';
 import { ObjectId } from "mongodb";
+import BakaLogger from "~~/server/utils/BakaLogger";
+import { imageUploadService } from "~~/server/utils/imageUpload";
 
 const logger = BakaLogger.child({ service: 'PlaylistDeleteAPI' });
 
@@ -24,12 +27,25 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Playlist not found'
       });
     }
+    const playlist = await Playlists.findById(playlistId);
+    if (!playlist) {
+      logger.warn(`PlaylistDeleteAPI: Playlist ${playlistId} not found`);
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Playlist not found'
+      });
+    }
 
     logger.info(`PlaylistDeleteAPI: Deleting playlist ${playlistId}`);
 
-    // Use the Users model static method to delete playlist
-    // This handles ownership verification, cover cleanup, and user array updates
     try {
+      if (playlist.coverUrl) {
+        try {
+          await imageUploadService.deleteImage(playlist.coverUrl);
+        } catch (error) {
+          logger.warn('PlaylistDeleteAPI: Failed to delete playlist cover image', { error });
+        }
+      }
       await Users.deletePlaylist(new ObjectId(userId), new ObjectId(playlistId));
     } catch (modelError: unknown) {
       // Handle specific errors from the Users.deletePlaylist method

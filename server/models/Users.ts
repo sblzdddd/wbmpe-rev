@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import Playlists, { type PlaylistDocument } from "./Playlists";
 import UserAuth from "./UserAuth";
-// import { imageUploadService } from "../utils/imageUpload";
 import type { SimpleUser, UserInfo, UserPlaylists } from "../../types/User/User";
 import BakaLogger from "../utils/BakaLogger";
 import type { Song } from "#types/Song";
@@ -206,16 +205,6 @@ const userSchema = new mongoose.Schema({
         throw new Error('Unauthorized: User does not own this playlist');
       }
 
-      // Delete cover image if it exists
-      if (playlist.coverUrl) {
-        try {
-          await imageUploadService.deleteImage(playlist.coverUrl);
-        } catch (error) {
-          console.warn('Failed to delete playlist cover image:', error);
-          // Continue with deletion even if cover deletion fails
-        }
-      }
-
       // Remove playlist from user's createdPlaylists array
       user.createdPlaylists.pull(playlistId);
       await user.save();
@@ -224,7 +213,6 @@ const userSchema = new mongoose.Schema({
       await Playlists.findByIdAndDelete(playlistId);
     },
     updateUserQueue: async (userId: string, songs: { songId: string }[] | null, currentIndex: number | null, currentTime: number | null): Promise<void> => {
-      console.log('updateUserQueue', userId, songs, currentIndex, currentTime);
       const user = await Users.findById(userId);
       if (!user) {
         throw new Error('User not found');

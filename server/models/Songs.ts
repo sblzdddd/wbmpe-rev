@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 import type { TimeMetadata } from '../../types/time_metadata';
+import type { Song } from '#types/Song';
 
 export type SongDocument = {
   _id: ObjectId;
@@ -21,6 +22,12 @@ export const SongSchema = new mongoose.Schema({
   src: {type: String, required: true, unique: true},
 }, {
   timestamps: true, // Adds createdAt and updatedAt fields
+  statics: {
+    getMultipleFullInfo: async function(srcs: string[]): Promise<Song[]> {
+      const songs = await this.find({ src: { $in: srcs } }).populate('album').populate('artists').lean()
+      return songs as unknown as Song[]
+    } 
+  }
 });
 
 const Songs = mongoose.model('Songs', SongSchema);

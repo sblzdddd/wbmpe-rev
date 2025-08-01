@@ -81,15 +81,19 @@ export const usePlayer = () => {
     }
   }
 
-  const playSong = async (song: Song) => {
+  const playSong = async (song: Song, restartIfSameSong = false) => {
     try {
       playerState.value.isLoading = true
 
       // Check if it's the same song - if so, just restart playback
       if (playerState.value.currentSong?._id === song._id && audioSource.value) {
         console.log('Same song detected, restarting playback from beginning')
-        audio.seek(0) // Reset to beginning
-        await audio.play(audioSource.value, 0) // Start playing from beginning
+        if(restartIfSameSong) {
+          audio.seek(0) // Reset to beginning
+          await audio.play(audioSource.value, 0) // Start playing from beginning
+        } else {
+          audio.unPause()
+        }
         playerState.value.isLoading = false
         return
       }
@@ -137,7 +141,7 @@ export const usePlayer = () => {
     if (!result?.success) { throw new Error(result?.message || 'Next song not found')}
     const song = getCurrentSong()
     if (!song) { throw new Error('Next song not found')}
-    await playSong(song)
+    await playSong(song, true)
   }
 
   // Previous song
@@ -147,7 +151,7 @@ export const usePlayer = () => {
     if (!result?.success) { throw new Error(result?.message || 'Previous song not found')}
     const song = getCurrentSong()
     if (!song) { throw new Error('Previous song not found')}
-    await playSong(song)
+    await playSong(song, true)
   }
 
   // Toggle play mode: queue -> repeat -> repeat-one -> random -> queue
@@ -160,8 +164,8 @@ export const usePlayer = () => {
 
 
   // Remove song from queue
-  const removeFromQueue = async (queueId: string) => {
-    const { needsNewSong, newSong } = await queueRemoveFromQueue(queueId)
+  const removeFromQueue = async (queueIds: string[]) => {
+    const { needsNewSong, newSong } = await queueRemoveFromQueue(queueIds)
     
     if (needsNewSong) {
       if (newSong) {

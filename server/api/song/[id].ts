@@ -53,7 +53,6 @@ defineRouteMeta({
               artists: { type: 'array', items: { $ref: '#/components/schemas/SimpleArtist' } },
               album: { $ref: '#/components/schemas/SimpleAlbum' },
               duration: { type: 'number' },
-              isFavourite: { type: 'boolean' },
               createdAt: { type: 'string', format: 'date-time', description: 'Creation timestamp' },
               updatedAt: { type: 'string', format: 'date-time', description: 'Last update timestamp' }
             }

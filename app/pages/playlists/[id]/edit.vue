@@ -36,13 +36,13 @@
 
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import type { PlaylistResponse } from '#types/Playlist';
 import { TabPages } from '@/components/ui/tabs';
 import { BACKGROUND } from '@/lib/background_settings';
 import type { SEOData } from '#types/Utils/SEO';
 import { WindowVirtualizer } from '~/components/ui/Virtua';
 import { useSidebar } from '~/components/ui/sidebar';
-import { fallbackPlaylist } from '~/lib/fallback_data';
+import type { InternalApi } from 'nitropack';
+import type { PlaylistResponse } from '#types/Playlist';
 
 const seoData = useState<SEOData>('seoData')
 const route = useRoute();
@@ -95,9 +95,8 @@ watch([() => route.query.tab], async ([newTab]) => {
   isUpdatingFromRoute.value = false;
 }, {deep: true, immediate: true})
 
-const { error } = await useFetch(`/api/playlist/${id}`, {
+const { error, refresh: refreshFetch } = await useFetch(`/api/playlist/${id}`, {
   key: `playlist-page-${id}`,
-  default: () => (fallbackPlaylist),
   onResponse({ response }) {
     // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {
@@ -106,8 +105,6 @@ const { error } = await useFetch(`/api/playlist/${id}`, {
     seoData.value.title = `Edit Playlist ${response._data.data.name || 'Unknown'}`
   }
 })
-
-const playlist = useNuxtData<PlaylistResponse>(`playlist-page-${id}`);
 
 if (error.value) {
   // Check if there's browser history to go back
@@ -124,14 +121,39 @@ if (error.value) {
   }
 }
 
+const playlist = useNuxtData<PlaylistResponse>(`playlist-page-${rawId}`);
+const user = useNuxtData<InternalApi['/api/user/me']['get']>('userInfo')
+
 // Keep the watcher as fallback for client-side updates
-watch(() => playlist.data.value, (newVal) => {
-  seoData.value.title = `Edit Playlist ${newVal?.data?.name || 'Unknown'}`
-  if(newVal?.data?.coverUrl) {
-    setBackground(newVal.data.coverUrl, BACKGROUND.playlist_edit);
+watch(() => playlist.data.value, (value) => {
+  const playlistData = value?.data
+  if(!playlistData) {
+    refreshFetch()
+    return
   }
-  else if (newVal?.data?.songList.songs && newVal?.data?.songList.songs.length > 0) {
-    setBackground(newVal?.data?.songList.songs[0]?.song.album.coverUrl || "", BACKGROUND.playlist_edit);
+  if(playlistData?.playlistType !== 'playlist') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Forbidden",
+      message: "You are not allowed to edit system playlists",
+      fatal: true
+    })
+  }
+  console.log('not allowed to edit', playlistData?.owner._id, user.data.value?._id)
+  if(playlistData?.owner._id !== user.data.value?._id) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Forbidden",
+      message: "You are not allowed to edit this playlist",
+      fatal: true
+    })
+  }
+  seoData.value.title = `Edit Playlist ${playlistData?.name || 'Unknown'}`
+  if(playlistData?.coverUrl) {
+    setBackground(playlistData.coverUrl, BACKGROUND.playlist_edit);
+  }
+  else if (playlistData?.songList.songs && playlistData?.songList.songs.length > 0) {
+    setBackground(playlistData?.songList.songs[0]?.song.album.coverUrl || "", BACKGROUND.playlist_edit);
   } else {
     console.log('resetting background')
     resetBackground();  

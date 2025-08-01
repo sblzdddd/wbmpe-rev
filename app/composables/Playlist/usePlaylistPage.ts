@@ -9,6 +9,11 @@ export const usePlaylistPage = (playlistId: string | string[] | undefined) => {
   // Get playlist data from Nuxt data cache
   const playlist = useNuxtData<PlaylistResponse>(`playlist-page-${playlistId}`);
   
+  // Function to refresh playlist data
+  const refreshPlaylist = async () => {
+    await refreshCookie(`playlist-page-${playlistId}`);
+  };
+  
   // Transform playlist songs into a format suitable for the player
   const songs = computed(() => 
     playlist.data.value?.data?.songList.songs.map((song, index) => ({
@@ -61,6 +66,7 @@ export const usePlaylistPage = (playlistId: string | string[] | undefined) => {
     playAll,
     addAllToQueue,
     playSong,
-    playSongById
+    playSongById,
+    refreshPlaylist
   };
 };

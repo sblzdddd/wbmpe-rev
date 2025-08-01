@@ -261,41 +261,69 @@ export const useQueue = () => {
     return await saveQueueToServer()
   }
 
-  // Remove song from queue
-  const removeFromQueue = async (queueId: string): Promise<{ needsNewSong: boolean, newSong: Song | null }> => {
+  // Remove songs from queue (supports single or multiple IDs)
+  const removeFromQueue = async (queueIds: string | string[]): Promise<{ needsNewSong: boolean, newSong: Song | null }> => {
     if (!queueState.value) { throw new Error('Queue state not found')}
     updateQueueState()
 
-    const index = qState.value.new.songs.findIndex(song => song._id === queueId)
-    if (index === -1) return { needsNewSong: false, newSong: null }
+    // Normalize input to array
+    const idsToRemove = Array.isArray(queueIds) ? queueIds : [queueIds]
+    
+    // Find all indices to remove, sorted in descending order for safe removal
+    const indicesToRemove = idsToRemove
+      .map(id => qState.value.new.songs.findIndex(song => song._id === id))
+      .filter(index => index !== -1)
+      .sort((a, b) => b - a) // Sort descending to remove from end first
 
-    qState.value.new.songs.splice(index, 1)
+    if (indicesToRemove.length === 0) {
+      return { needsNewSong: false, newSong: null }
+    }
 
-    const needsNewSong = false
+    const originalCurrentIndex = qState.value.new.currentIndex
+    let needsNewSong = false
     let newSong: Song | null = null
 
-    // Adjust current index if necessary
-    if (index < qState.value.new.currentIndex) {
-      qState.value.new.currentIndex--
-    } else if (index === qState.value.new.currentIndex) {
+    // Check if current song will be removed
+    const currentSongWillBeRemoved = indicesToRemove.includes(originalCurrentIndex)
+
+    // Remove songs from end to beginning to avoid index shifting issues
+    for (const index of indicesToRemove) {
+      qState.value.new.songs.splice(index, 1)
+    }
+
+    // Adjust current index based on how many songs were removed before it
+    let indexAdjustment = 0
+    for (const removedIndex of indicesToRemove) {
+      if (removedIndex < originalCurrentIndex) {
+        indexAdjustment++
+      }
+    }
+
+    if (currentSongWillBeRemoved) {
       // Current song was removed, need to play next or stop
-      console.log('needsNewSong', needsNewSong)
+      needsNewSong = true
       
       if (qState.value.new.songs.length > 0) {
-        if (qState.value.new.currentIndex >= qState.value.new.songs.length) {
-          qState.value.new.currentIndex = 0
+        // Try to stay at the same position, or go to beginning if at end
+        let newCurrentIndex = originalCurrentIndex - indexAdjustment
+        if (newCurrentIndex >= qState.value.new.songs.length) {
+          newCurrentIndex = 0
         }
-        newSong = qState.value.new.songs[qState.value.new.currentIndex] || null
+        qState.value.new.currentIndex = newCurrentIndex
+        newSong = qState.value.new.songs[newCurrentIndex] || null
       } else {
         // No more songs in queue
         qState.value.new.currentIndex = -1
         newSong = null
       }
+    } else {
+      // Current song not removed, just adjust the index
+      qState.value.new.currentIndex = originalCurrentIndex - indexAdjustment
     }
 
     await saveQueueToServer()
     
-    return { needsNewSong, newSong: newSong as Song | null }
+    return { needsNewSong, newSong }
   }
 
   // Clear queue

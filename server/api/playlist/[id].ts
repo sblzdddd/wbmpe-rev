@@ -16,6 +16,16 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Playlist not found'
       })
     }
+
+    const hasReadAccess = await Playlists.hasReadAccess(playlistId, event.context.user?.id)
+    if(!hasReadAccess) {
+      logger.warn('PlaylistAPI: Unauthorized access attempt', {playlistId})
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'You are not allowed to access this playlist'
+      })
+    }
+
     logger.info('PlaylistAPI: Getting playlist data', {playlistId})
 
     // Get pagination parameters from query

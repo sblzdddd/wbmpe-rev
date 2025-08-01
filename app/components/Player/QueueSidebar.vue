@@ -1,10 +1,70 @@
 <script setup lang="ts">
 import { VList } from '~/components/ui/Virtua'
+import type { Song } from '#types/Song'
+import { useDebounceFn } from '@vueuse/core'
 
 const { open, changeOpen } = useDialog()
 const { clearQueue, playQueueIndex, removeFromQueue } = usePlayer()
 const { queue, currentIndex, hasQueue } = useQueue()
 const { isPlaying } = useAudio()
+
+// Track items being removed for optimistic UI updates
+const removingItems = ref<Set<string>>(new Set())
+const pendingRemovals = ref<Set<string>>(new Set())
+
+// Debounced removal function
+const debouncedRemove = useDebounceFn(async () => {
+  if (pendingRemovals.value.size === 0) return
+  
+  // Process all pending removals in a single batch
+  const itemsToRemove = Array.from(pendingRemovals.value)
+  pendingRemovals.value.clear()
+  
+  try {
+    // Use the new batch removal function
+    await removeFromQueue(itemsToRemove)
+    
+    // Clear all removing items on successful removal
+    for (const itemId of itemsToRemove) {
+      removingItems.value.delete(itemId)
+    }
+  } catch (error) {
+    console.error('Failed to remove items from queue:', error)
+    
+    // Remove from removing items even on error to prevent permanent hidden state
+    for (const itemId of itemsToRemove) {
+      removingItems.value.delete(itemId)
+    }
+  }
+}, 500) // 500ms debounce
+
+// Optimistic removal handler
+const handleRemoveFromQueue = (itemId: string) => {
+  // Immediately hide the item in the UI
+  removingItems.value.add(itemId)
+  
+  // Add to pending removals
+  pendingRemovals.value.add(itemId)
+  
+  // Trigger debounced removal
+  debouncedRemove()
+}
+
+// Filter queue to hide removing items
+const filteredQueue = computed(() => {
+  return queue.value.filter(item => !removingItems.value.has(item._id))
+})
+
+// Helper function to get original queue index from item ID
+const getOriginalIndex = (itemId: string) => {
+  return queue.value.findIndex(item => item._id === itemId)
+}
+
+// Helper function to check if an item in filtered queue is currently playing
+const isCurrentlyPlaying = (item: Song) => {
+  const originalIndex = getOriginalIndex(item._id)
+  return originalIndex === currentIndex.value && isPlaying.value
+}
 
 watch(() => hasQueue.value, (newVal) => {
   console.log('hasQueue', newVal)
@@ -20,7 +80,7 @@ watch(() => hasQueue.value, (newVal) => {
       <SheetHeader class="pt-3 pb-0 pr-10 gap-0 flex flex-row items-center justify-between">
         <div class="flex items-center gap-2">
           <SheetTitle>Queue </SheetTitle>
-          <SheetDescription>({{ queue.length }} songs)</SheetDescription>
+          <SheetDescription>({{ filteredQueue.length }} songs)</SheetDescription>
         </div>
         <Button 
           variant="ghost" 
@@ -34,12 +94,12 @@ watch(() => hasQueue.value, (newVal) => {
       <div class="queue-list overflow-y-auto h-full">
         <VList 
           v-slot="{ item, index }"
-          :data="queue"
+          :data="filteredQueue"
         >
-          <div :class="{ 'bg-muted/40': index % 2 === 0 }" class="queue-item flex items-center gap-3 p-2 hover:bg-muted cursor-pointer" @click="playQueueIndex(index)">
+          <div :class="{ 'bg-muted/40': index % 2 === 0 }" class="queue-item flex items-center gap-3 p-2 hover:bg-muted cursor-pointer" @click="playQueueIndex(getOriginalIndex(item._id))">
             <div class="queue-index w-6 text-xs text-muted-foreground text-center">
               <Icon 
-                v-if="index === currentIndex && isPlaying" 
+                v-if="isCurrentlyPlaying(item)" 
                 name="lucide:play" 
                 size="12" 
                 class="text-primary" 
@@ -58,7 +118,7 @@ watch(() => hasQueue.value, (newVal) => {
             <div v-else class="w-8 h-8 bg-muted rounded flex-shrink-0" />
             
             <div class="song-info min-w-0 flex-1">
-              <p class="text-sm truncate" :class="{ 'text-primary': index === currentIndex }">
+              <p class="text-sm truncate" :class="{ 'text-primary': getOriginalIndex(item._id) === currentIndex }">
                 {{ item.name }}
               </p>
               <p class="text-xs text-muted-foreground truncate">
@@ -72,7 +132,7 @@ watch(() => hasQueue.value, (newVal) => {
               variant="ghost" 
               size="sm" 
               class="w-6 h-6 p-0 opacity-0 group-hover:opacity-100"
-              @click.stop="removeFromQueue(item._id)"
+              @click.stop="handleRemoveFromQueue(item._id)"
             >
               <Icon name="lucide:x" size="12" />
             </Button>

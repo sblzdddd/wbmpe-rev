@@ -12,7 +12,7 @@ const search = ref('')
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col gap-14 items-center justify-center p-4 pt-0">
+  <div class="w-full h-full flex flex-1 flex-col gap-14 items-center justify-center p-4 pt-0">
     <Image src="/images/logo/logo-search_1024.png" alt="search" class="w-[90%] sm:w-[80%] md:w-[60%] lg:w-[40%]" />
     <div class="flex gap-0 w-full max-w-2xl xl:max-w-3xl 2xl:max-w-4xl mb-[30vh]">
 

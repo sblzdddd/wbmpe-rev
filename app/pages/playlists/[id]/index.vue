@@ -25,7 +25,7 @@
           <Button variant="outline" :disabled="!songs || songs.length === 0" @click="addAllToQueue">
             <Icon name="lucide:plus" class="w-4 h-4" /> Add to queue
           </Button>
-          <NuxtLink :to="`/playlists/${id}/edit`">
+          <NuxtLink v-if="canEdit" :to="`/playlists/${id}/edit`">
             <Button variant="outline"><Icon name="lucide:edit" class="w-4 h-4" /> Edit</Button>
           </NuxtLink>
         </div>
@@ -101,7 +101,8 @@ import { BACKGROUND } from '@/lib/background_settings';
 import type { SEOData } from '#types/Utils/SEO';
 import { useSidebar } from '~/components/ui/sidebar';
 import { WindowVirtualizer } from '~/components/ui/Virtua/'
-import { fallbackPlaylist } from '~/lib/fallback_data';
+import type { RoutePath } from "#types/Utils/RoutePath"
+import type { PlaylistResponse } from '#types/Playlist';
 
 
 const seoData = useState<SEOData>('seoData')
@@ -110,13 +111,19 @@ const id = route.params.id;
 
 const { open } = useSidebar()
 
-const { setBackground, resetBackground } = useBackground(); 
+const { setBackground, resetBackground } = useBackground();
 
 const sortMode = ref<'index' | 'title' | 'album' | 'duration' | 'like'>('index');
 const sortOrder = ref<'asc' | 'desc'>('asc');
 
 // Use the playlist page composable for common functionality
-const { playlist, songs, playAll, addAllToQueue, playSong } = usePlaylistPage(id);
+const { songs, playAll, addAllToQueue, playSong } = usePlaylistPage(id);
+
+const { user } = useAuth()
+
+const canEdit = computed(() => {
+  return playlist.data.value?.data?.playlistType === 'playlist' && playlist.data.value?.data?.owner._id === user.data.value?._id
+})
 
 // Tab configuration
 const tabsConfig = computed(() => [
@@ -165,9 +172,8 @@ watch([() => sortMode.value, () => sortOrder.value], async ([newSortMode, newSor
   isUpdatingFromRoute.value = false;
 }, {deep: true})
 
-const { error } = await useFetch(`/api/playlist/${id}`, {
+const { error, refresh: refreshFetch } = await useFetch(`/api/playlist/${id}`, {
   key: `playlist-page-${id}`,
-  default: () => (fallbackPlaylist),
   onResponse({ response }) {
     // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {
@@ -176,6 +182,31 @@ const { error } = await useFetch(`/api/playlist/${id}`, {
     seoData.value.title = `${response._data.data.name || 'Playlist'}`
   }
 })
+
+const playlist = useNuxtData<PlaylistResponse>(`playlist-page-${id}`);
+const routePath = useState<RoutePath>('routePath', () => ({
+  last: '',
+  next: route.path
+}))
+
+// Watch for route changes to detect coming from edit page
+watch(() => routePath.value.last, (newPath, oldPath) => {
+  if (oldPath && oldPath.includes(`/playlists/${id}/edit`)) {
+    // Refresh data when coming back from edit page
+    refreshFetch();
+  }
+}, { immediate: false });
+
+// Also check on mount as fallback for direct navigation
+onMounted(() => {
+  // Check if coming from edit page (client-side only)
+  if (import.meta.client) {
+    const referrer = document.referrer;
+    if (referrer && referrer.includes(`/playlists/${id}/edit`)) {
+      refreshFetch();
+    }
+  }
+});
 
 if (error.value) {
   // Check if there's browser history to go back

@@ -276,6 +276,13 @@ export const useAudio = () => {
     }
   }
 
+  function unPause() {
+    if (audioState.value.audioElement && !audioState.value.isPlaying) {
+      audioState.value.audioElement.play()
+      audioState.value.isPlaying = true
+    }
+  }
+
   function seek(time: number) {
     if (audioState.value.audioElement) {
       audioState.value.audioElement.currentTime = time
@@ -347,6 +354,7 @@ export const useAudio = () => {
     play,
     pause,
     togglePlayPause,
+    unPause,
     seek,
     setVolume,
     cleanup,

@@ -9,6 +9,5 @@ export type Song = {
   artists: SimpleArtist[];
   album: SimpleAlbum;
   duration: number;
-  isFavourite: boolean;
 } & TimeMetadata
 

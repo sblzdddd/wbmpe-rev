@@ -43,7 +43,7 @@ defineOptions({
     <Nav-AppSidebar />
     <SidebarInset class="bg-transparent">
       <Nav-AppHeader :container-attrs="{class: 'w-full px-4 md:px-0 ' + paddingClass}" />
-      <div class="w-full mb-10" :class="paddingClass">
+      <div class="w-full h-full mb-10" :class="paddingClass">
         <slot />
       </div>
     </SidebarInset>

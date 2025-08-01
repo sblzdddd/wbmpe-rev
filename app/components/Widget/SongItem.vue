@@ -53,7 +53,7 @@ const formatDuration = (seconds: number) => {
 <template>
   <div
     class="songItem"
-    :class="`${isPlayingThis ? 'active' : 'hover-highlight'} ${index % 2 === 1 ? 'bg-black/3 dark:bg-white/3' : ''}`"
+    :class="`${isPlayingThis ? 'active' : 'hover-highlight'} ${index % 2 === 0 ? 'bg-black/3 dark:bg-white/3' : ''}`"
     @dblclick="playSong()"
   >
     <div class="hidden md:flex justify-start w-full">
