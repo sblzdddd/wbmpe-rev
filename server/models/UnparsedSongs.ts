@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
-import type { UnparsedSong, UnparsedSongWithoutId } from '#types/Search/UnparsedSongs';
 import UnparsedEntitySchema from './UnparsedEntity';
-
+const logger = BakaLogger.child({service: 'UnparsedSongs'})
 export const UnparsedSongSchema = new mongoose.Schema({
   album: UnparsedEntitySchema,
   artists: [UnparsedEntitySchema],
@@ -11,7 +10,7 @@ export const UnparsedSongSchema = new mongoose.Schema({
 }, {
   timestamps: true, // Adds createdAt and updatedAt fields
   statics: {
-    async addSongs(songs: UnparsedSongWithoutId[]): Promise<UnparsedSong[]> {
+    async addSongs(songs: UnparsedSongWithoutId[]): Promise<UnparsedSongType[]> {
       if (songs.length === 0) return []
       
       // Prepare bulk operations for upsert
@@ -28,10 +27,11 @@ export const UnparsedSongSchema = new mongoose.Schema({
       
       // Return the songs with their database IDs by finding them
       const srcs = songs.map(song => song.src)
-      return await this.find({ src: { $in: srcs } }).lean() as unknown as UnparsedSong[]
+      return await this.find({ src: { $in: srcs } }).lean() as unknown as UnparsedSongType[]
     }
   }
 });
 
 const UnparsedSongs = mongoose.model('UnparsedSongs', UnparsedSongSchema);
+logger.debug('model loaded')
 export default UnparsedSongs;

@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { SourcePlatform, UnparsedAlbum, UnparsedArtist } from '#types/Search/UnparsedSongs'
-import Artists from '~~/server/models/Artists'
-import Albums from '~~/server/models/Albums'
-import Songs from '~~/server/models/Songs'
-import type { Song } from '#types/Song'
 
 export interface ArtistLookupMaps {
   artistLookup: Map<string, any>
   albumLookup: Map<string, any>
-  songLookup: Map<string, Song>
+  songLookup: Map<string, SongType>
 }
 
 /**
@@ -49,13 +44,13 @@ export async function createLookupMaps<T>(
   const [localArtists, localAlbums, localSongs] = await Promise.all([
     Artists.find({ name: { $in: Array.from(artistNames) } }),
     Albums.find({ name: { $in: Array.from(albumNames) } }),
-    Songs.getMultipleFullInfo(Array.from(songSrcs))
+    Songs.getMultipleFullInfo(Array.from(songSrcs) as string[])
   ])
 
   // Create lookup maps for O(1) access
   const artistLookup = new Map(localArtists.map(artist => [String(artist.name), artist]))
   const albumLookup = new Map(localAlbums.map(album => [String(album.name), album]))
-  const songLookup = new Map(localSongs.map(song => [String(song?.src), song as unknown as Song]))
+  const songLookup = new Map(localSongs.map(song => [String(song?.src), song as unknown as SongType]))
 
   return { artistLookup, albumLookup, songLookup }
 }
@@ -66,15 +61,15 @@ export async function createLookupMaps<T>(
 export function processArtist(
   artistName: string,
   externalId: string,
-  platform: SourcePlatform,
+  platform: SourcePlatformTypes,
   artistLookup: Map<string, any>
-): UnparsedArtist {
+): UnparsedArtistType {
   const localArtist = artistLookup.get(artistName)
   
   if (localArtist) {
     return {
       name: localArtist.name,
-      platform: "local" as SourcePlatform,
+      platform: "local" as SourcePlatformTypes,
       id: localArtist._id.toString()
     }
   } else {
@@ -92,16 +87,16 @@ export function processArtist(
 export function processAlbum(
   albumName: string,
   externalId: string,
-  platform: SourcePlatform,
+  platform: SourcePlatformTypes,
   externalCoverUrl: string,
   albumLookup: Map<string, any>
-): UnparsedAlbum {
+): UnparsedAlbumType {
   const localAlbum = albumLookup.get(albumName)
   
   if (localAlbum) {
     return {
       name: localAlbum.name as string,
-      platform: "local" as SourcePlatform,
+      platform: "local" as SourcePlatformTypes,
       id: localAlbum._id.toString(),
       coverUrl: localAlbum.coverUrl as string
     }

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
-import type { TimeMetadata } from "../../types/time_metadata";
-import type { Song } from "#types/Song";
+const logger = BakaLogger.child({service: 'CollectionSongItem'})
 
 export type CollectionSongItemDocument = {
   _id: ObjectId;
@@ -10,7 +9,7 @@ export type CollectionSongItemDocument = {
 
 export type CollectionSongItem = {
   _id: string;
-  song: Song;
+  song: SongType;
 } & TimeMetadata
 
 const CollectionSongItemSchema = new mongoose.Schema({
@@ -18,5 +17,7 @@ const CollectionSongItemSchema = new mongoose.Schema({
 }, {
   timestamps: true, // Adds createdAt and updatedAt fields
 });
+
+logger.debug('model loaded')
 
 export default CollectionSongItemSchema;

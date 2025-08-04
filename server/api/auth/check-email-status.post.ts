@@ -1,6 +1,3 @@
-import EmailVerificationToken from "../../models/EmailVerificationToken"
-import UserAuth from "../../models/UserAuth"
-
 const logger = BakaLogger.child({ service: 'CheckEmailStatus' })
 
 export default defineEventHandler(async (event) => {

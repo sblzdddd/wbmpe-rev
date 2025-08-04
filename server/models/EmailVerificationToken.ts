@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+const logger = BakaLogger.child({service: 'EmailVerificationToken'})
 
 const emailVerificationTokenSchema = new mongoose.Schema({
   email: { type: String, required: true },
@@ -14,4 +15,5 @@ const emailVerificationTokenSchema = new mongoose.Schema({
 emailVerificationTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const EmailVerificationToken = mongoose.model('EmailVerificationToken', emailVerificationTokenSchema);
+logger.debug('model loaded')
 export default EmailVerificationToken;

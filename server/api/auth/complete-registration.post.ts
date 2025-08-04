@@ -1,7 +1,3 @@
-import EmailVerificationToken from "../../models/EmailVerificationToken"
-import { hashPasswordCustom } from "../../utils/auth"
-import Users from "../../models/Users"
-
 const logger = BakaLogger.child({ service: 'CompleteRegistration' })
 
 export default defineEventHandler(async (event) => {

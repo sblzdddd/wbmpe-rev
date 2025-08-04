@@ -1,5 +1,4 @@
-import Users from "../../models/Users"
-import type { PlaylistMeta } from "../../../types/Playlist"
+const logger = BakaLogger.child({service: 'UserPlaylistsAPI'})
 
 interface UserPlaylistsResponse {
   createdPlaylists: PlaylistMeta[]
@@ -26,7 +25,7 @@ export default defineEventHandler(async (event) => {
       throw error 
     }
     
-    console.error('Error:', error)
+    logger.error('Error:', error)
     throw createError({
       statusCode: 500,
       message: 'Internal server error: ' + error

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import CollectionSongItemSchema from "./CollectionSongItem";
+const logger = BakaLogger.child({service: 'Albums'})
 
 const albumsSchema = new mongoose.Schema({
   name: {type: String, required: true},
@@ -13,4 +14,6 @@ const albumsSchema = new mongoose.Schema({
 });
 
 const Albums = mongoose.model('Albums', albumsSchema);
+logger.debug('model loaded')
 export default Albums;
+

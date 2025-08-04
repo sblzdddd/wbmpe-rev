@@ -1,12 +1,12 @@
 import { useAudio } from './useAudio'
-import type { Song } from '#types/Song'
+import type { SongType } from '#types/Song'
 import { useQueue } from './useQueue'
 import { useStream } from './useStream'
 
 export type PlayMode = 'queue' | 'repeat' | 'repeat-one' | 'random'
 
 export interface PlayerState {
-  currentSong: Song | null
+  currentSong: SongType | null
   isLoading: boolean
   playMode: PlayMode
 }
@@ -52,7 +52,7 @@ export const usePlayer = () => {
   audio.onSongEnd.value = handleSongEnd
 
   // Add song to queue
-  const addSong = async (song: Song, playImmediately = false) => {
+  const addSong = async (song: SongType, playImmediately = false) => {
     const queueSong = await addToQueue(song, playImmediately)
     if (!queueSong?.success) { 
       throw new Error(queueSong?.message || 'Failed to add song to queue')
@@ -65,7 +65,7 @@ export const usePlayer = () => {
 
   // Add playlist to queue
   // Add multiple songs to queue
-  const addPlaylist = async (songs: Song[], playImmediatelyId: string | null = null) => {
+  const addPlaylist = async (songs: SongType[], playImmediatelyId: string | null = null) => {
     console.log('addPlaylist', songs, playImmediatelyId)
     const response = await addPlaylistToQueue(songs, playImmediatelyId)
     if (!response?.success) { 
@@ -81,7 +81,7 @@ export const usePlayer = () => {
     }
   }
 
-  const playSong = async (song: Song, restartIfSameSong = false) => {
+  const playSong = async (song: SongType, restartIfSameSong = false) => {
     try {
       playerState.value.isLoading = true
 

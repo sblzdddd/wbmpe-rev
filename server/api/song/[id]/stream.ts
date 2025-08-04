@@ -1,5 +1,4 @@
-import Streams from "../../../models/Streams";
-import { isValidObjectIdString } from "../../../utils/IdValidator";
+const logger = BakaLogger.child({service: 'SongStreamAPI'})
 
 export default defineEventHandler(async (event) => {
   const songId = getRouterParam(event, 'id');
@@ -25,7 +24,7 @@ export default defineEventHandler(async (event) => {
       data: stream
     };
   } catch (error) {
-    console.error('Error fetching audio stream:', error);
+    logger.error('Error fetching audio stream:', error);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to fetch audio stream"

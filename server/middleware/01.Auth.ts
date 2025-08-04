@@ -1,5 +1,4 @@
 import { ObjectId } from "mongodb"
-import { UserAuth, type UserAuthDocument } from "../models"
 
 const logger = BakaLogger.child({service: 'AuthMiddleware'})
 

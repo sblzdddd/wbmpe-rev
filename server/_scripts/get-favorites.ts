@@ -1,13 +1,5 @@
 import mongoose from "mongoose";
 import { MONGODB_URI } from "./baka";
-import '../models/UserAuth';
-import '../models/UserSubscriptions';
-import '../models/Songs';
-import '../models/Artists';
-import '../models/Albums';
-import '../models/Streams';
-import '../models/Lyrics';
-import Users from "../models/Users";
 
 await mongoose.connect(MONGODB_URI);
 console.log('Connected to MongoDB');

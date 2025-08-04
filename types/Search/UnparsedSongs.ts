@@ -1,25 +1,25 @@
-import type { Song } from "../Song"
+import type { SongType } from "../Song"
 import type { TimeMetadata } from "../time_metadata"
 
-export type SourcePlatform = "netease" | "qq" | "bilibili" | "local"
+export type SourcePlatforms = "netease" | "qq" | "bilibili" | "local"
 
 export type UnparsedArtist = {
   name: string
-  platform: SourcePlatform
+  platform: SourcePlatforms
   id: string
 }
 
 export type UnparsedAlbum = {
   name: string
-  platform: SourcePlatform
+  platform: SourcePlatforms
   coverUrl: string
   id: string
 }
 
-export type UnparsedSong = Omit<Song, "artists" | "album"> & {
-  platform: SourcePlatform
+export type UnparsedSongType = Omit<SongType, "artists" | "album"> & {
+  platform: SourcePlatforms
   artists: UnparsedArtist[]
   album: UnparsedAlbum
 } & TimeMetadata
 
-export type UnparsedSongWithoutId = Omit<UnparsedSong, "_id">
+export type UnparsedSongWithoutId = Omit<UnparsedSongType, "_id">

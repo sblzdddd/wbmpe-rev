@@ -1,5 +1,3 @@
-import { imageUploadService } from '../../utils/imageUpload';
-
 const logger = BakaLogger.child({ service: 'ImageUploadAPI' });
 
 export default defineEventHandler(async (event) => {

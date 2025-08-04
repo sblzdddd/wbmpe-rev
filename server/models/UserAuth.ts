@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
-
+const logger = BakaLogger.child({service: 'UserAuth'})
 export type UserAuthDocument = {
   userId: ObjectId;
   email: string | null;
@@ -20,4 +20,5 @@ const userAuthSchema = new mongoose.Schema({
 });
 
 const User_Auth = mongoose.model('User_Auth', userAuthSchema);
+logger.debug('model loaded')
 export default User_Auth;

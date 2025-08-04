@@ -1,2 +1,2 @@
-export * from "./Song";
+export * from "./SongType";
 export * from "./SongList";

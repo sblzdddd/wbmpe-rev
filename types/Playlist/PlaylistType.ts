@@ -1,6 +1,6 @@
 import type { SimpleUser } from "../User";
 import type { TimeMetadata } from "../time_metadata";
-import type { SongList, SongItem } from "../Song";
+import type { SongListType, SongItemType } from "../Song";
 
 export type PlaylistResponse = {
   data: PaginatedPlaylist;
@@ -24,9 +24,9 @@ export type PlaylistMeta = {
 }
 
 export type PaginatedPlaylist = PlaylistInfo & {
-  songList: SongList;
+  songList: SongListType;
 }
 
 export type FullPlaylist = PlaylistInfo & {
-  songs: SongItem[];
+  songs: SongItemType[];
 }

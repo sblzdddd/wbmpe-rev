@@ -3,14 +3,8 @@ import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import Playlists, { type PlaylistDocument } from "./Playlists";
 import UserAuth from "./UserAuth";
-import type { SimpleUser, UserInfo, UserPlaylists } from "../../types/User/User";
-import BakaLogger from "../utils/BakaLogger";
-import type { Song } from "#types/Song";
 import Songs from "./Songs";
-
-const logger = BakaLogger.child({
-  service: 'Users'
-});
+const logger = BakaLogger.child({service: 'Users'})
 
 export type UserDocument = {
   _id: ObjectId;
@@ -22,7 +16,7 @@ export type UserDocument = {
   favorites: ObjectId;
   recent: ObjectId;
   currentQueue?: {
-    songs: Song[];
+    songs: SongType[];
     currentIndex: number;
     currentTime: number;
   };
@@ -168,7 +162,6 @@ const userSchema = new mongoose.Schema({
       } else {
         playlist.songs.pull({ song: songId });
       }
-       console.log(playlist.songs.length)
       await playlist.save();
     },
     getUserPlaylists: async (userId: string): Promise<UserPlaylists> => {
@@ -228,7 +221,7 @@ const userSchema = new mongoose.Schema({
 
       await user.save();
     },
-    getUserQueue: async (userId: string): Promise<{ songs: Song[]; currentIndex: number; currentTime: number }> => {
+    getUserQueue: async (userId: string): Promise<{ songs: SongType[]; currentIndex: number; currentTime: number }> => {
       const user = await Users.findById(userId)
         .populate({
           path: 'currentQueue.songs',
@@ -262,4 +255,5 @@ const userSchema = new mongoose.Schema({
 });
 
 const Users = mongoose.model('Users', userSchema);
+logger.debug('model loaded')
 export default Users;

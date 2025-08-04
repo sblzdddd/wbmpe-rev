@@ -1,7 +1,3 @@
-import { sendEmailVerificationCode, generateVerificationCode } from "../../utils/emailSender"
-import EmailVerificationToken from "../../models/EmailVerificationToken"
-import UserAuth from "../../models/UserAuth"
-
 const logger = BakaLogger.child({ service: 'SendVerification' })
 
 export default defineEventHandler(async (event) => {

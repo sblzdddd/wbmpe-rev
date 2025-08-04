@@ -1,7 +1,4 @@
 import { z } from 'zod'
-import { UserAuth } from '../../models'
-import PasswordResetToken from '../../models/PasswordResetToken'
-import { hashPasswordCustom } from '../../utils/auth'
 
 const bodySchema = z.object({
   token: z.string(),

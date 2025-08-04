@@ -8,6 +8,8 @@ export default defineNuxtConfig({
     '#types': '../types',
     '#shadcn': '../app/components/ui',
     '#composables': '../app/composables',
+    '#utils': '~/utils',
+    '#models': '~/models',
   },
 
   runtimeConfig: {
@@ -89,7 +91,8 @@ export default defineNuxtConfig({
   
   imports: {
     dirs: [
-      'composables/**'
+      'composables/**',
+      '../types/**'
     ],
     presets: [
       {
@@ -98,6 +101,7 @@ export default defineNuxtConfig({
       }
     ]
   },
+
 
   image: {
     aliyun: {
@@ -177,6 +181,12 @@ export default defineNuxtConfig({
   // },
 
   nitro: {
+    imports: {
+      dirs: [
+        './server/models',
+        './types/**'
+      ]
+    },
     experimental: {
       openAPI: true,
       tasks: true,

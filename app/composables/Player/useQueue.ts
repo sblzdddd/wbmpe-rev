@@ -1,9 +1,9 @@
-import type { Song } from '#types/Song'
+import type { SongType } from '#types/Song'
 import type { InternalApi } from 'nitropack'
 import type { ApiError } from '#types/Utils/ApiError'
 
 export type QueueState = {
-  songs: Song[],
+  songs: SongType[],
   currentIndex: number,
   currentTime: number
 }
@@ -43,7 +43,7 @@ export const useQueue = () => {
   const saveQueueToServer = async (): Promise<UpdateQueueResponse> => {
     
     // Helper function to compare song arrays
-    const songsChanged = (newSongs: Song[], oldSongs: Song[]): boolean => {
+    const songsChanged = (newSongs: SongType[], oldSongs: SongType[]): boolean => {
       if (newSongs.length !== oldSongs.length) return true;
       return newSongs.some((song, index) => {
         const oldSong = oldSongs[index];
@@ -85,7 +85,7 @@ export const useQueue = () => {
   }
 
   // Add song to queue
-  const addToQueue = async (song: Song, playImmediately = false): Promise<UpdateQueueResponse> => {
+  const addToQueue = async (song: SongType, playImmediately = false): Promise<UpdateQueueResponse> => {
     console.log('addToQueue', song, playImmediately)
     updateQueueState()
 
@@ -118,7 +118,7 @@ export const useQueue = () => {
   }
 
   // Add multiple songs to queue
-  const addPlaylistToQueue = async (songs: Song[], playImmediatelyId: string | null = null): Promise<UpdateQueueResponse> => {
+  const addPlaylistToQueue = async (songs: SongType[], playImmediatelyId: string | null = null): Promise<UpdateQueueResponse> => {
     console.log('addPlaylistToQueue', songs, playImmediatelyId)
     updateQueueState()
 
@@ -262,7 +262,7 @@ export const useQueue = () => {
   }
 
   // Remove songs from queue (supports single or multiple IDs)
-  const removeFromQueue = async (queueIds: string | string[]): Promise<{ needsNewSong: boolean, newSong: Song | null }> => {
+  const removeFromQueue = async (queueIds: string | string[]): Promise<{ needsNewSong: boolean, newSong: SongType | null }> => {
     if (!queueState.value) { throw new Error('Queue state not found')}
     updateQueueState()
 
@@ -281,7 +281,7 @@ export const useQueue = () => {
 
     const originalCurrentIndex = qState.value.new.currentIndex
     let needsNewSong = false
-    let newSong: Song | null = null
+    let newSong: SongType | null = null
 
     // Check if current song will be removed
     const currentSongWillBeRemoved = indicesToRemove.includes(originalCurrentIndex)
@@ -375,7 +375,7 @@ export const useQueue = () => {
     currentSong: computed(() => {
       const index = queueState.value?.currentIndex ?? 0
       return index >= 0 && index < (queueState.value?.songs?.length ?? 0) 
-        ? queueState.value?.songs[index] as Song | null
+        ? queueState.value?.songs[index] as SongType | null
         : null
     }),
     queue: computed(() => queueState.value?.songs || []),

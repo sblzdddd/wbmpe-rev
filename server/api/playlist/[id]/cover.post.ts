@@ -1,8 +1,3 @@
-import Playlists from "../../../models/Playlists";
-import { isValidObjectIdString } from '../../../utils/IdValidator';
-import { imageUploadService } from '../../../utils/imageUpload';
-import { makeid } from "../../../utils/auth";
-
 const logger = BakaLogger.child({ service: 'PlaylistCoverAPI' });
 
 export default defineEventHandler(async (event) => {
@@ -82,8 +77,6 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'File size too large. Maximum size is 5MB.'
       });
     }
-
-    console.log(buffer.subarray(0, 3).toString('hex'))
 
     // Validate image type based on buffer
     const isValidImage = buffer.length > 0 && (

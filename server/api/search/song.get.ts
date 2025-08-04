@@ -1,25 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Songs from '../../models/Songs'
-import type { SearchSongRequest } from '#types/Search/SearchData'
+import { H3Error } from 'h3'
 
 const logger = BakaLogger.child({ service: 'SearchAPI' })
 
+// Platform weights: netease > qq > mikufans(bilibili)
+const platformWeights = {
+  netease: 3,
+  qq: 2,
+  bilibili: 1
+}
+
 export default defineEventHandler(async (event) => {
   try {
-    const query = getQuery(event) as unknown as SearchSongRequest
-    const { platform, keyword, page } = query
+    const query = getQuery(event) as { keyword?: string; page?: string }
+    const { keyword, page } = query
 
-    if (!platform || !keyword || !page) {
+    if (!keyword || !page) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Missing required parameters: platform, keyword, page'
-      })
-    }
-
-    if (!['bilibili', 'qq', 'netease'].includes(platform)) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Error: Platform not supported'
+        statusMessage: 'Missing required parameters: keyword, page'
       })
     }
 
@@ -32,55 +31,68 @@ export default defineEventHandler(async (event) => {
       .limit(20)
       .skip((Number(page) - 1) * 20)
 
-    let searchResults
     try {
-      switch (platform) {
-        case "bilibili":
-          searchResults = await searchSongBilibili(keyword, Number(page))
-          break
-        case "qq":
-          searchResults = await searchSongQQ(keyword, Number(page))
-          break
-        case "netease":
-          searchResults = await searchSongNetease(keyword, Number(page))
-          break
-        default:
-          throw createError({
-            statusCode: 400,
-            statusMessage: 'Error: Platform not supported'
-          })
+      // Run all three platform searches in parallel, skipping individual saves
+      const [bilibiliResults, qqResults, neteaseResults] = await Promise.allSettled([
+        searchSongBilibili(keyword, Number(page)),
+        searchSongQQ(keyword, Number(page)),
+        searchSongNetease(keyword, Number(page))
+      ])
+
+      // Collect all unparsed songs from successful searches
+      const allUnparsedSongs: UnparsedSongWithoutId[] = []
+      let totalPages = 1
+
+      if (bilibiliResults.status === 'fulfilled' && bilibiliResults.value.results) {
+        allUnparsedSongs.push(...bilibiliResults.value.results)
+        totalPages = Math.max(totalPages, bilibiliResults.value.totalPage)
       }
 
-      // Add stored songs to the response
-      // const storedSongsList = createSongList(storedSongs.map(song => ({
-      //   _id: song._id.toString(),
-      //   song: {
-      //     _id: song._id.toString(),
-      //     src: song.src,
-      //     name: song.name,
-      //     artists: song.artists,
-      //     album: song.album,
-      //     duration: song.duration,
-      //     createdAt: song.createdAt,
-      //     updatedAt: song.updatedAt
-      //   },
-      //   createdAt: song.createdAt,
-      //   updatedAt: song.updatedAt
-      // })), Number(page), 20)
+      if (qqResults.status === 'fulfilled' && qqResults.value.results) {
+        allUnparsedSongs.push(...qqResults.value.results)
+        totalPages = Math.max(totalPages, qqResults.value.totalPage)
+      }
+
+      if (neteaseResults.status === 'fulfilled' && neteaseResults.value.results) {
+        allUnparsedSongs.push(...neteaseResults.value.results)
+        totalPages = Math.max(totalPages, neteaseResults.value.totalPage)
+      }
+
+      // Process unparsed songs only once
+      const processedSongs = allUnparsedSongs.length > 0 ? await UnparsedSongs.addSongs(allUnparsedSongs) : []
+
+      // Sort by relevance and platform weight
+      const sortedResults = processedSongs.sort((a, b) => {
+        // Calculate relevance scores
+        const aRelevance = calculateSimilarity(a.name, keyword)
+        const bRelevance = calculateSimilarity(b.name, keyword)
+        
+        // Calculate platform scores
+        const aPlatformWeight = platformWeights[a.platform as keyof typeof platformWeights] || 0
+        const bPlatformWeight = platformWeights[b.platform as keyof typeof platformWeights] || 0
+        
+        // Sort by relevance first (descending), then by platform weight (descending)
+        if (Math.abs(aRelevance - bRelevance) > 0.1) {
+          return bRelevance - aRelevance
+        }
+        return bPlatformWeight - aPlatformWeight
+      })
 
       return {
-        ...searchResults,
-        stored_songs: storedSongs
+        page: Number(page),
+        totalPage: totalPages,
+        results: sortedResults,
+        stored_songs: storedSongs as unknown as SongType[]
       }
     } catch (error: any) {
       logger.error('Search error:', error)
       throw createError({
         statusCode: 400,
-        statusMessage: `Error searching '${keyword}' in platform '${platform}': ${error.message}`
+        statusMessage: `Error searching '${keyword}': ${error.message}`
       })
     }
   } catch (error: any) {
-    if (error.statusCode) {
+    if( !(error instanceof H3Error)) {
       throw error
     }
     logger.error('Unexpected error in search endpoint:', error)
@@ -94,9 +106,8 @@ export default defineEventHandler(async (event) => {
 defineRouteMeta({
   openAPI: {
     tags: ["Search"],
-    description: "Search for songs across different platforms",
+    description: "Search for songs across all platforms (bilibili, qq, netease) in parallel",
     parameters: [
-      { in: "query", name: "platform", required: true, schema: { type: 'string', enum: ['bilibili', 'qq', 'netease'] } },
       { in: "query", name: "keyword", required: true, schema: { type: 'string' } },
       { in: "query", name: "page", required: true, schema: { type: 'number' } }
     ],

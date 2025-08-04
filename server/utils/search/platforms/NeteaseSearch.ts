@@ -1,7 +1,4 @@
-import type { SearchResponse } from '../../../../types/Search/SearchData'
 import type { NeteaseSearchResponse } from './Schemas'
-import type { SourcePlatform, UnparsedSongWithoutId } from '#types/Search/UnparsedSongs'
-import UnparsedSongs from '~~/server/models/UnparsedSongs'
 import { createLookupMaps, processArtist, processAlbum } from '../search_util'
 
 async function encryptId(songId: number): Promise<string> {
@@ -19,10 +16,11 @@ async function encryptId(songId: number): Promise<string> {
   return encodedResult.replace(/\//g, '_').replace(/\+/g, '-')
 }
 
-export async function searchSongNetease(keyword: string, page: number): Promise<SearchResponse> {
+export async function searchSongNetease(keyword: string, page: number): Promise<SearchReturnType> {
   try {
-    const offset = (page - 1) * 20
-    const url = `https://music.163.com/api/search/get/web?csrf_token=hlpretag=&hlposttag=&s=${keyword}&type=1&offset=${offset}&total=true&limit=20`
+    const length = 14
+    const offset = (page - 1) * length
+    const url = `https://music.163.com/api/search/get/web?csrf_token=hlpretag=&hlposttag=&s=${keyword}&type=1&offset=${offset}&total=true&limit=${length}`
     
     const response = await $fetch(url, { responseType: 'json' })
     const result = response as NeteaseSearchResponse
@@ -37,7 +35,7 @@ export async function searchSongNetease(keyword: string, page: number): Promise<
       }
     }
 
-    const { artistLookup, albumLookup } = await createLookupMaps(
+    const { artistLookup, albumLookup, songLookup } = await createLookupMaps(
       result.result.songs,
       (song) => song.artists.map(artist => artist.name),
       (song) => song.album.name,
@@ -50,9 +48,13 @@ export async function searchSongNetease(keyword: string, page: number): Promise<
       if (res.transNames) {
         name += `(${res.transNames[0]})`
       }
+      
+      if (songLookup.has(url)) {
+        continue
+      }
       // Process artists using shared utility
       const artists = res.artists.map(neteaseArtist => 
-        processArtist(neteaseArtist.name, neteaseArtist.id.toString(), "netease" as SourcePlatform, artistLookup)
+        processArtist(neteaseArtist.name, neteaseArtist.id.toString(), "netease" as SourcePlatformTypes, artistLookup)
       )
       const picId = res.album.picId
       const picUrl = `https://p3.music.126.net/${await encryptId(picId)}/${picId}.jpg?param=150y150`
@@ -60,7 +62,7 @@ export async function searchSongNetease(keyword: string, page: number): Promise<
       const album = processAlbum(
         res.album.name,
         res.album.id.toString(),
-        "netease" as SourcePlatform,
+        "netease" as SourcePlatformTypes,
         picUrl,
         albumLookup
       )
@@ -71,19 +73,17 @@ export async function searchSongNetease(keyword: string, page: number): Promise<
         artists: artists,
         album: album,
         duration: res.duration,
-        platform: "netease" as SourcePlatform
+        platform: "netease" as SourcePlatformTypes
       }
 
       unsavedUnparsedSongs.push(unparsedSong)
     }
-    const unparsedSongs = await UnparsedSongs.addSongs(unsavedUnparsedSongs)
-    console.log("search module completed")
 
     return {
       platform: "netease",
       page: page,
       totalPage: -1,
-      results: unparsedSongs
+      results: unsavedUnparsedSongs
     }
   } catch (error) {
     throw new Error(`Error searching '${keyword}' in platform 'netease': ${error}`)

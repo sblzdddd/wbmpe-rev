@@ -1,9 +1,4 @@
-import Playlists from "~~/server/models/Playlists";
-import Users from "../../../models/Users";
-import { isValidObjectIdString } from '../../../utils/IdValidator';
 import { ObjectId } from "mongodb";
-import BakaLogger from "~~/server/utils/BakaLogger";
-import { imageUploadService } from "~~/server/utils/imageUpload";
 
 const logger = BakaLogger.child({ service: 'PlaylistDeleteAPI' });
 

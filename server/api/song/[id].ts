@@ -1,6 +1,3 @@
-// import { isValidObjectIdString } from "../../utils/IdValidator"
-// import Songs from "../../models/Songs"
-
 // const logger = BakaLogger.child({service: 'SongAPI'})
 
 export default defineEventHandler(async (_event) => {

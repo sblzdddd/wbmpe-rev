@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
-
+const logger = BakaLogger.child({service: 'Streams'})
 const streamsSchema = new mongoose.Schema({
   songId: {type: ObjectId, ref: 'Songs', required: true, unique: true},
   audio: {
@@ -28,4 +28,5 @@ const streamsSchema = new mongoose.Schema({
 });
 
 const Streams = mongoose.model('Streams', streamsSchema);
+logger.debug('model loaded')
 export default Streams;

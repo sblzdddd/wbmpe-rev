@@ -1,5 +1,4 @@
-import type { UserInfoResponse } from "../../../types/User/User"
-import Users from "../../models/Users"
+const logger = BakaLogger.child({service: 'UserMeAPI'})
 
 type BasicUserResponse = Omit<UserInfoResponse['user'], 'createdPlaylists' | 'favorites' | 'recent'>
 
@@ -22,7 +21,7 @@ export default defineEventHandler(async (event) => {
       throw error 
     }
     
-    console.error('Error:', error)
+    logger.error('Error:', error)
     throw createError({
       statusCode: 500,
       message: 'Internal server error: ' + error

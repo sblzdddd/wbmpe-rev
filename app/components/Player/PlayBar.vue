@@ -168,7 +168,7 @@
 
 <script setup lang="ts">
 import { DialogType } from '@/composables/UI/useDialog';
-import type { Song } from '#types/Song';
+import type { SongType } from '#types/Song';
 import type { PlayMode } from '@/composables/Player/usePlayer';
 
 const { 
@@ -254,7 +254,7 @@ const handlePlayPause = () => {
   if (audioCurrentSong.value?.src === currentSong.value?.src) {
     togglePlayPause()
   } else {
-    playSong(currentSong.value as Song)
+    playSong(currentSong.value as SongType)
   }
 }
 </script>

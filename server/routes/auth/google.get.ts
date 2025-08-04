@@ -1,5 +1,3 @@
-import { Users, UserAuth } from '../../models'
-
 const logger = BakaLogger.child({ service: 'GoogleOAuth' })
 
 export default defineOAuthGoogleEventHandler({

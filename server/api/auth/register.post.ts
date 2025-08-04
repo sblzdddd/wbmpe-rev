@@ -1,6 +1,4 @@
 import { z } from 'zod'
-import { Users, UserAuth } from '../../models'
-import { hashPasswordCustom } from '../../utils/auth'
 
 const logger = BakaLogger.child({ service: 'Auth' })
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // import type { Song } from "#types/Song"
-import type { Song } from "#types/Song"
+import type { SongType } from "#types/Song"
 
 const props = defineProps({
   index: {
@@ -8,7 +8,7 @@ const props = defineProps({
     required: true
   },
   song: {
-    type: Object as () => Song,
+    type: Object as () => SongType,
     required: true
   },
   isHovering: {
@@ -19,7 +19,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits({
-  'play': (index:number, song: Song) => song
+  'play': (index:number, song: SongType) => song
 })
 
 const { isPlaying, pause } = usePlayer()

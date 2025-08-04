@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Song } from "#types/Song"
+import type { SongType } from "#types/Song"
 
 defineProps({
   index: {
@@ -11,7 +11,7 @@ defineProps({
     required: true
   },
   song: {
-    type: Object as () => Song,
+    type: Object as () => SongType,
     required: true
   },
 })

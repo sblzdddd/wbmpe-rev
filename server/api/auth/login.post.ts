@@ -1,6 +1,4 @@
 import { z } from 'zod'
-import { Users, UserAuth } from '../../models'
-import { verifyPasswordCustom } from '../../utils/auth'
 
 const bodySchema = z.object({
   email: z.string().email(),

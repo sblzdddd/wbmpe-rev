@@ -1,5 +1,5 @@
 import type { SimpleArtist } from "../Artist";
-import type { SongList } from "../Song";
+import type { SongListType } from "../Song";
 import type { TimeMetadata } from "../time_metadata";
 
 export type SimpleAlbum = {
@@ -14,5 +14,5 @@ export type AlbumData = {
   coverUrl: string;
   name: string;
   description: string;
-  songList: SongList;
+  songList: SongListType;
 } & TimeMetadata

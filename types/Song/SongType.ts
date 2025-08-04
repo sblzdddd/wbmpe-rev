@@ -1,8 +1,8 @@
-import type { SimpleArtist } from "../Artist/SimpleArtist";
-import type { SimpleAlbum } from "../Album/SimpleAlbum";
+import type { SimpleArtist } from "#types/Artist";
+import type { SimpleAlbum } from "#types/Album";
 import type { TimeMetadata } from "../time_metadata";
 
-export type Song = {
+export type SongType = {
   _id: string;
   src: string;
   name: string;

@@ -1,4 +1,4 @@
-import Users from "../../models/Users";
+const logger = BakaLogger.child({service: 'UserQueueAPI'})
 
 export default defineEventHandler(async (event) => {
   const userId = event.context.user?.id;
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     
     return queueData
   } catch (error) {
-    console.error('Error fetching user queue:', error);
+    logger.error('Error fetching user queue:', error);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to fetch queue"

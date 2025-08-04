@@ -1,6 +1,5 @@
 import mongoose from "mongoose"
 import { MONGODB_URI } from "./baka"
-import PasswordResetToken from "../models/PasswordResetToken"
 
 const logger = BakaLogger.child({ service: 'CleanupExpiredTokensScript' })
 

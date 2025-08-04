@@ -1,11 +1,10 @@
-import { QQSearch } from '../../utils/search'
-import type { GetSuggestionsRequest } from '../../../types/Search/SearchData'
+import { H3Error } from 'h3'
 
 const logger = BakaLogger.child({ service: 'SearchAPI' })
 
 export default defineEventHandler(async (event) => {
   try {
-    const query = getQuery(event) as unknown as GetSuggestionsRequest
+    const query = getQuery(event) as unknown as GetSuggestionsRequestType
     const { keyword, platform } = query
 
     if (!keyword) {
@@ -18,15 +17,18 @@ export default defineEventHandler(async (event) => {
     try {
       const suggestions = await QQSearch.getSuggestions(keyword)
       return { suggestions }
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Suggestions error:', error)
+      if( !(error instanceof H3Error)) {
+        throw error
+      }
       throw createError({
         statusCode: 400,
-        statusMessage: `Error searching '${keyword}' in platform '${platform}': ${error.message}`
+        statusMessage: `Error searching '${keyword}' in platform '${platform}': ${error.message || error}`
       })
     }
-  } catch (error: any) {
-    if (error.statusCode) {
+  } catch (error) {
+    if( !(error instanceof H3Error)) {
       throw error
     }
     logger.error('Unexpected error in suggestions endpoint:', error)

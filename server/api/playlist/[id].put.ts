@@ -1,7 +1,3 @@
-import Playlists from "../../models/Playlists";
-import { isValidObjectIdString } from '../../utils/IdValidator';
-import { imageUploadService } from '../../utils/imageUpload';
-
 const logger = BakaLogger.child({ service: 'PlaylistUpdateAPI' });
 
 export default defineEventHandler(async (event) => {

@@ -1,4 +1,4 @@
-import type { PlaylistMeta } from "../Playlist/Playlist";
+import type { PlaylistMeta } from "#types/Playlist";
 
 export type SimpleUser = {
   _id: string;

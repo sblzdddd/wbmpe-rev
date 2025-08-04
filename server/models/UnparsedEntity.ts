@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+const logger = BakaLogger.child({service: 'UnparsedEntity'})
 const UnparsedEntitySchema = new mongoose.Schema({
   name: {type: String, required: true},
   platform: {type: String, required: true},
@@ -9,5 +9,6 @@ const UnparsedEntitySchema = new mongoose.Schema({
   timestamps: true, // Adds createdAt and updatedAt fields
 });
 
+logger.debug('model loaded')
 export default UnparsedEntitySchema;
 

@@ -71,6 +71,7 @@ await useFetch('/api/user/playlists', {
 })
 
 const { playlists } = useUserPlaylist()
+const { user } = useAuth()
 
 </script>
 
@@ -82,7 +83,7 @@ const { playlists } = useUserPlaylist()
     <SidebarContent class="gap-0">
       <NavMain :data="data.navMain" />
       <NavPlaylist 
-        v-if="playlists.data.value" 
+        v-if="user && playlists.data.value"
         :data="playlists.data.value.createdPlaylists" 
         :favorites="playlists.data.value.favorites ?? null" 
         :recent="playlists.data.value.recent ?? null" 

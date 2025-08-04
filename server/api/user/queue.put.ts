@@ -1,4 +1,4 @@
-import Users from "../../models/Users";
+const logger = BakaLogger.child({service: 'UserQueueAPI'})
 
 export default defineEventHandler(async (event) => {
   const userId = event.context.user?.id;
@@ -38,7 +38,6 @@ export default defineEventHandler(async (event) => {
   // Validate queue items only if songs array is provided
   if (songs && Array.isArray(songs)) {
     for (const item of songs) {
-      console.log('item', item);
       if (!item.songId) {
         throw createError({
           statusCode: 400,
@@ -56,7 +55,7 @@ export default defineEventHandler(async (event) => {
       message: "Queue updated successfully"
     };
   } catch (error) {
-    console.error('Error updating user queue:', error);
+    logger.error('Error updating user queue:', error);
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to update queue"

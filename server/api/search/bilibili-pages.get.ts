@@ -1,4 +1,4 @@
-import type { GetBilibiliPagesRequest, BilibiliPage } from '../../../types/Search/SearchData'
+import { H3Error } from 'h3'
 
 const logger = BakaLogger.child({ service: 'SearchAPI' })
 
@@ -20,7 +20,7 @@ async function getBilibiliPages(_bvid: string): Promise<{ success: boolean; data
 
 export default defineEventHandler(async (event) => {
   try {
-    const query = getQuery(event) as unknown as GetBilibiliPagesRequest
+    const query = getQuery(event) as unknown as GetBilibiliPagesRequestType
     const { url } = query
 
     if (!url) {
@@ -48,25 +48,25 @@ export default defineEventHandler(async (event) => {
         })
       }
 
-      const pages: BilibiliPage[] = data.map(d => ({
+      const pages: BilibiliPageType[] = data.map(d => ({
         thumb: d.first_frame,
         name: d.part,
         page: d.page
       }))
 
       return { data: pages }
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Bilibili pages error:', error)
-      if (error.statusCode) {
+      if( !(error instanceof H3Error)) {
         throw error
       }
       throw createError({
         statusCode: 400,
-        statusMessage: `Error fetching pages for URL '${url}': ${error.message}`
+        statusMessage: `Error fetching pages for URL '${url}': ${error.message || error}`
       })
     }
-  } catch (error: any) {
-    if (error.statusCode) {
+  } catch (error) {
+    if( !(error instanceof H3Error)) {
       throw error
     }
     logger.error('Unexpected error in bilibili-pages endpoint:', error)

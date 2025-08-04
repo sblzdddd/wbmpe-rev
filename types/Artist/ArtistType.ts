@@ -1,11 +1,11 @@
 import type { TimeMetadata } from "../time_metadata";
-import type { SongList } from "../Song";
+import type { SongListType } from "../Song";
 
-export type Artist = {
+export type ArtistType = {
   _id: string;
   name: string;
   description: string;
   avatarUrl: string;
-  songList: SongList;
+  songList: SongListType;
 } & TimeMetadata
     

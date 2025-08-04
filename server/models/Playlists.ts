@@ -1,11 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
-
-import type { FullPlaylist, PlaylistMeta } from "../../types/Playlist/";
-import type { TimeMetadata } from "../../types/time_metadata";
 import type { CollectionSongItemDocument } from "./CollectionSongItem";
 import CollectionSongItemSchema from "./CollectionSongItem";
+const logger = BakaLogger.child({service: 'Playlists'})
 
 export type PlaylistDocument = {
   _id: string;
@@ -62,7 +60,7 @@ const playlistsSchema = new mongoose.Schema({
         
         return result;
       } catch (error) {
-        console.error("Error fetching full playlist data:", error);
+        logger.error("Error fetching full playlist data:", error);
         throw error; // Re-throw the error so it can be caught by the caller
       }
     },
@@ -119,4 +117,5 @@ const playlistsSchema = new mongoose.Schema({
 });
 
 const Playlists = mongoose.model('Playlists', playlistsSchema);
+logger.debug('model loaded')
 export default Playlists;

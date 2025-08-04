@@ -1,7 +1,3 @@
-import { imageUploadService } from '../../utils/imageUpload';
-import { makeid } from "../../utils/auth";
-import Users from "../../models/Users";
-
 const logger = BakaLogger.child({ service: 'PlaylistAPI' });
 
 export default defineEventHandler(async (event) => {
@@ -72,7 +68,6 @@ export default defineEventHandler(async (event) => {
 
       // Validate image type based on buffer
       const buffer = imageFile.data;
-      console.log(buffer.subarray(0, 8).toString('hex'))
       const isValidImage = buffer.length > 0 && (
         buffer.subarray(0, 3).toString('hex') === 'ffd8ff' || // JPEG
         buffer.subarray(0, 8).toString('hex') === '89504e470d0a1a0a' || // PNG

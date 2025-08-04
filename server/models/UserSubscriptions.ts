@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
+const logger = BakaLogger.child({service: 'UserSubscriptions'})
 
 const PlaylistSubscriptionItemSchema = new mongoose.Schema({
   playlist: {type: ObjectId, ref: 'Playlists', required: true},
@@ -36,4 +37,5 @@ const userSubscriptionsSchema = new mongoose.Schema({
 });
 
 const User_Subscriptions = mongoose.model('User_Subscriptions', userSubscriptionsSchema);
+logger.debug('model loaded')
 export default User_Subscriptions;

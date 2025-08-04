@@ -1,7 +1,5 @@
 import mongoose from "mongoose"
 import { MONGODB_URI } from "./baka"
-import UserAuth from "../models/UserAuth"
-import Users from "../models/Users"
 
 async function checkUsers() {
   try {

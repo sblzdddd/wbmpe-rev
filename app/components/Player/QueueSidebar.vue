@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { VList } from '~/components/ui/Virtua'
-import type { Song } from '#types/Song'
+import type { SongType } from '#types/Song'
 import { useDebounceFn } from '@vueuse/core'
 
 const { open, changeOpen } = useDialog()
@@ -61,7 +61,7 @@ const getOriginalIndex = (itemId: string) => {
 }
 
 // Helper function to check if an item in filtered queue is currently playing
-const isCurrentlyPlaying = (item: Song) => {
+const isCurrentlyPlaying = (item: SongType) => {
   const originalIndex = getOriginalIndex(item._id)
   return originalIndex === currentIndex.value && isPlaying.value
 }

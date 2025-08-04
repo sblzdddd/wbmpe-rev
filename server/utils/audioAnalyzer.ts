@@ -2,6 +2,8 @@ import ffmpeg from 'fluent-ffmpeg';
 import { promises as fs } from 'fs';
 import path from 'path';
 
+const logger = BakaLogger.child({service: 'AudioAnalyzer'})
+
 export interface AudioInfo {
   bitrate: number;
   sampleRate: number;
@@ -14,14 +16,14 @@ export async function analyzeAudioFile(filePath: string): Promise<AudioInfo | nu
   return new Promise((resolve) => {
     ffmpeg.ffprobe(filePath, (err, metadata) => {
       if (err) {
-        console.error(`Error analyzing ${filePath}:`, err.message);
+        logger.error(`Error analyzing ${filePath}:`, err.message);
         resolve(null);
         return;
       }
 
       const audioStream = metadata.streams?.find(stream => stream.codec_type === 'audio');
       if (!audioStream) {
-        console.error(`No audio stream found in ${filePath}`);
+        logger.error(`No audio stream found in ${filePath}`);
         resolve(null);
         return;
       }
@@ -74,11 +76,11 @@ export async function decreaseAudioBitrate(
       .audioChannels(2) // Stereo
       .audioFrequency(44100) // 44.1kHz sample rate
       .on('end', () => {
-        console.log(`Successfully converted ${inputPath} to ${quality} quality (${bitrate})`);
+        logger.info(`Successfully converted ${inputPath} to ${quality} quality (${bitrate})`);
         resolve(true);
       })
       .on('error', (err) => {
-        console.error(`Error converting ${inputPath} to ${quality} quality:`, err.message);
+        logger.error(`Error converting ${inputPath} to ${quality} quality:`, err.message);
         resolve(false);
       })
       .save(outputPath);
@@ -113,7 +115,7 @@ export async function createQualityVersions(
     
     return results;
   } catch (error) {
-    console.error('Error creating quality versions:', error);
+    logger.error('Error creating quality versions:', error);
     return results;
   }
 }

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+const logger = BakaLogger.child({service: 'PasswordResetToken'})
 const passwordResetTokenSchema = new mongoose.Schema({
   email: { type: String, required: true },
   token: { type: String, required: true, unique: true },
@@ -13,4 +13,5 @@ const passwordResetTokenSchema = new mongoose.Schema({
 passwordResetTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const PasswordResetToken = mongoose.model('PasswordResetToken', passwordResetTokenSchema);
+logger.debug('model loaded')
 export default PasswordResetToken;

@@ -1,5 +1,4 @@
-import logger from "../utils/BakaLogger";
-import { resetColor, levelColors } from "../utils/ConsoleColors";
+const logger = BakaLogger.child({service: 'Request'})
 
 // Request Logger
 // This middleware logs all incoming requests to the console and file
