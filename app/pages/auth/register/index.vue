@@ -22,7 +22,7 @@ const sendVerificationCode = async () => {
   success.value = ''
   
   try {
-    const response = await $fetch('/api/auth/send-verification', {
+    const response = await $fetch('/api/register/send-verification', {
       method: 'POST',
       body: { email: email.value }
     })

@@ -168,7 +168,6 @@
 
 <script setup lang="ts">
 import { DialogType } from '@/composables/UI/useDialog';
-import type { SongType } from '#types/Song';
 import type { PlayMode } from '@/composables/Player/usePlayer';
 
 const { 

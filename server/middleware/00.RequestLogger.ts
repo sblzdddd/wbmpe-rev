@@ -1,10 +1,4 @@
-const logger = BakaLogger.child({service: 'Request'})
-
-// Request Logger
-// This middleware logs all incoming requests to the console and file
-const requestLogger = logger.child({
-  service: 'API',
-})
+const requestLogger = BakaLogger.child({service: 'API'})
 
 requestLogger.log('success', 'Request logger initialized');
 

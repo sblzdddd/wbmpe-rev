@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 import { useSidebar } from './utils'
 
 const props = defineProps<{
-  class?: HTMLAttributes['class']
+  class?: string
 }>()
 
 const { toggleSidebar } = useSidebar()

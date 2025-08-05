@@ -5,7 +5,7 @@ const logger = BakaLogger.child({ service: 'SearchAPI' })
 export default defineEventHandler(async (event) => {
   try {
     const query = getQuery(event) as unknown as GetSuggestionsRequestType
-    const { keyword, platform } = query
+    const { keyword } = query
 
     if (!keyword) {
       throw createError({
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
       }
       throw createError({
         statusCode: 400,
-        statusMessage: `Error searching '${keyword}' in platform '${platform}': ${error.message || error}`
+        statusMessage: `Error getting suggestions for '${keyword}': ${error.message || error}`
       })
     }
   } catch (error) {
@@ -45,7 +45,6 @@ defineRouteMeta({
     description: "Get search suggestions for keywords",
     parameters: [
       { in: "query", name: "keyword", required: true, schema: { type: 'string' } },
-      { in: "query", name: "platform", required: false, schema: { type: 'string' } }
     ],
     responses: {
       '200': {
@@ -66,11 +65,9 @@ defineRouteMeta({
       },
       '400': {
         description: 'Bad request',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       }
     }
   }

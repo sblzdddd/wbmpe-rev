@@ -10,42 +10,11 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const body = await readBody(event);
-  const { songs, currentIndex, currentTime } = body;
-
-  // Validate input only if provided
-  if (songs !== undefined && songs !== null && !Array.isArray(songs)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Queue must be an array"
-    });
+  const result = await readValidatedBody(event, userQueueSchema.safeParse);
+  if (!result.success) {
+    throw createError({statusCode: 400, statusMessage: result.error.message})
   }
-
-  if (currentIndex !== undefined && currentIndex !== null && currentIndex < 0) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Current index must be a non-negative number"
-    });
-  }
-
-  if (currentTime !== undefined && currentTime !== null && currentTime < 0) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Current time must be a non-negative number"
-    });
-  }
-
-  // Validate queue items only if songs array is provided
-  if (songs && Array.isArray(songs)) {
-    for (const item of songs) {
-      if (!item.songId) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Each queue item must have songId"
-        });
-      }
-    }
-  }
+  const { songs, currentIndex, currentTime } = result.data;
 
   try {
     await Users.updateUserQueue(userId, songs, currentIndex, currentTime);

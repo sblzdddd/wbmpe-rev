@@ -29,14 +29,14 @@ const playlistsSchema = new mongoose.Schema({
   methods: {
   },
   statics: {
-    async hasReadAccess(playlistId: string, userId: string|null): Promise<boolean> {
+    async hasReadAccess(playlistId: ObjectId, userId: ObjectId|null): Promise<boolean> {
       const playlist = await Playlists.findById(playlistId)
       if(!playlist) {
         return false
       }
-      return playlist.owner?.toString() === userId || playlist.isPublic
+      return playlist.owner?.toString() === userId?.toString() || playlist.isPublic
     },
-    async findFullPlaylistData(playlistId: string): Promise<FullPlaylist> {
+    async findFullPlaylistData(playlistId: ObjectId): Promise<FullPlaylist> {
       try {
         // Get the playlist data
         const playlist = await Playlists.findById(playlistId)
@@ -76,7 +76,7 @@ const playlistsSchema = new mongoose.Schema({
       const playlist = await Playlists.create({playlistType: 'playlist', name, description, coverUrl, owner, songs: [], isPublic})
       return playlist.toObject() as unknown as PlaylistDocument;
     },
-    async getCreatedPlaylistInfo(playlistId: string): Promise<PlaylistMeta> {
+    async getCreatedPlaylistInfo(playlistId: ObjectId): Promise<PlaylistMeta> {
       const playlist = await Playlists.findById(playlistId)
         .select('-__v -songs -owner -description -createdAt -updatedAt')
         .lean();
@@ -85,7 +85,7 @@ const playlistsSchema = new mongoose.Schema({
       }
       return playlist as unknown as PlaylistMeta;
     },
-    async getLastSongCoverUrl(playlistId: string): Promise<string> {
+    async getLastSongCoverUrl(playlistId: ObjectId): Promise<string> {
       const result = await Playlists.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(playlistId) } },
         { $project: { firstSongId: { $arrayElemAt: ['$songs.song', 0] } } },

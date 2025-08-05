@@ -27,7 +27,10 @@ export const UnparsedSongSchema = new mongoose.Schema({
       
       // Return the songs with their database IDs by finding them
       const srcs = songs.map(song => song.src)
-      return await this.find({ src: { $in: srcs } }).lean() as unknown as UnparsedSongType[]
+      const unparsedSongs = await this.find({ src: { $in: srcs } })
+      .select('-__v -createdAt -updatedAt -album._id -artists._id -artists.createdAt -artists.updatedAt -album.createdAt -album.updatedAt')
+      .lean()
+      return unparsedSongs as unknown as UnparsedSongType[]
     }
   }
 });

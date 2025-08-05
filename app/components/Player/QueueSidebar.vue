@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { VList } from '~/components/ui/Virtua'
-import type { SongType } from '#types/Song'
 import { useDebounceFn } from '@vueuse/core'
 
 const { open, changeOpen } = useDialog()

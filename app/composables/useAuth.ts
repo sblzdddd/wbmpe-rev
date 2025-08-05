@@ -1,7 +1,3 @@
-
-import type { InternalApi } from 'nitropack'
-import type { ApiError } from '#types/Utils/ApiError'
-
 const loading = ref(false)
 const error = ref<string | null>(null)
 

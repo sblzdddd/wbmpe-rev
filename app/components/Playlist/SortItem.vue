@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { SongType } from "#types/Song"
 
 defineProps({
   index: {

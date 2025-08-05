@@ -88,25 +88,21 @@ export default defineNuxtConfig({
     'motion-v/nuxt'
   ],
 
-  
-  imports: {
-    dirs: [
-      'composables/**',
-      '../types/**'
-    ],
-    presets: [
-      {
-        from: 'animejs',
-        imports: ['animate', 'createSpring', 'createTimeline', {name: 'Timeline', type: true}]
-      }
-    ]
-  },
-
 
   image: {
     aliyun: {
       baseURL: process.env.NUXT_IMAGE_ALIYUN_BASE_URL || 'https://no-cdn-you-baka.site'
-    }
+    },
+    providers: {
+      proxy: {
+        name: 'proxy',
+        provider: '~/providers/proxy-provider.ts'
+      },
+      netease: {
+        name: 'netease',
+        provider: '~/providers/netease-provider.ts'
+      }
+    },
   },
 
   // security: {
@@ -180,11 +176,32 @@ export default defineNuxtConfig({
   //   },
   // },
 
+  
+  imports: {
+    dirs: [
+      'composables/**',
+      '../types/**',
+      '../shared/validators/**',
+      'components/ui/sidebar/'
+    ],
+    presets: [
+      {
+        from: 'animejs',
+        imports: ['animate', 'createSpring', 'createTimeline', {name: 'Timeline', type: true}]
+      },
+      {
+        from: 'nitropack',
+        imports: [{name: 'InternalApi', type: true}]
+      }
+    ]
+  },
+
   nitro: {
     imports: {
       dirs: [
         './server/models',
-        './types/**'
+        './types/**',
+        './shared/validators/**',
       ]
     },
     experimental: {

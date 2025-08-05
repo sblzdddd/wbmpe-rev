@@ -54,7 +54,7 @@ export async function searchSongNetease(keyword: string, page: number): Promise<
       }
       // Process artists using shared utility
       const artists = res.artists.map(neteaseArtist => 
-        processArtist(neteaseArtist.name, neteaseArtist.id.toString(), "netease" as SourcePlatformTypes, artistLookup)
+        processArtist(neteaseArtist.name, neteaseArtist.id.toString(), "netease" as SourcePlatforms, artistLookup)
       )
       const picId = res.album.picId
       const picUrl = `https://p3.music.126.net/${await encryptId(picId)}/${picId}.jpg?param=150y150`
@@ -62,7 +62,7 @@ export async function searchSongNetease(keyword: string, page: number): Promise<
       const album = processAlbum(
         res.album.name,
         res.album.id.toString(),
-        "netease" as SourcePlatformTypes,
+        "netease" as SourcePlatforms,
         picUrl,
         albumLookup
       )
@@ -72,8 +72,8 @@ export async function searchSongNetease(keyword: string, page: number): Promise<
         name: name,
         artists: artists,
         album: album,
-        duration: res.duration,
-        platform: "netease" as SourcePlatformTypes
+        duration: Math.floor(res.duration / 1000),
+        platform: "netease" as SourcePlatforms
       }
 
       unsavedUnparsedSongs.push(unparsedSong)
@@ -89,3 +89,14 @@ export async function searchSongNetease(keyword: string, page: number): Promise<
     throw new Error(`Error searching '${keyword}' in platform 'netease': ${error}`)
   }
 }
+
+// export async function getSuggestions(keyword: string): Promise<string[]> {
+//   try {
+//     const url = `https://music.163.com/api/search/suggest/web?csrf_token=hlpretag=&hlposttag=&s=${keyword}`
+//     const response = await $fetch(url, { responseType: 'json' })
+//     const result = response as NeteaseSearchResponse
+//     return result.result.songs.map(song => song.name)
+//   } catch (error) {
+//     throw new Error(`Error getting suggestions for '${keyword}': ${error}`)
+//   }
+// }

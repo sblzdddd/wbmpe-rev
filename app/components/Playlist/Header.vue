@@ -28,7 +28,6 @@
   </div>
 </template>
 <script setup lang="ts">
-import { useSidebar } from '~/components/ui/sidebar';
 
 const route = useRoute();
 const id = route.params.id;

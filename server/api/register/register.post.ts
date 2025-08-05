@@ -1,15 +1,11 @@
-import { z } from 'zod'
-
 const logger = BakaLogger.child({ service: 'Auth' })
 
-const bodySchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-  userName: z.string().min(3),
-})
-
 export default defineEventHandler(async (event) => {
-  const { email, password, userName } = await readValidatedBody(event, bodySchema.parse)
+  const result = await readValidatedBody(event, registerSchema.safeParse)
+  if (!result.success) {
+    throw createError({statusCode: 400, statusMessage: result.error.message})
+  }
+  const { email, password, userName } = result.data
 
   try {
     // Check if email already exists
@@ -63,38 +59,17 @@ export default defineEventHandler(async (event) => {
 
 defineRouteMeta({
   openAPI: {
-    $global: {
-      components: {
-        schemas: {
-          RegisterRequest: {
-            type: 'object',
-            properties: {
-              email: { type: 'string', format: 'email' },
-              password: { type: 'string' },
-              userName: { type: 'string' }
-            },
-            required: ['email', 'password', 'userName']
-          },
-        }
-      }
-    },
-    tags: ["Auth"],
+    tags: ["Register"],
     description: "User registration",
-    requestBody: {
-      content: { 'application/json': { schema: { $ref: '#/components/schemas/RegisterRequest' } } }
-    },
     responses: {
       '200': {
         description: 'Registration successful',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserInfoResponse' } } }
       },
       '400': {
         description: 'Bad request - email or username already exists',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       }
     }
   }

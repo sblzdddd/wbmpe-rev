@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { motion } from "motion-v"
-import type { RoutePath } from "#types/Utils/RoutePath"
 
 defineProps<{
   data: {
@@ -32,7 +31,7 @@ const routePath = useState<RoutePath>('routePath')
               <span class="ml-2 text-sm">{{ item.title }}</span>
             </SidebarMenuButton>
             <motion.div
-              v-if="item.url == routePath.next"
+              v-if="item.url == routePath.next || (item.url.includes('/search') && routePath.next.includes('/search'))"
               layout-id="nav-highlighter"
               class="absolute inset-0 bg-black/15 dark:bg-white/15 rounded-md" 
               :transition="{ type: 'spring', stiffness: 400, damping: 30, mass: 1 }"

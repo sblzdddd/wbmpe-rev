@@ -1,14 +1,7 @@
-import { z } from 'zod'
-
-const bodySchema = z.object({
-  token: z.string(),
-  password: z.string().min(8)
-})
-
 const logger = BakaLogger.child({service: 'ResetPasswordAPI'})
 
 export default defineEventHandler(async (event) => {
-  const { token, password } = await readValidatedBody(event, bodySchema.parse)
+  const { token, password } = await readValidatedBody(event, resetPasswordSchema.parse);
   logger.info('Password reset attempt', { token: token.substring(0, 8) + '...' })
 
   try {
@@ -72,44 +65,17 @@ export default defineEventHandler(async (event) => {
 
 defineRouteMeta({
   openAPI: {
-    $global: {
-      components: {
-        schemas: {
-          ResetPasswordRequest: {
-            type: 'object',
-            properties: {
-              token: { type: 'string' },
-              password: { type: 'string' }
-            },
-            required: ['token', 'password']
-          },
-          ResetPasswordResponse: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              message: { type: 'string' }
-            }
-          },
-        }
-      }
-    },
     tags: ["Auth"],
     description: "Reset password with token",
-    requestBody: {
-      content: { 'application/json': { schema: { $ref: '#/components/schemas/ResetPasswordRequest' } } }
-    },
     responses: {
       '200': {
         description: 'Password reset successful',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/ResetPasswordResponse' } } }
       },
       '400': {
         description: 'Invalid or expired token',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       }
     }
   }

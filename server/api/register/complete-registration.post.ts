@@ -1,30 +1,11 @@
 const logger = BakaLogger.child({ service: 'CompleteRegistration' })
 
 export default defineEventHandler(async (event) => {
-  const { verificationToken, userName, password } = await readBody(event)
-
-  if (!verificationToken || !userName || !password) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Verification token, username, and password are required'
-    })
+  const result = await readValidatedBody(event, completeRegistrationSchema.safeParse)
+  if (!result.success) {
+    throw createError({statusCode: 400, statusMessage: result.error.message})
   }
-
-  // Validate username (min 3 characters)
-  if (userName.length < 3) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Username must be at least 3 characters long'
-    })
-  }
-
-  // Validate password (min 8 characters)
-  if (password.length < 8) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Password must be at least 8 characters long'
-    })
-  }
+  const { verificationToken, userName, password } = result.data
 
   try {
     // Find and validate the verification token

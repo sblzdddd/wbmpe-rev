@@ -17,28 +17,14 @@ export default defineEventHandler(async (event) => {
 
 defineRouteMeta({
   openAPI: {
-    $global: {
-      components: {
-        schemas: {
-          LogoutResponse: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' }
-            }
-          },
-        }
-      }
-    },
     tags: ["Auth"],
     description: "User logout",
     responses: {
       '200': {
         description: 'Logout successful',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/LogoutResponse' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       }
     }
   }

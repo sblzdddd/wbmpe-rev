@@ -31,54 +31,18 @@ export default defineEventHandler(async (event) => {
 
 defineRouteMeta({
   openAPI: {
-    $global: {
-      components: {
-        schemas: {
-          UserInfoResponse: {
-            type: 'object',
-            properties: {
-              user: { $ref: '#/components/schemas/UserInfo' }
-            }
-          },
-          UserInfo: {
-            type: 'object',
-            properties: {
-              _id: { type: 'string' },
-              userName: { type: 'string' },
-              nickName: { type: 'string' },
-              avatarUrl: { type: 'string' },
-              bio: { type: 'string', nullable: true },
-              createdPlaylists: { type: 'array', items: { $ref: '#/components/schemas/PlaylistMeta' } },
-              favorites: { $ref: '#/components/schemas/PlaylistMeta', nullable: true },
-              recent: { $ref: '#/components/schemas/PlaylistMeta', nullable: true }
-            }
-          },
-          PlaylistMeta: {
-            type: 'object',
-            properties: {
-              _id: { type: 'string' },
-              coverUrl: { type: 'string', nullable: true },
-              name: { type: 'string' }
-            }
-          }
-        }
-      }
-    },
 
     tags: ["User"],
     description: "Get current user information",
     responses: {
       '200': {
         description: 'Successful response',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserInfoResponse' } } }
       },
       '401': {
         description: 'Not authenticated',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       }
     }
   }

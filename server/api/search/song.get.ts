@@ -12,28 +12,22 @@ const platformWeights = {
 
 export default defineEventHandler(async (event) => {
   try {
-    const query = getQuery(event) as { keyword?: string; page?: string }
-    const { keyword, page } = query
-
-    if (!keyword || !page) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Missing required parameters: keyword, page'
-      })
+    const query = getQuery(event)
+    const result = await searchSongSchema.safeParse(query)
+    if (!result.success) {
+      throw createError({statusCode: 400, statusMessage: result.error.errors.map((e) => e.message).join('; ')})
     }
+    const { keyword, page } = result.data
 
     // Get stored songs from database
-    const storedSongs = await Songs.find({
-      name: { $regex: keyword, $options: 'i' }
-    })
-      .populate('artists')
-      .populate('album')
-      .limit(20)
-      .skip((Number(page) - 1) * 20)
+    let storedSongs: SongType[] = []
+    if(page === 1) {
+      storedSongs = await Songs.searchMultipleFullInfo(keyword)
+    }
 
     try {
       // Run all three platform searches in parallel, skipping individual saves
-      const [bilibiliResults, qqResults, neteaseResults] = await Promise.allSettled([
+      const platformResults = await Promise.allSettled([
         searchSongBilibili(keyword, Number(page)),
         searchSongQQ(keyword, Number(page)),
         searchSongNetease(keyword, Number(page))
@@ -42,20 +36,17 @@ export default defineEventHandler(async (event) => {
       // Collect all unparsed songs from successful searches
       const allUnparsedSongs: UnparsedSongWithoutId[] = []
       let totalPages = 1
-
-      if (bilibiliResults.status === 'fulfilled' && bilibiliResults.value.results) {
-        allUnparsedSongs.push(...bilibiliResults.value.results)
-        totalPages = Math.max(totalPages, bilibiliResults.value.totalPage)
-      }
-
-      if (qqResults.status === 'fulfilled' && qqResults.value.results) {
-        allUnparsedSongs.push(...qqResults.value.results)
-        totalPages = Math.max(totalPages, qqResults.value.totalPage)
-      }
-
-      if (neteaseResults.status === 'fulfilled' && neteaseResults.value.results) {
-        allUnparsedSongs.push(...neteaseResults.value.results)
-        totalPages = Math.max(totalPages, neteaseResults.value.totalPage)
+      
+      let i = 0;
+      for (const result of platformResults) {
+        i++
+        if (result.status === 'fulfilled' && result.value.results) {
+          logger.debug(`Successfully searched ${result.value.results.length} songs in platform ${i}`)
+          allUnparsedSongs.push(...result.value.results)
+          totalPages = Math.max(totalPages, result.value.totalPage)
+        } else {
+          logger.warn(`Failed to search ${result.status} in platform ${i}`, {result: result})
+        }
       }
 
       // Process unparsed songs only once
@@ -92,7 +83,7 @@ export default defineEventHandler(async (event) => {
       })
     }
   } catch (error: any) {
-    if( !(error instanceof H3Error)) {
+    if(error instanceof H3Error) {
       throw error
     }
     logger.error('Unexpected error in search endpoint:', error)
@@ -114,55 +105,13 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful response',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                platform: { type: 'string' },
-                page: { type: 'number' },
-                totalPage: { type: 'number' },
-                results: {
-                  type: 'array',
-                  items: { $ref: '#/components/schemas/SearchResult' }
-                },
-                stored_songs: {
-                  type: 'array',
-                  items: { $ref: '#/components/schemas/SongItem' }
-                }
-              }
-            }
-          }
-        }
       },
       '400': {
         description: 'Bad request',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       }
     },
-    $global: {
-      components: {
-        schemas: {
-          SearchResult: {
-            type: 'object',
-            properties: {
-              _id: { type: 'string' },
-              src: { type: 'string' },
-              name: { type: 'string' },
-              artistNames: { type: 'string' },
-              artists: { type: 'array', items: { type: 'object' } },
-              album: { type: 'string' },
-              pic: { type: 'string' },
-              duration: { type: 'number' },
-              addedTime: { type: 'number' }
-            }
-          }
-        }
-      }
-    }
   }
 })

@@ -1,4 +1,3 @@
-import { useSidebar } from "~/components/ui/sidebar"
 
 export const marginClass = computed(() => {
   const {open} = useSidebar()

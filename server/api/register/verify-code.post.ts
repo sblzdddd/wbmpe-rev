@@ -1,22 +1,11 @@
-const logger = BakaLogger.child({ service: 'VerifyCode' })
+const logger = BakaLogger.child({ service: 'RegisterVerifyCode' })
 
 export default defineEventHandler(async (event) => {
-  const { email, code } = await readBody(event)
-
-  if (!email || !code) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Email and code are required'
-    })
+  const result = await readValidatedBody(event, registerVerifyCodeSchema.safeParse)
+  if (!result.success) {
+    throw createError({statusCode: 400, statusMessage: result.error.message})
   }
-
-  // Validate code format (6 digits)
-  if (!/^\d{6}$/.test(code)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Code must be 6 digits'
-    })
-  }
+  const { email, code } = result.data
 
   try {
     // Find the verification token

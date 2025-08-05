@@ -1,14 +1,11 @@
 const logger = BakaLogger.child({ service: 'ValidateToken' })
 
 export default defineEventHandler(async (event) => {
-  const { email, verificationToken } = await readBody(event)
-
-  if (!email || !verificationToken) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Email and verification token are required'
-    })
+  const result = await readValidatedBody(event, registerVerifyTokenSchema.safeParse)
+  if (!result.success) {
+    throw createError({statusCode: 400, statusMessage: result.error.message})
   }
+  const { email, verificationToken } = result.data
 
   try {
     // Find the verification token

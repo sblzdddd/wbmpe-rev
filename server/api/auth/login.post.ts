@@ -1,14 +1,7 @@
-import { z } from 'zod'
-
-const bodySchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8)
-})
-
 const logger = BakaLogger.child({service: 'LoginAPI'})
 
 export default defineEventHandler(async (event) => {
-  const { email, password } = await readValidatedBody(event, bodySchema.parse)
+  const { email, password } = await readValidatedBody(event, loginSchema.parse);
   logger.info('Login request received', {email: email, password: password})
 
   try {
@@ -77,37 +70,17 @@ export default defineEventHandler(async (event) => {
 
 defineRouteMeta({
   openAPI: {
-    $global: {
-      components: {
-        schemas: {
-          LoginRequest: {
-            type: 'object',
-            properties: {
-              email: { type: 'string', format: 'email' },
-              password: { type: 'string' }
-            },
-            required: ['email', 'password']
-          },
-        }
-      }
-    },
     tags: ["Auth"],
     description: "User login",
-    requestBody: {
-      content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } } }
-    },
     responses: {
       '200': {
         description: 'Login successful',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/BasicUserResponse' } } }
       },
       '401': {
         description: 'Invalid credentials',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       }
     }
   }

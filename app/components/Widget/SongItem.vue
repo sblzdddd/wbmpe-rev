@@ -1,6 +1,4 @@
 <script setup lang="ts">
-// import type { Song } from "#types/Song"
-import type { SongType } from "#types/Song"
 
 const props = defineProps({
   index: {

@@ -29,8 +29,6 @@
 </template>
 <script setup lang="ts">
 import emblaCarouselVue from 'embla-carousel-vue'
-import type { Recom } from '#types/Home'
-
 
 const recom_item_class= `
 min-w-40 md:min-w-48 recom-item__item flex flex-col gap-3 py-0 relative cursor-pointer active:scale-[0.97] active:opacity-70 transition-all duration-100 ease-out

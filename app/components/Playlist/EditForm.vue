@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import type { PlaylistResponse } from '#types/Playlist';
 import { BACKGROUND } from '@/lib/background_settings';
-import type { InternalApi } from 'nitropack';
 
 const route = useRoute();
 const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;

@@ -205,7 +205,7 @@ const userSchema = new mongoose.Schema({
       // Delete the playlist from database
       await Playlists.findByIdAndDelete(playlistId);
     },
-    updateUserQueue: async (userId: string, songs: { songId: string }[] | null, currentIndex: number | null, currentTime: number | null): Promise<void> => {
+    updateUserQueue: async (userId: string, songs: { songId: ObjectId }[] | undefined, currentIndex: number | undefined, currentTime: number | undefined): Promise<void> => {
       const user = await Users.findById(userId);
       if (!user) {
         throw new Error('User not found');

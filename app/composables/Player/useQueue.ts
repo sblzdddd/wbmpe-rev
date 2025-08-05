@@ -1,7 +1,3 @@
-import type { SongType } from '#types/Song'
-import type { InternalApi } from 'nitropack'
-import type { ApiError } from '#types/Utils/ApiError'
-
 export type QueueState = {
   songs: SongType[],
   currentIndex: number,

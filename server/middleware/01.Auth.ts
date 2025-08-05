@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
     { path: '/api/playlist', methods: ['PUT', 'POST', 'DELETE'] }, // Protect update/create/delete operations only
     { path: '/api/user', methods: ['GET', 'POST', 'PUT'] },
     { path: '/api/upload', methods: ['POST'] },
+    { path: '/api/search', methods: ['GET', 'POST'] },
   ]
   
   // Check if this is a method-specific protected endpoint

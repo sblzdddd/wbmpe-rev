@@ -14,6 +14,7 @@ export type SongDocument = {
 
 interface SongModel extends mongoose.Model<SongDocument> {
   getMultipleFullInfo(srcs: string[]): Promise<SongType[]>;
+  searchMultipleFullInfo(keyword: string): Promise<SongType[]>;
 }
 
 export const SongSchema = new mongoose.Schema({
@@ -32,6 +33,14 @@ const Songs = mongoose.model<SongDocument, SongModel>('Songs', SongSchema);
 // Add static method after model creation
 Songs.getMultipleFullInfo = async function(srcs: string[]): Promise<SongType[]> {
   const songs = await this.find({ src: { $in: srcs } }).populate('album').populate('artists').lean()
+  return songs as unknown as SongType[]
+}
+Songs.searchMultipleFullInfo = async function(keyword: string): Promise<SongType[]> {
+  const songs = await this.find({ name: { $regex: keyword, $options: 'i' } })
+  .populate({path: 'album', select: '-songs'})
+  .populate({path: 'artists', select: '-songs'})
+  .select('-__v -createdAt -updatedAt')
+  .lean()
   return songs as unknown as SongType[]
 }
 logger.debug('model loaded')

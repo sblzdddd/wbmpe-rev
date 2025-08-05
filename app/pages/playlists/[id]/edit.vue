@@ -38,11 +38,7 @@
 import { Button } from '@/components/ui/button';
 import { TabPages } from '@/components/ui/tabs';
 import { BACKGROUND } from '@/lib/background_settings';
-import type { SEOData } from '#types/Utils/SEO';
-import { WindowVirtualizer } from '~/components/ui/Virtua';
-import { useSidebar } from '~/components/ui/sidebar';
-import type { InternalApi } from 'nitropack';
-import type { PlaylistResponse } from '#types/Playlist';
+import { WindowVirtualizer } from '@/components/ui/Virtua';
 
 const seoData = useState<SEOData>('seoData')
 const route = useRoute();
@@ -96,14 +92,15 @@ watch([() => route.query.tab], async ([newTab]) => {
 }, {deep: true, immediate: true})
 
 const { error, refresh: refreshFetch } = await useFetch(`/api/playlist/${id}`, {
-  key: `playlist-page-${id}`,
+  key: computed(() => `playlist-page-${id}`),
   onResponse({ response }) {
     // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {
       setBackground(response._data.data.coverUrl, BACKGROUND.playlist_edit);
     }
     seoData.value.title = `Edit Playlist ${response._data.data.name || 'Unknown'}`
-  }
+  },
+  lazy: false
 })
 
 if (error.value) {

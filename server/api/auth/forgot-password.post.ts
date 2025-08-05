@@ -1,13 +1,7 @@
-import { z } from 'zod'
-
-const bodySchema = z.object({
-  email: z.string().email()
-})
-
 const logger = BakaLogger.child({service: 'ForgotPasswordAPI'})
 
 export default defineEventHandler(async (event) => {
-  const { email } = await readValidatedBody(event, bodySchema.parse)
+  const { email } = await readValidatedBody(event, forgotPasswordSchema.parse);
   logger.info('Password reset request received', { email })
 
   try {
@@ -55,39 +49,14 @@ export default defineEventHandler(async (event) => {
 
 defineRouteMeta({
   openAPI: {
-    $global: {
-      components: {
-        schemas: {
-          ForgotPasswordRequest: {
-            type: 'object',
-            properties: {
-              email: { type: 'string', format: 'email' }
-            },
-            required: ['email']
-          },
-          ForgotPasswordResponse: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              message: { type: 'string' }
-            }
-          },
-        }
-      }
-    },
     tags: ["Auth"],
     description: "Request password reset",
-    requestBody: {
-      content: { 'application/json': { schema: { $ref: '#/components/schemas/ForgotPasswordRequest' } } }
-    },
     responses: {
       '200': {
         description: 'Password reset request processed',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/ForgotPasswordResponse' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
       }
     }
   }

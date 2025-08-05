@@ -1,0 +1,17 @@
+import type { z } from "zod"
+import type { H3Event } from "h3"
+
+export async function parseRouteParams<T extends z.ZodTypeAny>(
+  event: H3Event,
+  schema: T
+): Promise<z.infer<T>> {
+  const raw = Object.fromEntries(Object.entries(event.context.params || {}))
+  const result = await schema.safeParseAsync(raw)
+  if (!result.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: result.error.errors.map((e: z.ZodIssue) => e.message).join('; ')
+    })
+  }
+  return result.data
+}

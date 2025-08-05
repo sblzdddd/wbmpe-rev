@@ -1,6 +1,6 @@
 import OSS from 'ali-oss';
 import { randomUUID } from 'crypto';
-import BakaLogger from './BakaLogger';
+import BakaLogger from './logger/BakaLogger';
 
 const logger = BakaLogger.child({service: 'ImageUploadService'})
 

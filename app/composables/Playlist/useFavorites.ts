@@ -1,4 +1,3 @@
-import type { InternalApi } from 'nitropack';
 import { useUserPlaylist } from './useUserPlaylist';
 
 export const useFavorites = () => {

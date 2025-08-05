@@ -41,7 +41,7 @@ export async function searchSongBilibili(_keyword: string, page: number): Promis
     // Ensure we have the required cookies before making the API request
     const cookies = await ensureBilibiliCookies()
     
-    const url = `https://api.bilibili.com/x/web-interface/search/type?page=${page}&page_size=6&keyword=${_keyword}&search_type=video`
+    const url = `https://api.bilibili.com/x/web-interface/search/type?page=${page}&page_size=6&keyword=${_keyword}&search_type=video&highlight=0`
     
     // Prepare headers with cookies if available
     const headers: Record<string, string> = {
@@ -96,7 +96,7 @@ export async function searchSongBilibili(_keyword: string, page: number): Promis
       const artists = processArtist(res.author, res.mid.toString(), "bilibili" as SourcePlatforms, artistLookup)
       const picUrl = res.pic
       const album = processAlbum(
-        res.title,
+        "bilibili: " + res.bvid,
         res.bvid,
         "bilibili" as SourcePlatforms,
         picUrl,

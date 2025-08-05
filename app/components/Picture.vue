@@ -2,11 +2,11 @@
   <NuxtPicture
     v-slot="{ isLoaded, imgAttrs }"
     format="avif,webp"
-    :src="src.replace('cdn://', '/')"
+    :src="processedSrc"
     :alt="alt"
     :custom="true"
     v-bind="$attrs"
-    :provider="src.startsWith('cdn://') ? 'aliyun':'ipx'"
+    :provider="provider"
   >
   <img
     v-if="isLoaded"
@@ -18,7 +18,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
+import { useImageProxy } from '~/lib/useImageProxy'
+
+const props = defineProps({
   src: {
     type: String,
     required: true,
@@ -34,4 +36,6 @@ defineProps({
     default: true,
   },
 })
+
+const { processedSrc, provider } = useImageProxy(props.src)
 </script>

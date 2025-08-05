@@ -21,7 +21,7 @@ const checkingEmail = ref(true)
 
 onMounted(async () => {
   try {
-    const response = await $fetch('/api/auth/check-email-status', {
+    const response = await $fetch('/api/register/check-email-status', {
       method: 'POST',
       body: { email: email.value }
     })
@@ -62,7 +62,7 @@ const verifyCode = async () => {
   
   try {
     const codeString = code.value.join('')
-    const response = await $fetch('/api/auth/verify-code', {
+    const response = await $fetch('/api/register/verify-code', {
       method: 'POST',
       body: { 
         email: email.value,
@@ -89,7 +89,7 @@ const resendCode = async () => {
   error.value = ''
   
   try {
-    const response = await $fetch('/api/auth/send-verification', {
+    const response = await $fetch('/api/register/send-verification', {
       method: 'POST',
       body: { email: email.value }
     })

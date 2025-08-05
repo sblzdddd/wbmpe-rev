@@ -1,4 +1,6 @@
 export function paginate<T>(data: T[], page: number, limit: number): T[] {
+  // if limit is -1, disable pagination
+  if(limit === -1) return data;
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
   const results = data.slice(startIndex, endIndex);

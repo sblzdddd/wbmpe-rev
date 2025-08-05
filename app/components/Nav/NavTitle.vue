@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useSidebar } from '#shadcn/sidebar/utils'
 
 const colorMode = useColorMode()
 const { toggleSidebar } = useSidebar()

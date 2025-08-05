@@ -23,6 +23,15 @@ const streamsSchema = new mongoose.Schema({
         },
         video: stream?.video?.replace('cdn://', process.env.NUXT_IMAGE_ALIYUN_BASE_URL + '/') || null
       } 
+    },
+    parseSong: async (songId: string) => {
+      
+      // const stream = await Streams.findOne({ songId });
+      // return {
+      //   songId: songId,
+      //   audio: stream?.audio,
+      //   video: stream?.video
+      // }
     }
   }
 });

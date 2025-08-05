@@ -1,35 +1,11 @@
-import { ObjectId } from "mongodb";
-
 const logger = BakaLogger.child({ service: 'PlaylistDeleteAPI' });
 
 export default defineEventHandler(async (event) => {
   try {
     const userId = event.context.user?.id;
-    if (!userId) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Authentication required'
-      });
-    }
+    const { id: playlistId } = await parseRouteParams(event, playlistParamsSchema)
 
-    const id = getRouterParam(event, 'id');
-    const playlistId = id as string;
-
-    if (!isValidObjectIdString(playlistId)) {
-      logger.warn(`PlaylistDeleteAPI: Invalid playlist ID ${playlistId}`);
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Playlist not found'
-      });
-    }
-    const playlist = await Playlists.findById(playlistId);
-    if (!playlist) {
-      logger.warn(`PlaylistDeleteAPI: Playlist ${playlistId} not found`);
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Playlist not found'
-      });
-    }
+    const playlist = await checkPlaylistOwnership(event, playlistId);
 
     logger.info(`PlaylistDeleteAPI: Deleting playlist ${playlistId}`);
 
@@ -41,7 +17,7 @@ export default defineEventHandler(async (event) => {
           logger.warn('PlaylistDeleteAPI: Failed to delete playlist cover image', { error });
         }
       }
-      await Users.deletePlaylist(new ObjectId(userId), new ObjectId(playlistId));
+      await Users.deletePlaylist(userId, playlistId);
     } catch (modelError: unknown) {
       // Handle specific errors from the Users.deletePlaylist method
       if (modelError instanceof Error && modelError.message === 'User not found') {

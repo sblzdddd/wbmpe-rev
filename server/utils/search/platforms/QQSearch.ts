@@ -1,4 +1,4 @@
-import type { QQSearchResponse } from './Schemas'
+import type { QQSearchResponse, SuggestionResponse } from './Schemas'
 import { createLookupMaps, processArtist, processAlbum } from '../search_util'
 
 export async function searchSongQQ(keyword: string, page: number): Promise<SearchReturnType> {
@@ -27,7 +27,7 @@ export async function searchSongQQ(keyword: string, page: number): Promise<Searc
       if (item.pay.payplay === 1) continue
 
       const title = item.songname
-      const picUrl = `https://y.gtimg.cn/music/photo_new/T002R300x300M000${item.albummid}.jpg?max_age=2592000`
+      const picUrl = `https://y.gtimg.cn/music/photo_new/T002R300x300M000${item.albummid || item.grp[0].albummid || ''}.jpg?max_age=2592000`
       const src = item.grp?.[0]?.songurl || `https://y.qq.com/n/ryqq/songDetail/${item.songmid}`
       const duration = item.interval
 
@@ -37,14 +37,14 @@ export async function searchSongQQ(keyword: string, page: number): Promise<Searc
 
       // Process artists using shared utility
       const artists = item.singer.map(s => 
-        processArtist(s.name, s.mid, "qq" as SourcePlatformTypes, artistLookup)
+        processArtist(s.name, s.mid, "qq" as SourcePlatforms, artistLookup)
       )
 
       // Process album using shared utility
       const album = processAlbum(
         item.albumname,
         item.albummid,
-        "qq" as SourcePlatformTypes,
+        "qq" as SourcePlatforms,
         picUrl,
         albumLookup
       )
@@ -55,7 +55,7 @@ export async function searchSongQQ(keyword: string, page: number): Promise<Searc
         artists: artists,
         album: album,
         duration: duration,
-        platform: "qq" as SourcePlatformTypes
+        platform: "qq" as SourcePlatforms
       }
 
       unsavedUnparsedSongs.push(unparsedSong)
@@ -75,10 +75,9 @@ export async function searchSongQQ(keyword: string, page: number): Promise<Searc
 export async function getSuggestions(keyword: string): Promise<string[]> {
   try {
     const url = `https://c6.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg?format=json&key=${keyword}`
-    const response = await $fetch(url)
-    const info = response as { data: { song: { itemlist: Array<{ name: string; singer: string }> } } }
-    
-    return info.data.song.itemlist.map(i => i.name + i.singer)
+    const response = await $fetch(url, {responseType: 'json'})
+    const info = response as SuggestionResponse
+    return [...info.data.song.itemlist.map(i => i.name), ...info.data.album.itemlist.map(i => i.name), ...info.data.singer.itemlist.map(i => i.name)]
   } catch (error) {
     throw new Error(`Error getting suggestions for '${keyword}': ${error}`)
   }

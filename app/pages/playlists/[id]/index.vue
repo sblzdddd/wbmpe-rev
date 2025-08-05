@@ -99,7 +99,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { TabPages } from '@/components/ui/tabs';
 import { BACKGROUND } from '@/lib/background_settings';
 import type { SEOData } from '#types/Utils/SEO';
-import { useSidebar } from '~/components/ui/sidebar';
 import { WindowVirtualizer } from '~/components/ui/Virtua/'
 import type { RoutePath } from "#types/Utils/RoutePath"
 import type { PlaylistResponse } from '#types/Playlist';
@@ -173,14 +172,15 @@ watch([() => sortMode.value, () => sortOrder.value], async ([newSortMode, newSor
 }, {deep: true})
 
 const { error, refresh: refreshFetch } = await useFetch(`/api/playlist/${id}`, {
-  key: `playlist-page-${id}`,
+  key: computed(() => `playlist-page-${id}`),
   onResponse({ response }) {
     // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {
       setBackground(response._data.data.coverUrl, BACKGROUND.playlist);
     }
     seoData.value.title = `${response._data.data.name || 'Playlist'}`
-  }
+  },
+  lazy: false
 })
 
 const playlist = useNuxtData<PlaylistResponse>(`playlist-page-${id}`);

@@ -9,7 +9,5 @@
   </Dialog>
 </template>
 <script setup lang="ts">
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-
 const { open, changeOpen } = useDialog()
 </script>

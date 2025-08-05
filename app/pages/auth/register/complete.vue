@@ -21,7 +21,7 @@ const validatingToken = ref(true)
 
 onMounted(async () => {
   try {
-    const response = await $fetch('/api/auth/validate-token', {
+    const response = await $fetch('/api/register/validate-token', {
       method: 'POST',
       body: {
         email: email.value,
@@ -64,7 +64,7 @@ const completeRegistration = async () => {
   success.value = ''
   
   try {
-    const response = await $fetch('/api/auth/complete-registration', {
+    const response = await $fetch('/api/register/complete-registration', {
       method: 'POST',
       body: { 
         verificationToken: verificationToken.value,

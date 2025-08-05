@@ -1,5 +1,3 @@
-import type { InternalApi } from 'nitropack';
-
 export const useUserPlaylist = () => {
   const playlists = useNuxtData<InternalApi['/api/user/playlists']['get']>('userPlaylists');
   
@@ -17,7 +15,7 @@ export const useUserPlaylist = () => {
       }
 
       // Submit to API
-      const response = await $fetch<InternalApi['/api/playlist']['post']>('/api/playlist', {
+      const response = await $fetch<InternalApi['/api/playlist/new']['post']>('/api/playlist/new', {
         method: 'POST',
         body: formData,
         onRequest: () => {
@@ -48,8 +46,8 @@ export const useUserPlaylist = () => {
     
     try {
       // Call the delete API endpoint
-      const response = await $fetch<{success: boolean, message: string}>(`/api/playlist/${id}/delete`, {
-        method: 'POST',
+      const response = await $fetch<InternalApi['/api/playlist/:id']['delete']>(`/api/playlist/${id}`, {
+        method: 'DELETE',
         onRequest: () => {
           if (playlists.data.value?.createdPlaylists) {
             playlists.data.value.createdPlaylists = playlists.data.value.createdPlaylists.filter(playlist => playlist._id !== id)

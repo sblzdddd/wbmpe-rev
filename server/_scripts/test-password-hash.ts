@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import { MONGODB_URI } from "./baka"
-import { hashPasswordCustom, verifyPasswordCustom } from "../utils/auth"
+import { hashPasswordCustom, verifyPasswordCustom } from "../utils/auth_utils"
 
 async function testPasswordHashing() {
   try {

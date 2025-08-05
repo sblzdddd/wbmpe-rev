@@ -1,32 +1,19 @@
+// get playlist by id
+
 const logger = BakaLogger.child({service: 'PlaylistAPI'})
 
 export default defineEventHandler(async (event) => {
   try {
-    const id = getRouterParam(event, 'id')
-    const playlistId = id as string
-    if (!isValidObjectIdString(playlistId)) {
-      logger.warn('PlaylistAPI: Invalid playlist ID', {playlistId})
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Playlist not found'
-      })
-    }
+    const { id: playlistId } = await parseRouteParams(event, playlistParamsSchema)
 
-    const hasReadAccess = await Playlists.hasReadAccess(playlistId, event.context.user?.id)
-    if(!hasReadAccess) {
-      logger.warn('PlaylistAPI: Unauthorized access attempt', {playlistId})
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'You are not allowed to access this playlist'
-      })
-    }
+    await checkPlaylistReadAccess(event, playlistId);
 
     logger.info('PlaylistAPI: Getting playlist data', {playlistId})
 
     // Get pagination parameters from query
-    const query = getQuery(event)
-    const page = parseInt(query.page as string) || 1
-    const limit = parseInt(query.limit as string) || 100
+    // const query = getQuery(event)
+    // const page = parseInt(query.page as string) || 1
+    // const limit = parseInt(query.limit as string) || 100
 
     const playlist = await Playlists.findFullPlaylistData(playlistId)
     
@@ -38,7 +25,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const songList = await createSongList(playlist.songs, page, limit)
+    const songList = await createSongList(playlist.songs, 1, -1)
     
     return {
       data: {

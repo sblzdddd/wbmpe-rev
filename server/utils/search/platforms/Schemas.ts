@@ -264,5 +264,61 @@ export type Datum = {
   watched_show:        null;
 }
 
-
+export type SuggestionResponse = {
+  code:    number;
+  data:    {
+    album:  {
+      count:    number;
+      itemlist: {
+        docid:  string;
+        id:     string;
+        mid:    string;
+        name:   string;
+        pic:    string;
+        singer: string;
+      }[];
+      name:     string;
+      order:    number;
+      type:     number;
+    };
+    mv:     {
+      count:    number;
+      itemlist: {
+        docid:  string;
+        id:     string;
+        mid:    string;
+        name:   string;
+        singer: string;
+        vid:    string;
+      }[];
+      name:     string;
+      order:    number;
+      type:     number;
+    };
+    singer: {
+      count:    number;
+      itemlist: {
+        docid:  string;
+        id:     string;
+        mid:    string;
+        name:   string;
+        singer: string;
+      }[];
+      name:     string;
+      order:    number;
+      type:     number;
+    };
+    song:   {
+      count:    number;
+      itemlist: {
+        docid:  string;
+        id:     string;
+        mid:    string;
+        name:   string;
+        singer: string;
+      }[];
+    };
+  };
+  subcode: number;
+}
 

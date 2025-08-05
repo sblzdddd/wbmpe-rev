@@ -3,60 +3,23 @@ const logger = BakaLogger.child({ service: 'PlaylistCoverAPI' });
 export default defineEventHandler(async (event) => {
   try {
     const userId = event.context.user?.id;
-    if (!userId) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Authentication required'
-      });
-    }
 
-    const id = getRouterParam(event, 'id');
-    const playlistId = id as string;
-
-    if (!isValidObjectIdString(playlistId)) {
-      logger.warn('PlaylistCoverAPI: Invalid playlist ID', { playlistId });
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Playlist not found'
-      });
-    }
+    const { id: playlistId } = await parseRouteParams(event, playlistParamsSchema)
 
     logger.info('PlaylistCoverAPI: Uploading playlist cover', { playlistId, userId });
 
-    // Find playlist and verify ownership
-    const playlist = await Playlists.findById(playlistId);
-    if (!playlist) {
-      logger.warn('PlaylistCoverAPI: Playlist not found', { playlistId });
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Playlist not found'
-      });
-    }
-
-    // Check ownership
-    if (playlist.owner?.toString() !== userId) {
-      logger.warn('PlaylistCoverAPI: Unauthorized access attempt', { 
-        playlistId, 
-        userId, 
-        ownerId: playlist.owner?.toString() 
-      });
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'You can only edit your own playlists'
-      });
-    }
+    const playlist = await checkPlaylistOwnership(event, playlistId);
 
     // Parse multipart form data
     const form = await readMultipartFormData(event);
-    if (!form) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'No form data provided'
-      });
+    const result = playlistCoverSchema.safeParse({cover: form?.find(item => item.name === 'cover')});
+    if (!result.success) {
+      throw createError({statusCode: 400, statusMessage: result.error.message});
     }
+    const { cover } = result.data;
 
     // Find image file in form data
-    const imageFile = form.find(item => item.name === 'cover');
+    const imageFile = cover;
     if (!imageFile || !imageFile.data) {
       throw createError({
         statusCode: 400,
@@ -70,29 +33,6 @@ export default defineEventHandler(async (event) => {
     const extension = filename.split('.').pop();
     const buffer = imageFile.data;
 
-    // Basic validation
-    if (buffer.length > 5 * 1024 * 1024) { // 5MB limit
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'File size too large. Maximum size is 5MB.'
-      });
-    }
-
-    // Validate image type based on buffer
-    const isValidImage = buffer.length > 0 && (
-      buffer.subarray(0, 3).toString('hex') === 'ffd8ff' || // JPEG
-      buffer.subarray(0, 8).toString('hex') === '89504e470d0a1a0a' || // PNG
-      buffer.subarray(0, 6).toString() === 'GIF87a' || buffer.subarray(0, 6).toString() === 'GIF89a' || // GIF
-      buffer.subarray(0, 4).toString() === 'RIFF' // WebP
-    );
-
-    if (!isValidImage) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid image format. Only JPEG, PNG, GIF, and WebP are supported.'
-      });
-    }
-
     // Delete old cover if it exists
     if (playlist.coverUrl) {
       logger.info('PlaylistCoverAPI: Old cover URL found');
@@ -100,7 +40,11 @@ export default defineEventHandler(async (event) => {
     }
 
     // Upload new cover to OSS
-    const uploadResult = await imageUploadService.uploadPlaylistCover(buffer, `${filenameWithoutExtension}-${makeid(10)}.${extension}`, playlistId);
+    const uploadResult = await imageUploadService.uploadPlaylistCover(
+      buffer, 
+      `${filenameWithoutExtension}-${makeid(10)}.${extension}`, 
+      playlistId.toString()
+    );
 
     // Update playlist with new cover URL
     const updatedPlaylist = await Playlists.findByIdAndUpdate(

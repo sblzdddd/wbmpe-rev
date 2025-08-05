@@ -1,78 +1,20 @@
+// update playlist by id
+
 const logger = BakaLogger.child({ service: 'PlaylistUpdateAPI' });
 
 export default defineEventHandler(async (event) => {
   try {
-    const userId = event.context.user?.id;
-    if (!userId) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Authentication required'
-      });
-    }
-
-    const id = getRouterParam(event, 'id');
-    const playlistId = id as string;
-
-    if (!isValidObjectIdString(playlistId)) {
-      logger.warn(`PlaylistUpdateAPI: Invalid playlist ID ${playlistId}`);
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Playlist not found'
-      });
-    }
+    const { id: playlistId } = await parseRouteParams(event, playlistParamsSchema)
 
     logger.info(`PlaylistUpdateAPI: Updating playlist ${playlistId}`);
 
-    // Find playlist and verify ownership
-    const playlist = await Playlists.findById(playlistId);
-    if (!playlist) {
-      logger.warn(`PlaylistUpdateAPI: Playlist ${playlistId} not found`);
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Playlist not found'
-      });
+    const playlist = await checkPlaylistOwnership(event, playlistId);
+
+    const result = playlistUpdateSchema.safeParse(await readValidatedBody(event, playlistUpdateSchema.parse));
+    if (!result.success) {
+      throw createError({statusCode: 400, statusMessage: result.error.message});
     }
-
-    // Check ownership
-    if (playlist.owner?.toString() !== userId) {
-      logger.warn('PlaylistUpdateAPI: Unauthorized access attempt', { 
-        playlistId, 
-        userId, 
-        ownerId: playlist.owner?.toString() 
-      });
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'You can only edit your own playlists'
-      });
-    }
-
-    // Parse request body
-    const body = await readBody(event);
-    const { name, description, coverUrl, isPublic } = body;
-
-    // Validate provided fields
-    if (name !== undefined) {
-      if (!name || typeof name !== 'string' || name.trim().length === 0) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: 'Playlist name cannot be empty'
-        });
-      }
-
-      if (name.length > 24) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: 'Playlist name must be 24 characters or less'
-        });
-      }
-    }
-
-    if (description !== undefined && description.length > 500) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Description must be 500 characters or less'
-      });
-    }
+    const { name, description, coverUrl, isPublic } = result.data;
 
     // Build update data with only provided fields
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -96,16 +38,10 @@ export default defineEventHandler(async (event) => {
     // Handle cover URL update
     if (coverUrl !== undefined) {
       // If coverUrl is empty string, remove the cover
-      if (coverUrl === '') {
-        // Delete old cover if it exists
-        if (playlist.coverUrl) {
-          await imageUploadService.deleteImage(playlist.coverUrl);
-        }
-        updateData.coverUrl = '';
-      } else if (coverUrl && typeof coverUrl === 'string') {
-        // Update with new cover URL
-        updateData.coverUrl = coverUrl;
+      if (coverUrl === '' && playlist.coverUrl) {
+        await imageUploadService.deleteImage(playlist.coverUrl);
       }
+      updateData.coverUrl = coverUrl;
     }
 
     // Update the playlist

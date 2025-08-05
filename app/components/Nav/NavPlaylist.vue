@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { motion } from "motion-v"
-import type { RoutePath } from "#types/Utils/RoutePath"
-import type { PlaylistMeta } from "#types/Playlist"
 
 defineProps<{
   data: PlaylistMeta[]
