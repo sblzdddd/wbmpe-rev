@@ -103,7 +103,7 @@ export const playlistIdParam = playlistIdParams.pick({ id: true }).meta({
 
 // -----------REQUEST SCHEMAS-----------
 
-export const playlistCreateRequest = z.object({
+export const PlaylistCreateRequest = z.object({
   name: z.string().min(1, 'Playlist name is required').max(24, 'Playlist name must be 24 characters or less').meta({
     description: 'The name of the playlist',
     example: 'My Playlist',
@@ -126,7 +126,7 @@ export const playlistCreateRequest = z.object({
   }).optional(),
 });
 
-export const playlistUpdateRequest = z.object({
+export const PlaylistInfoUpdateRequest = z.object({
   name: z.string().max(24).optional().meta({
     description: 'The name of the playlist',
     example: 'My Playlist',
@@ -145,7 +145,7 @@ export const playlistUpdateRequest = z.object({
   }),
 });
 
-export const playlistCoverUpdateRequest = z.object({
+export const PlaylistCoverUpdateRequest = z.object({
   cover: imageFileSchemaCoerced("Cover Image", 5 * 1024 * 1024).meta({
     description: 'The cover image of the playlist',
     example: '[no example]',
@@ -154,11 +154,11 @@ export const playlistCoverUpdateRequest = z.object({
 
 // -----------RESPONSE SCHEMAS-----------
 
-export const playlistResponse = z.object({
+export const PlaylistResponse = z.object({
   data: paginatedPlaylistSchema,
 });
 
-export const playlistCreateResponse = z.object({
+export const PlaylistCreateResponse = z.object({
   success: z.boolean().meta({
     description: 'Whether the operation was successful',
     example: true,
@@ -191,7 +191,7 @@ export const playlistCreateResponse = z.object({
   }),
 });
 
-export const playlistUpdateResponse = z.object({
+export const PlaylistUpdateResponse = z.object({
   success: z.boolean().meta({
     description: 'Whether the operation was successful',
     example: true,
@@ -220,7 +220,7 @@ export const playlistUpdateResponse = z.object({
   }),
 });
 
-export const playlistCoverUploadResponse = z.object({
+export const PlaylistCoverUploadResponse = z.object({
   success: z.boolean().meta({
     description: 'Whether the upload was successful',
     example: true,
@@ -241,14 +241,14 @@ export const playlistCoverUploadResponse = z.object({
   }),
 });
 
-export const playlistDeleteResponse = successResponseSchema.extend({
+export const PlaylistDeleteResponse = successResponseSchema.extend({
   message: z.string().meta({
     description: 'Success message',
     example: 'Playlist deleted successfully',
   }),
 });
 
-export const playlistListResponse = z.object({
+export const PlaylistListResponse = z.object({
   data: z.array(playlistMetaSchema).meta({
     description: 'Array of user playlists',
   }),
@@ -256,7 +256,3 @@ export const playlistListResponse = z.object({
 
 // Legacy exports for backward compatibility
 export const PlaylistRequestParamsInternal = playlistIdParam;
-export const PlaylistRequestIdParam = playlistIdParam;
-export const PlaylistCreateRequest = playlistCreateRequest;
-export const PlaylistInfoUpdateRequest = playlistUpdateRequest;
-export const PlaylistCoverUpdateRequest = playlistCoverUpdateRequest;

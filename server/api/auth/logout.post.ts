@@ -22,7 +22,7 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Logout successful',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/logoutResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/successResponseSchema' } } }
       },
       '500': {
         description: 'Internal server error',

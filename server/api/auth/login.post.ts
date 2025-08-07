@@ -75,7 +75,7 @@ defineRouteMeta({
     requestBody: {
       required: true,
       content: {
-        'application/json': { schema: { $ref: '#/components/schemas/loginRequest' } }
+        'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } }
       }
     },
     responses: {

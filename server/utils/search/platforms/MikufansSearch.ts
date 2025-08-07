@@ -93,12 +93,12 @@ export async function searchSongBilibili(_keyword: string, page: number): Promis
       if (songLookup.has(url)) {
         continue
       }
-      const artists = processArtist(res.author, res.mid.toString(), "bilibili" as SourcePlatforms, artistLookup)
+      const artists = processArtist(res.author, res.mid.toString(), "bilibili", artistLookup)
       const picUrl = res.pic
       const album = processAlbum(
         "bilibili: " + res.bvid,
         res.bvid,
-        "bilibili" as SourcePlatforms,
+        "bilibili",
         picUrl,
         albumLookup
       )
@@ -108,7 +108,7 @@ export async function searchSongBilibili(_keyword: string, page: number): Promis
         artists: [artists],
         album,
         duration: res.duration.split(':').reduce((acc, curr, index) => acc + (index === 0 ? Number(curr) * 60 : Number(curr)), 0),
-        platform: "bilibili" as SourcePlatforms
+        platform: "bilibili"
       }
       unsavedUnparsedSongs.push(song)
     }

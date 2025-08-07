@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-const props = defineProps<{
+defineProps<{
   isPage?: boolean
 }>()
 
@@ -101,7 +101,7 @@ watch(email, () => {
       
       <div class="text-center text-sm">
         <NuxtLink
-          v-if="props.isPage"
+          v-if="isPage"
           to="/auth/login"
           class="underline underline-offset-4"
         >

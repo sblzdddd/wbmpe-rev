@@ -75,7 +75,7 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Playlist deleted successfully',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/playlistDeleteResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/PlaylistDeleteResponse' } } }
       },
       '400': {
         description: 'Bad Request',

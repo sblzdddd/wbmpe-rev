@@ -11,9 +11,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // not completed, ignore the error
     const stream = await Streams.parseSong(songId);
-    // @ts-expect-error not completed, ignore the error
     if (!stream) {
       throw createError({
         statusCode: 404,
@@ -25,10 +23,24 @@ export default defineEventHandler(async (event) => {
       data: stream
     };
   } catch (error) {
-    logger.error('Error fetching audio stream:', error);
+    logger.error('Error parsing song:', error);
+    if (error instanceof Error) {
+      if (error.message.includes('not found')) {
+        throw createError({
+          statusCode: 404,
+          statusMessage: error.message
+        });
+      }
+      if (error.message.includes('Duration is too long')) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: error.message
+        });
+      }
+    }
     throw createError({
       statusCode: 500,
-      statusMessage: "Failed to fetch audio stream"
+      statusMessage: "Failed to parse song"
     });
   }
 });

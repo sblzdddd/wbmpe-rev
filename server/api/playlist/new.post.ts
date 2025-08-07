@@ -101,7 +101,7 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Playlist created successfully',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/playlistCreateResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/PlaylistCreateResponse' } } }
       },
       '400': {
         description: 'Bad request',

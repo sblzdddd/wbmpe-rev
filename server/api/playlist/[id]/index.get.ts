@@ -58,7 +58,7 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful response',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/playlistResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/PlaylistResponse' } } }
       },
       '400': {
         description: 'Bad Request',

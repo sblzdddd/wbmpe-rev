@@ -54,7 +54,7 @@ defineRouteMeta({
     requestBody: {
       required: true,
       content: {
-        'application/json': { schema: { $ref: '#/components/schemas/forgotPasswordRequest' } }
+        'application/json': { schema: { $ref: '#/components/schemas/ForgotPasswordRequest' } }
       }
     },
     responses: {

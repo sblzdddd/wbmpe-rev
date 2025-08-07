@@ -30,7 +30,7 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful response',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/userQueueResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserQueueResponse' } } }
       },
       '401': {
         description: 'Not authenticated',

@@ -118,7 +118,7 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful upload',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/playlistCoverUploadResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/PlaylistCoverUploadResponse' } } }
       },
       '400': {
         description: 'Bad request',

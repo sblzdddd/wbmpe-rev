@@ -138,7 +138,8 @@ function getHandlersMeta(): {
 
   for (const h of handlersMeta) {
     // const { route, parameters } = normalizeRoute(h.route || "");
-    if(h.route?.startsWith('/_')) continue
+    console.log(h.route);
+    if(h.route?.startsWith('/_') || h.route === undefined) continue
     const { route } = normalizeRoute(h.route || "");
     const tags = defaultTags(h.route || "");
     const method = (h.method || "get").toLowerCase() as Lowercase<HTTPMethod>;

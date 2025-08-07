@@ -96,14 +96,14 @@ defineRouteMeta({
       required: true,
       content: {
         'application/json': {
-          schema: { $ref: '#/components/schemas/playlistUpdateRequest' }
+          schema: { $ref: '#/components/schemas/PlaylistInfoUpdateRequest' }
         }
       }
     },
     responses: {
       '200': {
         description: 'Successful update',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/playlistUpdateResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/PlaylistUpdateResponse' } } }
       },
       '400': {
         description: 'Bad request',

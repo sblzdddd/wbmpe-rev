@@ -34,7 +34,7 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful response',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/userFavoritesResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserFavoritesResponse' } } }
       },
       '401': {
         description: 'Not authenticated',

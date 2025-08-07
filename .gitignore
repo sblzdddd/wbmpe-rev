@@ -30,3 +30,6 @@ baka.ts
 .env.sentry-build-plugin
 sentry.client.config.ts
 sentry.server.config.ts
+
+cookies.txt
+temp

@@ -10,6 +10,7 @@ await useFetch('/api/user/me', {
   default: () => (fallbackUserInfo)
 })
 const { user, logout } = useAuth()
+const { activeTasks, recentTasks, notificationCount, isConnected } = useTasks()
 
 // User panel state and refs
 const showUserPanel = ref(false)
@@ -42,20 +43,6 @@ const spring = createSpring({
   damping: 50,
   velocity: 18,
 })
-
-const getRelativePosition = (element: HTMLElement, container: HTMLElement) => {
-  const elementRect = element.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-
-  return {
-    top: elementRect.top - containerRect.top,
-    left: elementRect.left - containerRect.left,
-    right: containerRect.right - elementRect.right,
-    bottom: containerRect.bottom - elementRect.bottom,
-    width: elementRect.width,
-    height: elementRect.height
-  };
-}
 
 watch(() => colorMode.value, () => {
   if (showUserPanel.value) {
@@ -93,38 +80,7 @@ watch(() => isOnTop.value, () => {
   }
 })
 
-const getAvatarAndNamePosition = async () => {
-  showUserPanelDOM.value = true
-  showUserInfo.value = true
-  await nextTick()
-
-  const userAvatar = document.querySelector(".user-avatar") as HTMLElement
-  const userName = document.querySelector(".user-name") as HTMLElement
-  const userPanelRoot = document.querySelector(".user-panel-root") as HTMLElement
-
-  if(!userAvatar || !userName || !userPanelRoot) {
-    console.warn("User avatar, user name or user panel root not found")
-    return {
-      imageRelativePosition: undefined,
-      nameRelativePosition: undefined
-    }
-  }
-
-  const imageRelativePosition = getRelativePosition(userAvatar, userPanelRoot)
-  const nameRelativePosition = getRelativePosition(userName, userPanelRoot)
-  return {
-    imageRelativePosition,
-    nameRelativePosition
-  }
-}
-
 const openUserPanel = async () => {
-  const { imageRelativePosition, nameRelativePosition } = await getAvatarAndNamePosition()
-  if(!imageRelativePosition || !nameRelativePosition) {
-    console.warn("Image relative position or name relative position not found")
-    return
-  }
-
   showUserPanel.value = true
   showUserPanelDOM.value = true
   showUserInfo.value = false
@@ -132,25 +88,13 @@ const openUserPanel = async () => {
 
   const userPanelRoot = document.querySelector(".user-panel-root") as HTMLElement
   const userPanelBackdrop = document.querySelector(".user-panel-backdrop") as HTMLElement
-  const userPanelAvatar = document.querySelector(".user-panel-avatar") as HTMLElement
-  const userPanelName = document.querySelector(".user-panel-name") as HTMLElement
 
-  if(!userPanelBackdrop || !userPanelAvatar || !userPanelName || !userPanelRoot) {
-    console.warn("User panel backdrop, avatar, name or root not found")
+  if(!userPanelBackdrop || !userPanelRoot) {
+    console.warn("User panel backdrop or root not found")
     return
   }
   const backdropEndWidth = userPanelRoot.clientWidth || 240
   const backdropEndHeight = userPanelRoot.clientHeight || 500
-
-  const imageEndPosition = {right: 150, top: 28}
-  const nameEndPosition = {right: 130 - nameRelativePosition.width * 1.3, top: 36}
-
-  userPanelAvatar.style.transformOrigin = `top right`
-  userPanelName.style.transformOrigin = `top right`
-  userPanelAvatar.style.top = `${imageRelativePosition.top}px`
-  userPanelAvatar.style.right = `${imageRelativePosition.right}px`
-  userPanelName.style.top = `${nameRelativePosition.top}px`
-  userPanelName.style.right = `${nameRelativePosition.right}px`
 
   await nextTick()
   if (timeline) {
@@ -168,20 +112,6 @@ const openUserPanel = async () => {
     backgroundColor: `#${isOnTop.value ? colorMode.value == "dark" ? contentBGDark: contentBGLight : colorMode.value == "dark" ? contentBGDarkSolid: contentBGLightSolid}`,
     ease: spring,
   }, 0)
-  timeline.add(userPanelAvatar, {
-    scale: 4,
-    right: `${imageEndPosition.right}px`,
-    top: `${imageEndPosition.top}px`,
-    ease: "outQuart",
-    duration: 350,
-  }, 0)
-  timeline.add(userPanelName, {
-    scale: 1.3,
-    fontWeight: 500,
-    right: `${nameEndPosition.right}px`,
-    top: `${nameEndPosition.top}px`,
-    ease: spring
-  }, 0)
   timeline.add(".user-panel-header, .user-panel-content", {
     opacity: 1,
     ease: spring
@@ -189,38 +119,18 @@ const openUserPanel = async () => {
 }
 
 const closeUserPanel = async (callback: () => void = () => {}) => {
-  
-  const { imageRelativePosition, nameRelativePosition } = await getAvatarAndNamePosition()
-  if(!imageRelativePosition || !nameRelativePosition) {
-    console.warn("Image relative position or name relative position not found")
-    return
-  }
-
   showUserPanel.value = false
   showUserPanelDOM.value = true
   showUserInfo.value = false
   await nextTick()
 
-  
   const userPanelRoot = document.querySelector(".user-panel-root") as HTMLElement
   const userPanelBackdrop = document.querySelector(".user-panel-backdrop") as HTMLElement
-  const userPanelAvatar = document.querySelector(".user-panel-avatar") as HTMLElement
-  const userPanelName = document.querySelector(".user-panel-name") as HTMLElement
 
-  if(!userPanelBackdrop || !userPanelAvatar || !userPanelName || !userPanelRoot) {
-    console.warn("User panel backdrop, avatar, name or root not found")
+  if(!userPanelBackdrop || !userPanelRoot) {
+    console.warn("User panel backdrop or root not found")
     return
   }
-
-  const imageStartPosition = {right: 150, top: 28}
-  const nameStartPosition = {right: 130 - nameRelativePosition.width * 1.3, top: 36}
-
-  userPanelAvatar.style.transformOrigin = `top right`
-  userPanelName.style.transformOrigin = `top right`
-  userPanelAvatar.style.top = `${imageStartPosition.top}px`
-  userPanelAvatar.style.right = `${imageStartPosition.right}px`
-  userPanelName.style.top = `${nameStartPosition.top}px`
-  userPanelName.style.right = `${nameStartPosition.right}px`
 
   const size = document.querySelector(".user-panel-toggle")?.clientWidth || 28
   if (timeline) {
@@ -235,19 +145,6 @@ const closeUserPanel = async (callback: () => void = () => {}) => {
   timeline.add(".user-panel-header, .user-panel-content", {
     opacity: 0,
     ease: spring
-  }, 0)
-  timeline.add(userPanelAvatar, {
-    scale: 1,
-    right: `${imageRelativePosition.right}px`,
-    top: `${imageRelativePosition.top}px`,
-    ease: spring,
-  }, 0)
-  timeline.add(userPanelName, {
-    scale: 1,
-    fontWeight: 100,
-    right: `${nameRelativePosition.right}px`,
-    top: `${nameRelativePosition.top}px`,
-    ease: spring,
   }, 0)
   timeline.add(userPanelBackdrop, {
     scale: 1,
@@ -293,40 +190,109 @@ onUnmounted(() => {
 <template>
   <div v-if="user.data.value && user.data.value._id" class="flex items-center gap-2">
     <div class="user-info-root">
-      <template v-if="showUserInfo">
-        <div class="user-avatar">
-          <Image :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" :img-attrs="{class: 'w-5 h-5'}" />
-        </div>
-        <span class="user-name">{{ user.data.value.nickName || user.data.value.userName }}</span>
-      </template>
+      <div class="user-avatar">
+        <Image :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" :img-attrs="{class: 'w-5 h-5'}" />
+      </div>
+      <span class="user-name">{{ user.data.value.nickName || user.data.value.userName }}</span>
 
       <div class="user-panel-toggle" :class="{'user-panel-toggle--interactive': !showUserPanel}" @click="onToggleClicked">
         <Icon name="lucide:align-justify" size="14" class="user-panel-toggle-icon" :class="{'user-panel-toggle-icon--light-open': colorMode.value == 'light' && showUserPanel}" />
         <div v-show="showUserPanelDOM" class="user-panel-root">
           <div class="user-panel-backdrop" :class="{'backdrop-blur-md': isOnTop}" />
-          <div class="user-panel-header">
+          <div class="user-panel-header" style="opacity: 0;">
             <Widget-ThemeSwitcher class="rounded-full" />
             <Button variant="ghost" size="icon" class="w-7 h-7 rounded-full" @click.stop="toggleUserPanel">
               <Icon name="lucide:align-justify" size="14" />
             </Button>
           </div>
-          <div class="user-panel-avatar">
-            <Image :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" :img-attrs="{class: 'w-5 h-5'}" />
-          </div>
-          <span class="user-panel-name">{{ user.data.value.nickName || user.data.value.userName }}</span>
-          <div class="user-panel-content">
+          <div class="user-panel-content" style="opacity: 0;">
             <div class="user-panel-user-info">
-              <Button variant="outline" size="sm" class="h-8 rounded-full">
-                <Icon name="lucide:user" size="16" /> Profile
-              </Button>
-              <Button variant="outline" size="icon" class="w-8 h-8 rounded-full" @click.stop="handleLogout">
-                <Icon name="lucide:log-out" size="16" />
-              </Button>
+              <div class="user-panel-avatar">
+                <Image class="size-18 min-size-18" :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" />
+              </div>
+              <div class="flex flex-col gap-2">
+                <span class="user-panel-name">{{ user.data.value.nickName || user.data.value.userName }}</span>
+                <div class="flex">
+                  <Button variant="outline" size="sm" class="h-8 rounded-full">
+                    <Icon name="lucide:user" size="16" /> Profile
+                  </Button>
+                  <Button variant="outline" size="icon" class="w-8 h-8 rounded-full" @click.stop="handleLogout">
+                    <Icon name="lucide:log-out" size="16" />
+                  </Button>
+                </div>
+              </div>
             </div>
             <div class="user-panel-inbox">
               <div class="user-panel-inbox-header">
-                <p class="user-panel-inbox-title"><Icon name="lucide:inbox" size="16" /> Inbox</p>
-                <button class="user-panel-inbox-mark-read"><Icon name="lucide:check" size="16" /> Mark all as read</button>
+                <p class="user-panel-inbox-title">
+                  <Icon name="lucide:inbox" size="16" /> 
+                  Inbox
+                  <span v-if="notificationCount > 0" class="notification-count">{{ notificationCount }}</span>
+                </p>
+                <div class="flex items-center gap-2">
+                  <div v-if="isConnected" class="connection-status connected" title="Connected">
+                    <Icon name="lucide:wifi" size="12" />
+                  </div>
+                  <div v-else class="connection-status disconnected" title="Disconnected">
+                    <Icon name="lucide:wifi-off" size="12" />
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Active Tasks -->
+              <div v-if="activeTasks.length > 0" class="user-panel-inbox-section">
+                <h4 class="inbox-section-title">Processing</h4>
+                <div class="inbox-task-list">
+                  <div v-for="task in activeTasks" :key="task._id" class="inbox-task-item">
+                    <div class="task-info">
+                      <div class="task-title">{{ task.songName }}</div>
+                      <div class="task-artist">{{ task.artistName }}</div>
+                      <div class="task-status">{{ task.progressMessage || task.status }}</div>
+                    </div>
+                    <div class="task-progress">
+                      <div class="progress-bar">
+                        <div 
+                          class="progress-fill" 
+                          :style="{ width: task.progress + '%' }"
+                          :class="{
+                            'progress-downloading': task.status === 'downloading',
+                            'progress-processing': task.status === 'processing',
+                            'progress-pending': task.status === 'pending'
+                          }"
+                        ></div>
+                      </div>
+                      <div class="progress-text">{{ task.progress }}%</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Recent Completed Tasks -->
+              <div v-if="recentTasks.length > 0" class="user-panel-inbox-section">
+                <h4 class="inbox-section-title">Recent</h4>
+                <div class="inbox-task-list">
+                  <div v-for="task in recentTasks" :key="task._id" class="inbox-task-item completed">
+                    <div class="task-info">
+                      <div class="task-title">{{ task.songName }}</div>
+                      <div class="task-artist">{{ task.artistName }}</div>
+                      <div class="task-status">
+                        <Icon 
+                          :name="task.status === 'completed' ? 'lucide:check-circle' : 'lucide:x-circle'" 
+                          size="12" 
+                          :class="task.status === 'completed' ? 'text-green-500' : 'text-red-500'"
+                        />
+                        {{ task.status === 'completed' ? 'Completed' : 'Failed' }}
+                        <span v-if="task.errorMessage" class="error-message">: {{ task.errorMessage }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Empty State -->
+              <div v-if="activeTasks.length === 0 && recentTasks.length === 0" class="inbox-empty">
+                <Icon name="lucide:inbox" size="24" class="opacity-50" />
+                <p class="text-sm opacity-75">No parsing tasks</p>
               </div>
             </div>
           </div>
@@ -392,14 +358,12 @@ onUnmounted(() => {
 
 /* User panel avatar styles */
 .user-panel-avatar {
-  @apply absolute w-5 h-5 rounded-full flex items-center justify-center overflow-hidden;
-  transform-origin: top right;
+  @apply rounded-full flex items-center justify-center overflow-hidden size-18;
 }
 
 /* User panel name styles */
 .user-panel-name {
-  @apply text-xs absolute scale-100;
-  transform-origin: top right;
+  @apply text-lg pl-1;
 }
 
 /* User panel content styles */
@@ -409,7 +373,7 @@ onUnmounted(() => {
 
 /* User panel user info styles */
 .user-panel-user-info {
-  @apply flex items-center gap-2 ml-23 mt-8 mb-4.5 relative;
+  @apply flex items-center gap-2 relative mb-2;
 }
 
 /* User panel inbox styles */
@@ -427,6 +391,94 @@ onUnmounted(() => {
 
 .user-panel-inbox-mark-read {
   @apply bg-none cursor-pointer text-xs opacity-50 flex items-center gap-1;
+}
+
+.notification-count {
+  @apply bg-primary text-primary-foreground text-xs rounded-full px-2 py-0.5 ml-2;
+}
+
+.connection-status {
+  @apply flex items-center justify-center w-4 h-4 rounded-full;
+}
+
+.connection-status.connected {
+  @apply bg-green-500/20 text-green-500;
+}
+
+.connection-status.disconnected {
+  @apply bg-red-500/20 text-red-500;
+}
+
+.user-panel-inbox-section {
+  @apply mb-4;
+}
+
+.inbox-section-title {
+  @apply text-xs font-medium uppercase tracking-wide opacity-75 mb-2;
+}
+
+.inbox-task-list {
+  @apply space-y-2;
+}
+
+.inbox-task-item {
+  @apply p-2 rounded-md bg-black/5 dark:bg-white/5 border border-border/50;
+}
+
+.inbox-task-item.completed {
+  @apply opacity-75;
+}
+
+.task-info {
+  @apply mb-2;
+}
+
+.task-title {
+  @apply text-sm font-medium truncate;
+}
+
+.task-artist {
+  @apply text-xs opacity-75 truncate;
+}
+
+.task-status {
+  @apply text-xs opacity-60 flex items-center gap-1 mt-1;
+}
+
+.task-progress {
+  @apply flex items-center gap-2;
+}
+
+.progress-bar {
+  @apply flex-1 h-2 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-full transition-all duration-300 ease-out;
+}
+
+.progress-pending {
+  @apply bg-gray-400;
+}
+
+.progress-downloading {
+  @apply bg-blue-500;
+}
+
+.progress-processing {
+  @apply bg-yellow-500;
+}
+
+.progress-text {
+  @apply text-xs font-mono opacity-75;
+}
+
+.inbox-empty {
+  @apply flex flex-col items-center justify-center py-6 text-center;
+}
+
+.error-message {
+  @apply text-red-500 text-xs;
 }
 
 /* Animation styles */

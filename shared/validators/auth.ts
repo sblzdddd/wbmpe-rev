@@ -4,16 +4,16 @@ import { simpleUserSchema } from './user';
 
 // -----------REQUEST SCHEMAS-----------
 
-export const loginRequest = z.object({
+export const LoginRequest = z.object({
   email: emailSchema,
   password: passwordSchema,
 });
 
-export const forgotPasswordRequest = z.object({
+export const ForgotPasswordRequest = z.object({
   email: emailSchema,
 });
 
-export const resetPasswordRequest = z.object({
+export const ResetPasswordRequest = z.object({
   token: z.string().meta({
     description: "The token for resetting the password",
     example: "baka".repeat(32),
@@ -41,9 +41,3 @@ export const resetPasswordResponse = successResponseSchema.extend({
   }),
 });
 
-export const logoutResponse = successResponseSchema;
-
-// Legacy exports for backward compatibility
-export const LoginRequest = loginRequest;
-export const ForgotPasswordRequest = forgotPasswordRequest;
-export const ResetPasswordRequest = resetPasswordRequest;

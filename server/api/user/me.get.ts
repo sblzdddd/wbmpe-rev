@@ -1,7 +1,5 @@
 const logger = BakaLogger.child({service: 'UserMeAPI'})
 
-type BasicUserResponse = Omit<UserInfoResponse['user'], 'createdPlaylists' | 'favorites' | 'recent'>
-
 export default defineEventHandler(async (event) => {
   try {
     const userId = event.context.user?.id
@@ -13,9 +11,7 @@ export default defineEventHandler(async (event) => {
       })
     }
     
-    const user = await Users.getBasicUserInfo(userId)
-
-    return user as BasicUserResponse
+    return await Users.getBasicUserInfo(userId)
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error 
@@ -36,7 +32,7 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful response',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/userMeResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserMeResponse' } } }
       },
       '401': {
         description: 'Not authenticated',

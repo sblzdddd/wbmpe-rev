@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { apiStatusResponseSchema } from './common';
 
 // -----------CONTENT SCHEMAS-----------
 
@@ -60,5 +59,3 @@ export const exploreResponse = z.object({
     description: 'Explore page content sections',
   }),
 });
-
-export const apiIndexResponse = apiStatusResponseSchema;

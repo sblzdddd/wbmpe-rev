@@ -1,6 +1,4 @@
 export const getImage = (src: string, { modifiers = {} }: { modifiers: Record<string, unknown> }) => {
-
-  console.log('modifiers', modifiers)
   // Extract width and height from modifiers
   const width = modifiers.width as number | undefined
   const height = modifiers.height as number | undefined

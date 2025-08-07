@@ -37,14 +37,14 @@ export async function searchSongQQ(keyword: string, page: number): Promise<Searc
 
       // Process artists using shared utility
       const artists = item.singer.map(s => 
-        processArtist(s.name, s.mid, "qq" as SourcePlatforms, artistLookup)
+        processArtist(s.name, s.mid, "qq", artistLookup)
       )
 
       // Process album using shared utility
       const album = processAlbum(
         item.albumname,
         item.albummid,
-        "qq" as SourcePlatforms,
+        "qq",
         picUrl,
         albumLookup
       )
@@ -55,7 +55,7 @@ export async function searchSongQQ(keyword: string, page: number): Promise<Searc
         artists: artists,
         album: album,
         duration: duration,
-        platform: "qq" as SourcePlatforms
+        platform: "qq"
       }
 
       unsavedUnparsedSongs.push(unparsedSong)

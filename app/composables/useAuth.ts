@@ -55,7 +55,7 @@ export const useAuth = () => {
     loading.value = true
     error.value = null
     
-    await $fetch<InternalApi['/api/auth/register']['post']>('/api/auth/register', {
+    await $fetch<InternalApi['/api/register/complete-registration']['post']>('/api/register/complete-registration', {
       method: 'POST',
       body: { email, password, userName },
       onResponse: () => {

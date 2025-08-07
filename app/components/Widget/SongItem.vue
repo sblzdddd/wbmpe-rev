@@ -24,9 +24,21 @@ const { isPlaying, pause } = usePlayer()
 const { currentSong } = useQueue()
 
 const { isFavorite, toggleFavorite } = useFavorites()
+const { createParseTask } = useTasks()
 
 const playSong = async () => {
-  emit('play', props.index, props.song)
+  // For unparsed songs, create a parse task instead of playing
+  if (props.song.src && typeof props.song.src === 'string' && props.song.src.startsWith('http')) {
+    try {
+      await createParseTask(props.song._id)
+      console.log('Parse task created for song:', props.song.name)
+    } catch (error) {
+      console.error('Failed to create parse task:', error)
+    }
+  } else {
+    // For parsed songs, emit play event
+    emit('play', props.index, props.song)
+  }
 }
 
 const pauseSong = async () => {
@@ -66,7 +78,7 @@ const formatDuration = (seconds: number) => {
       </button>
     </div>
     <div class="flex gap-2 items-center grow pr-6">
-      <Picture :src="props.song.album.coverUrl" class="block size-9 min-w-9 min-h-9 rounded-sm" :img-attrs="{class: 'w-9 h-9 rounded-sm'}" :modifiers="{resize: {s: 100}}" :alt="song.name" />
+      <Picture :src="song.album.coverUrl" class="block size-9 min-w-9 min-h-9 rounded-sm" :img-attrs="{class: 'w-9 h-9 rounded-sm'}" :modifiers="{resize: {s: 100}}" :alt="song.name" />
       <div class="grow pb-0.5 flex flex-col items-left h-full gap-1">
         <div class="flex justify-start">
           <a class="songItem-title">{{ song.name }}</a>

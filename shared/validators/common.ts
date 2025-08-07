@@ -142,7 +142,7 @@ export const successResponseSchema = z.object({
   }),
 });
 
-export const apiStatusResponseSchema = z.object({
+export const apiIndexResponse = z.object({
   status: z.string().meta({
     description: 'API status',
     example: 'ok',

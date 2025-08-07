@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-const props = defineProps<{
+defineProps<{
   isPage?: boolean
 }>()
 
@@ -69,7 +69,7 @@ const startOAuth = (provider: string) => {
         <div class="flex items-center">
           <Label for="password"><Icon name="lucide:lock" size="16" class="mx-1" />Password</Label>
           <NuxtLink
-            v-if="props.isPage"
+            v-if="isPage"
             to="/auth/forgot-password"
             class="ml-auto text-sm underline-offset-2 hover:underline"
           >

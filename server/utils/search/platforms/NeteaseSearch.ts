@@ -54,7 +54,7 @@ export async function searchSongNetease(keyword: string, page: number): Promise<
       }
       // Process artists using shared utility
       const artists = res.artists.map(neteaseArtist => 
-        processArtist(neteaseArtist.name, neteaseArtist.id.toString(), "netease" as SourcePlatforms, artistLookup)
+        processArtist(neteaseArtist.name, neteaseArtist.id.toString(), "netease", artistLookup)
       )
       const picId = res.album.picId
       const picUrl = `https://p3.music.126.net/${await encryptId(picId)}/${picId}.jpg?param=150y150`
@@ -62,7 +62,7 @@ export async function searchSongNetease(keyword: string, page: number): Promise<
       const album = processAlbum(
         res.album.name,
         res.album.id.toString(),
-        "netease" as SourcePlatforms,
+        "netease",
         picUrl,
         albumLookup
       )
@@ -73,7 +73,7 @@ export async function searchSongNetease(keyword: string, page: number): Promise<
         artists: artists,
         album: album,
         duration: Math.floor(res.duration / 1000),
-        platform: "netease" as SourcePlatforms
+        platform: "netease"
       }
 
       unsavedUnparsedSongs.push(unparsedSong)

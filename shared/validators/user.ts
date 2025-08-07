@@ -26,7 +26,7 @@ export const simpleUserSchema = z.object({
   }),
 });
 
-export const playlistMetaSchema = z.object({
+const playlistMetaSchema = z.object({
   _id: z.string().meta({
     description: 'Playlist ID',
     example: '6863722013b04be86cb7a555',
@@ -103,16 +103,16 @@ export const userQueueUpdateRequest = z.object({
 
 // -----------RESPONSE SCHEMAS-----------
 
-export const userMeResponse = simpleUserSchema;
+export const UserMeResponse = simpleUserSchema;
 
-export const userPlaylistsResponse = userPlaylistsSchema;
+export const UserPlaylistsResponse = userPlaylistsSchema;
 
-export const userFavoritesResponse = z.array(z.string()).meta({
+export const UserFavoritesResponse = z.array(z.string()).meta({
   description: 'Array of favorite song IDs',
   example: ['6863722013b04be86cb7a555', '6863722013b04be86cb7a556'],
 });
 
-export const userQueueResponse = z.object({
+export const UserQueueResponse = z.object({
   songs: z.array(z.object({
     songId: z.string().meta({
       description: 'Song ID',
@@ -131,6 +131,6 @@ export const userQueueResponse = z.object({
   }),
 });
 
-export const userInfoResponse = z.object({
+export const UserInfoResponse = z.object({
   user: userInfoSchema,
 });

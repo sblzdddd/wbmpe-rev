@@ -70,7 +70,6 @@ export function useImageProxy(src: string) {
     
     // If using Netease domain, use netease provider
     if (isNetease(urlToCheck)) {
-      console.log('isNetease', urlToCheck, 'netease')
       return 'netease'
     }
     
