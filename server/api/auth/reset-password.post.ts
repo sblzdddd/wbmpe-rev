@@ -1,7 +1,7 @@
 const logger = BakaLogger.child({service: 'ResetPasswordAPI'})
 
 export default defineEventHandler(async (event) => {
-  const { token, password } = await readValidatedBody(event, resetPasswordSchema.parse);
+  const { token, password } = await readValidatedBody(event, ResetPasswordRequest.parse);
   logger.info('Password reset attempt', { token: token.substring(0, 8) + '...' })
 
   try {
@@ -67,15 +67,24 @@ defineRouteMeta({
   openAPI: {
     tags: ["Auth"],
     description: "Reset password with token",
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': { schema: { $ref: '#/components/schemas/resetPasswordRequest' } }
+      }
+    },
     responses: {
       '200': {
         description: 'Password reset successful',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/resetPasswordResponse' } } }
       },
       '400': {
         description: 'Invalid or expired token',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

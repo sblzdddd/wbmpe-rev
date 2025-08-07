@@ -7,10 +7,13 @@ export async function parseRouteParams<T extends z.ZodTypeAny>(
 ): Promise<z.infer<T>> {
   const raw = Object.fromEntries(Object.entries(event.context.params || {}))
   const result = await schema.safeParseAsync(raw)
+  console.log(result.error?.issues)
   if (!result.success) {
     throw createError({
       statusCode: 400,
-      statusMessage: result.error.errors.map((e: z.ZodIssue) => e.message).join('; ')
+      statusMessage: "Parameters validation error",
+      message: result.error.issues.map((issue) => issue.message).join('; '),
+      data: result.error.issues
     })
   }
   return result.data

@@ -4,13 +4,13 @@ const logger = BakaLogger.child({ service: 'PlaylistUpdateAPI' });
 
 export default defineEventHandler(async (event) => {
   try {
-    const { id: playlistId } = await parseRouteParams(event, playlistParamsSchema)
+    const { id: playlistId } = await parseRouteParams(event, PlaylistRequestParamsInternal)
 
     logger.info(`PlaylistUpdateAPI: Updating playlist ${playlistId}`);
 
     const playlist = await checkPlaylistOwnership(event, playlistId);
 
-    const result = playlistUpdateSchema.safeParse(await readValidatedBody(event, playlistUpdateSchema.parse));
+    const result = PlaylistInfoUpdateRequest.safeParse(await readValidatedBody(event, PlaylistInfoUpdateRequest.parse));
     if (!result.success) {
       throw createError({statusCode: 400, statusMessage: result.error.message});
     }
@@ -90,68 +90,40 @@ defineRouteMeta({
     tags: ["Playlist"],
     description: "Update a playlist's metadata (partial updates supported)",
     parameters: [
-      { in: "path", name: "id", required: true, schema: { type: 'string' } }
+      { $ref: '#/components/parameters/playlistIdParam' }
     ],
     requestBody: {
       required: true,
       content: {
         'application/json': {
-          schema: {
-            type: 'object',
-            properties: {
-              name: { type: 'string', description: 'Playlist name (optional for partial update)' },
-              description: { type: 'string', description: 'Playlist description (optional for partial update)' },
-              coverUrl: { type: 'string', description: 'Cover image URL (empty string to remove, optional for partial update)' },
-              isPublic: { type: 'boolean', description: 'Whether the playlist is public (optional for partial update)' }
-            },
-
-          }
+          schema: { $ref: '#/components/schemas/playlistUpdateRequest' }
         }
       }
     },
     responses: {
       '200': {
         description: 'Successful update',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                success: { type: 'boolean' },
-                data: {
-                  type: 'object',
-                  properties: {
-                    _id: { type: 'string' },
-                    name: { type: 'string' },
-                    description: { type: 'string' },
-                    coverUrl: { type: 'string' },
-                    isPublic: { type: 'boolean' }
-                  }
-                }
-              }
-            }
-          }
-        }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/playlistUpdateResponse' } } }
       },
       '400': {
         description: 'Bad request',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '401': {
         description: 'Unauthorized',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '403': {
         description: 'Forbidden',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '404': {
         description: 'Playlist not found',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

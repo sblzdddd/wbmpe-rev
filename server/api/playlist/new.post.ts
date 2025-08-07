@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     if (!form) {throw createError({statusCode: 400, statusMessage: 'No form data provided'});}
 
     // Validate using schema
-    const result = playlistCreateSchema.safeParse({
+    const result = PlaylistCreateRequest.safeParse({
       name: form.find(item => item.name === 'name')?.data?.toString('utf-8'),
       description: form.find(item => item.name === 'description')?.data?.toString('utf-8'),
       isPublic: form.find(item => item.name === 'isPublic')?.data?.toString('utf-8'),
@@ -81,18 +81,39 @@ defineRouteMeta({
   openAPI: {
     tags: ["Playlist"],
     description: "Create a new playlist",
+    requestBody: {
+      required: true,
+      content: {
+        'multipart/form-data': {
+          schema: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              description: { type: 'string' },
+              isPublic: { type: 'string' },
+              cover: { type: 'string', format: 'binary' }
+            },
+            required: ['name', 'isPublic']
+          }
+        }
+      }
+    },
     responses: {
-      '201': {
+      '200': {
         description: 'Playlist created successfully',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/playlistCreateResponse' } } }
       },
       '400': {
         description: 'Bad request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '401': {
         description: 'Unauthorized',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     },
   }

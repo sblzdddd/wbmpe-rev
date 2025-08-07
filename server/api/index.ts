@@ -7,14 +7,15 @@ export default defineEventHandler(() => {
   }
 })
 
-
 defineRouteMeta({
   openAPI: {
-    description: "Get server status",
+    tags: ["API"],
+    description: "Get API status and version",
     responses: {
       '200': {
-        description: 'Successful response',
+        description: 'API status',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/apiIndexResponse' } } }
       }
-    },
+    }
   }
 })

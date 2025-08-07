@@ -30,4 +30,32 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Failed to fetch audio stream"
     });
   }
+});
+
+defineRouteMeta({
+  openAPI: {
+    tags: ["Song"],
+    description: "Get all available audio stream URLs for a song",
+    parameters: [
+      { $ref: '#/components/parameters/songIdParam' }
+    ],
+    responses: {
+      '200': {
+        description: 'Successful response',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/songStreamResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
+      },
+      '404': {
+        description: 'Song not found',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '500': {
+        description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      }
+    }
+  }
 }); 

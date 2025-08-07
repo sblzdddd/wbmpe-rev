@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   try {
     const userId = event.context.user?.id;
 
-    const { id: playlistId } = await parseRouteParams(event, playlistParamsSchema)
+    const { id: playlistId } = await parseRouteParams(event, PlaylistRequestParamsInternal)
 
     logger.info('PlaylistCoverAPI: Uploading playlist cover', { playlistId, userId });
 
@@ -12,9 +12,9 @@ export default defineEventHandler(async (event) => {
 
     // Parse multipart form data
     const form = await readMultipartFormData(event);
-    const result = playlistCoverSchema.safeParse({cover: form?.find(item => item.name === 'cover')});
+    const result = PlaylistCoverUpdateRequest.safeParse({cover: form?.find(item => item.name === 'cover')});
     if (!result.success) {
-      throw createError({statusCode: 400, statusMessage: result.error.message});
+      throw createError({statusCode: 400, statusMessage: result.error.message, data: result.error.issues});
     }
     const { cover } = result.data;
 
@@ -95,7 +95,7 @@ defineRouteMeta({
     tags: ["Playlist"],
     description: "Upload a cover image for a playlist",
     parameters: [
-      { in: "path", name: "id", required: true, schema: { type: 'string' } }
+      { $ref: '#/components/parameters/playlistIdParam' }
     ],
     requestBody: {
       required: true,
@@ -118,44 +118,27 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful upload',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                success: { type: 'boolean' },
-                data: {
-                  type: 'object',
-                  properties: {
-                    coverUrl: { type: 'string' },
-                    path: { type: 'string' },
-                    name: { type: 'string' }
-                  }
-                }
-              }
-            }
-          }
-        }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/playlistCoverUploadResponse' } } }
       },
       '400': {
         description: 'Bad request',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '401': {
         description: 'Unauthorized',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '403': {
         description: 'Forbidden',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '404': {
         description: 'Playlist not found',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

@@ -21,4 +21,25 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Failed to fetch queue"
     });
   }
+});
+
+defineRouteMeta({
+  openAPI: {
+    tags: ["User"],
+    description: "Get current user's playback queue",
+    responses: {
+      '200': {
+        description: 'Successful response',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/userQueueResponse' } } }
+      },
+      '401': {
+        description: 'Not authenticated',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '500': {
+        description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      }
+    }
+  }
 }); 

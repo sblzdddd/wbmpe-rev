@@ -17,9 +17,15 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful response',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/songListResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

@@ -103,36 +103,19 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful upload',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                success: { type: 'boolean' },
-                data: {
-                  type: 'object',
-                  properties: {
-                    url: { type: 'string' },
-                    path: { type: 'string' },
-                    name: { type: 'string' }
-                  }
-                }
-              }
-            }
-          }
-        }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/imageUploadResponse' } } }
       },
       '400': {
         description: 'Bad request',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '401': {
         description: 'Unauthorized',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

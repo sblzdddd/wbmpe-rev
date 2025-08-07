@@ -1,7 +1,7 @@
 const logger = BakaLogger.child({ service: 'RegisterVerifyCode' })
 
 export default defineEventHandler(async (event) => {
-  const result = await readValidatedBody(event, registerVerifyCodeSchema.safeParse)
+  const result = await readValidatedBody(event, RegisterVerifyCodeRequest.safeParse)
   if (!result.success) {
     throw createError({statusCode: 400, statusMessage: result.error.message})
   }

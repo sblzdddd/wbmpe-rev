@@ -1,7 +1,7 @@
 const logger = BakaLogger.child({service: 'ForgotPasswordAPI'})
 
 export default defineEventHandler(async (event) => {
-  const { email } = await readValidatedBody(event, forgotPasswordSchema.parse);
+  const { email } = await readValidatedBody(event, ForgotPasswordRequest.parse);
   logger.info('Password reset request received', { email })
 
   try {
@@ -51,12 +51,24 @@ defineRouteMeta({
   openAPI: {
     tags: ["Auth"],
     description: "Request password reset",
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': { schema: { $ref: '#/components/schemas/forgotPasswordRequest' } }
+      }
+    },
     responses: {
       '200': {
         description: 'Password reset request processed',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/forgotPasswordResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

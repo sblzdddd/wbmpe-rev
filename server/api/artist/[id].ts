@@ -11,21 +11,24 @@ defineRouteMeta({
     tags: ["Artist"],
     description: "Get an artist by ID",
     parameters: [
-      { in: "path", name: "id", required: true, schema: { type: 'string' } },
-      { in: "query", name: "page", required: false, schema: { type: 'number', default: 1 } },
+      { $ref: '#/components/parameters/artistIdParam' }
     ],
     responses: {
       '200': {
         description: 'Successful response',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/ArtistResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/artistResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '404': {
         description: 'Artist not found',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

@@ -49,25 +49,15 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful response',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                suggestions: {
-                  type: 'array',
-                  items: { type: 'string' }
-                }
-              }
-            }
-          }
-        }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/searchSuggestionsResponse' } } }
       },
       '400': {
         description: 'Bad request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

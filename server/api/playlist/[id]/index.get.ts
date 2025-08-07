@@ -4,7 +4,7 @@ const logger = BakaLogger.child({service: 'PlaylistAPI'})
 
 export default defineEventHandler(async (event) => {
   try {
-    const { id: playlistId } = await parseRouteParams(event, playlistParamsSchema)
+    const { id: playlistId } = await parseRouteParams(event, PlaylistRequestParamsInternal)
 
     await checkPlaylistReadAccess(event, playlistId);
 
@@ -53,22 +53,32 @@ defineRouteMeta({
     tags: ["Playlist"],
     description: "Get a playlist by ID",
     parameters: [
-      { in: "path", name: "id", required: true, schema: { type: 'string' } },
-      { in: "query", name: "page", required: false, schema: { type: 'number', default: 1 } },
-      { in: "query", name: "limit", required: false, schema: { type: 'number', default: 100 } }
+      { $ref: '#/components/parameters/playlistIdParam' }
     ],
     responses: {
       '200': {
         description: 'Successful response',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/PlaylistResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/playlistResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '403': {
+        description: 'Forbidden',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '404': {
         description: 'Playlist not found',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

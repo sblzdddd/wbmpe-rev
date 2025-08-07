@@ -1,4 +1,5 @@
 import tailwindcss from "@tailwindcss/vite";
+import transform from "./server/internal/hooks/openapi";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -209,7 +210,7 @@ export default defineNuxtConfig({
       tasks: true,
     },
     openAPI: {
-      route: "/_docs/openapi.json",
+      route: "/_hidden/openapi.json",
       meta: {
         title: 'BakaAPI',
         description: 'BakaAPI is the RESTful API for WBMPE.',
@@ -218,18 +219,28 @@ export default defineNuxtConfig({
       production: "runtime",
       ui: {
         scalar: {
-          route: "/_docs/scalar",
+          route: "/_hidden/scalar",
           theme: 'default'
         },
         swagger: {
-          route: "/_docs/swagger",
+          route: "/_hidden/swagger",
         }
       }
     },
     scheduledTasks: {
       // Run `cleanup:password-reset-token` task every hour
       '0 * * * *': ['cleanup:tokens']
-    }
+    },
+    hooks: {
+      // "rollup:before": (nitro, config) => {
+      //   if (Array.isArray(config?.plugins)) {
+      //     config.plugins.unshift({
+      //       name: "openapi-schema-inject",
+      //       transform,
+      //     });
+      //   }
+      // },
+    },
   },
 
   shadcn: {

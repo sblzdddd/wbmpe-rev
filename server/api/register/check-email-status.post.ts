@@ -1,7 +1,7 @@
 const logger = BakaLogger.child({ service: 'CheckEmailStatus' })
 
 export default defineEventHandler(async (event) => {
-  const result = await readValidatedBody(event, registerSendVerificationSchema.safeParse)
+  const result = await readValidatedBody(event, RegisterSendVerificationRequest.safeParse)
   if (!result.success) {
     throw createError({statusCode: 400, statusMessage: result.error.message})
   }

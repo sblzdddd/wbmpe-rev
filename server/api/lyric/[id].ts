@@ -11,17 +11,24 @@ defineRouteMeta({
     tags: ["Lyric"],
     description: "Get lyrics for a song",
     parameters: [
-      { in: "path", name: "id", required: true, schema: { type: 'string' } }
+      { $ref: '#/components/parameters/lyricIdParam' }
     ],
     responses: {
       '200': {
         description: 'Successful response',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/lyricResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '404': {
         description: 'Lyrics not found',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

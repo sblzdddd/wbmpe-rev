@@ -1,7 +1,7 @@
 const logger = BakaLogger.child({service: 'LoginAPI'})
 
 export default defineEventHandler(async (event) => {
-  const { email, password } = await readValidatedBody(event, loginSchema.parse);
+  const { email, password } = await readValidatedBody(event, LoginRequest.parse);
   logger.info('Login request received', {email: email, password: password})
 
   try {
@@ -71,16 +71,29 @@ export default defineEventHandler(async (event) => {
 defineRouteMeta({
   openAPI: {
     tags: ["Auth"],
-    description: "User login",
+    description: "Login via email and password",
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': { schema: { $ref: '#/components/schemas/loginRequest' } }
+      }
+    },
     responses: {
       '200': {
         description: 'Login successful',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/loginResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '401': {
         description: 'Invalid credentials',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

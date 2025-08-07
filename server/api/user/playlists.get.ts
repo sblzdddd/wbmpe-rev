@@ -28,18 +28,20 @@ export default defineEventHandler(async (event) => {
 
 defineRouteMeta({
   openAPI: {
-
     tags: ["User"],
     description: "Get current user playlists",
     responses: {
       '200': {
         description: 'Successful response',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/userPlaylistsResponse' } } }
       },
       '401': {
         description: 'Not authenticated',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

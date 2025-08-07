@@ -1,27 +1,11 @@
 const logger = BakaLogger.child({ service: 'SendVerification' })
 
 export default defineEventHandler(async (event) => {
-  const result = await readValidatedBody(event, registerSendVerificationSchema.safeParse)
+  const result = await readValidatedBody(event, RegisterSendVerificationRequest.safeParse)
   if (!result.success) {
     throw createError({statusCode: 400, statusMessage: result.error.message})
   }
   const { email } = result.data
-
-  if (!email) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Email is required'
-    })
-  }
-
-  // Validate email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(email)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid email format'
-    })
-  }
 
   try {
     // Check if email is already registered

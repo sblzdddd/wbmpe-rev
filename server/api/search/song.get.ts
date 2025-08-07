@@ -13,9 +13,9 @@ const platformWeights = {
 export default defineEventHandler(async (event) => {
   try {
     const query = getQuery(event)
-    const result = await searchSongSchema.safeParse(query)
+    const result = await searchSongRequest.safeParse(query)
     if (!result.success) {
-      throw createError({statusCode: 400, statusMessage: result.error.errors.map((e) => e.message).join('; ')})
+      throw createError({statusCode: 400, statusMessage: result.error.issues.map((e) => e.message).join('; ')})
     }
     const { keyword, page } = result.data
 
@@ -105,12 +105,15 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful response',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/searchSongResponse' } } }
       },
       '400': {
         description: 'Bad request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     },
   }

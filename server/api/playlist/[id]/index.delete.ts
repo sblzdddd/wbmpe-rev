@@ -3,7 +3,7 @@ const logger = BakaLogger.child({ service: 'PlaylistDeleteAPI' });
 export default defineEventHandler(async (event) => {
   try {
     const userId = event.context.user?.id;
-    const { id: playlistId } = await parseRouteParams(event, playlistParamsSchema)
+    const { id: playlistId } = await parseRouteParams(event, PlaylistRequestParamsInternal)
 
     const playlist = await checkPlaylistOwnership(event, playlistId);
 
@@ -70,38 +70,32 @@ defineRouteMeta({
     tags: ["Playlist"],
     description: "Delete a playlist",
     parameters: [
-      { in: "path", name: "id", required: true, schema: { type: 'string' } }
+      { $ref: '#/components/parameters/playlistIdParam' }
     ],
     responses: {
       '200': {
         description: 'Playlist deleted successfully',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                success: { type: 'boolean' },
-                message: { type: 'string' }
-              }
-            }
-          }
-        }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/playlistDeleteResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '401': {
         description: 'Unauthorized',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '403': {
         description: 'Forbidden',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '404': {
         description: 'Playlist not found',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

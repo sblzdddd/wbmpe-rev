@@ -87,34 +87,15 @@ defineRouteMeta({
     responses: {
       '200': {
         description: 'Successful response',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                data: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      thumb: { type: 'string' },
-                      name: { type: 'string' },
-                      page: { type: 'number' }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/bilibiliPagesResponse' } } }
       },
       '400': {
         description: 'Bad request',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }

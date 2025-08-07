@@ -11,21 +11,24 @@ defineRouteMeta({
     tags: ["Album"],
     description: "Get an album by ID",
     parameters: [
-      { in: "path", name: "id", required: true, schema: { type: 'string' } },
-      { in: "query", name: "page", required: false, schema: { type: 'number', default: 1 } },
+      { $ref: '#/components/parameters/albumIdParam' }
     ],
     responses: {
       '200': {
         description: 'Successful response',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/AlbumResponse' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/albumResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
       '404': {
         description: 'Album not found',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
       '500': {
         description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } }
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       }
     }
   }
