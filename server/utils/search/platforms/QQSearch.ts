@@ -20,7 +20,7 @@ export async function searchSongQQ(keyword: string, page: number): Promise<Searc
       validSongs,
       (item) => item.singer.map(s => s.name),
       (item) => item.albumname,
-      (item) => item.grp?.[0]?.songurl || `https://y.qq.com/n/ryqq/songDetail/${item.songmid}`
+      (item) => item.grp?.[0]?.songurl || `https://y.qq.com/n/ryqq/songDetail/${item.grp[0].songmid || item.songmid}`
     )
 
     for (const item of sInfo) {
@@ -28,7 +28,7 @@ export async function searchSongQQ(keyword: string, page: number): Promise<Searc
 
       const title = item.songname
       const picUrl = `https://y.gtimg.cn/music/photo_new/T002R300x300M000${item.albummid || item.grp[0].albummid || ''}.jpg?max_age=2592000`
-      const src = item.grp?.[0]?.songurl || `https://y.qq.com/n/ryqq/songDetail/${item.songmid}`
+      const src = item.grp?.[0]?.songurl || `https://y.qq.com/n/ryqq/songDetail/${item.grp[0].songmid || item.songmid}`
       const duration = item.interval
 
       if (songLookup.has(src)) {

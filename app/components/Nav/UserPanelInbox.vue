@@ -120,11 +120,11 @@ const { activeTasks, recentTasks, notificationCount, isConnected } = useTasks()
 }
 
 .inbox-task-list {
-  @apply space-y-1;
+  @apply space-y-1 max-h-[30vh] overflow-y-auto overflow-x-hidden;
 }
 
 .inbox-task-item {
-  @apply p-2 w-full rounded-md bg-black/5 dark:bg-white/5 border border-border/50;
+  @apply p-2 w-full max-w-50 max-h-20 rounded-md bg-black/5 dark:bg-white/5 border border-border/50;
 }
 
 .inbox-task-item.completed {
@@ -144,7 +144,7 @@ const { activeTasks, recentTasks, notificationCount, isConnected } = useTasks()
 }
 
 .task-status {
-  @apply text-xs opacity-60 flex items-center gap-1 mt-1;
+  @apply text-xs opacity-60 flex items-center gap-1 mt-1 w-38;
 }
 
 .task-progress {

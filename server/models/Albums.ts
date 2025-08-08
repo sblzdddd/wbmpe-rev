@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import CollectionSongItemSchema from "./CollectionSongItem";
 import BakaLogger from "../utils/logger/BakaLogger";
+import { getAlbumInfo, searchAlbum } from "../utils/netease_album";
 
 const logger = BakaLogger.child({service: 'Albums'})
 
@@ -53,13 +54,14 @@ Albums.findOrCreateByExternalId = async function(externalId: string, albumData: 
     if(!album) album = await this.findOne({ name: albumData.name });
     
     if (!album) {
+      const { description, coverUrl } = albumData.platform === 'netease' ? await getAlbumInfo(externalId, albumData.name) : await searchAlbum(albumData.name);
       // Create new album if not found
       album = await this.create({
         externalId,
         name: albumData.name,
-        coverUrl: albumData.coverUrl,
+        coverUrl,
         platform: albumData.platform,
-        description: albumData.description,
+        description,
         artists: [],
         songs: []
       });

@@ -102,8 +102,7 @@ export class StreamDownloader {
 
       let thumbnailURL: string | null = null;
       if(thumbnailFile) {
-        const thumbnailPath = path.join(this.tempDir, thumbnailFile);
-        const thumbnailUploadResult = await mediaUploadService.uploadMedia(thumbnailPath, `thumbnails/${songId}.jpg`);
+        const thumbnailUploadResult = await mediaUploadService.uploadMedia(thumbnailFile, `thumbnails/${songId}.jpg`);
         thumbnailURL = thumbnailUploadResult.url;
       }
 
@@ -199,7 +198,7 @@ export class StreamDownloader {
     for(const ext of possibleThumbnailExts) {
       const thumbnail = files.find(file => file.endsWith(`.${ext}`));
       if (thumbnail) {
-        return 'temp/' + thumbnail;
+        return path.join(this.tempDir, thumbnail);
       }
     }
     return null;

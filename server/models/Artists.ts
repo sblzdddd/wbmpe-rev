@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import type { ObjectId } from "mongodb";
 import CollectionSongItemSchema from "./CollectionSongItem";
 import BakaLogger from "../utils/logger/BakaLogger";
+import { getSingerInfo, searchSinger } from "../utils/netease_artist";
 
 const logger = BakaLogger.child({service: 'Artists'})
 
@@ -51,13 +52,14 @@ Artists.findOrCreateByExternalId = async function(externalId: string, artistData
     if(!artist) artist = await this.findOne({ name: artistData.name });
     
     if (!artist) {
+      const { description, avatarUrl } = artistData.platform === 'netease' ? await getSingerInfo(externalId) : await searchSinger(artistData.name);
       // Create new artist if not found
       artist = await this.create({
         externalId,
         name: artistData.name,
-        avatarUrl: artistData.avatarUrl,
+        avatarUrl,
         platform: artistData.platform,
-        description: artistData.description,
+        description,
         songs: []
       });
       logger.info(`Created new artist with externalId: ${externalId}`);

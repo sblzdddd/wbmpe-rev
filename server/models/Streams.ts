@@ -105,6 +105,7 @@ Streams.parseSong = async function(songId: string, taskId?: string, userId?: str
       const artist = await Artists.findOrCreateByExternalId(artistData.id, {
         name: artistData.name,
         platform: artistData.platform,
+        description: "this asshole does not have a description.",
       });
       artistIds.push(artist._id);
     }
