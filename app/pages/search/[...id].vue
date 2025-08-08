@@ -19,13 +19,12 @@
     <div v-else-if="data" class="flex flex-col gap-8">
       <!-- Stored Songs Results -->
       <div v-if="data.stored_songs && data.stored_songs.length > 0" class="flex flex-col gap-4">
-        <h2 class="text-lg font-semibold">From Your Library</h2>
+        <h2 class="text-lg font-semibold">From Library</h2>
         <div class="flex flex-col">
           <WindowVirtualizer v-slot="{ item, index }" :data="data.stored_songs" :item-size="54" :overscan="10" :ssr-count="10">
             <SongItem
               :song="item"
               :index="index"
-              @play="() => {}"
             />
           </WindowVirtualizer>
         </div>
@@ -39,7 +38,7 @@
             <SongItem
               :song="item"
               :index="index"
-              @play="() => {}"
+              @play="(index, song) => {createParseTask(song._id.toString())}"
             />
           </WindowVirtualizer>
         </div>
@@ -80,6 +79,7 @@ const router = useRouter()
 
 // Use the search composable
 const { searchKeyword } = useSearch()
+const { createParseTask } = useTasks()
 
 // Parse route parameters: /search/keyword (remove page from URL)
 const routeParams = computed(() => {
@@ -227,4 +227,5 @@ watch([hasKeyword], ([hasKw]) => {
     router.push('/search')
   }
 }, { immediate: true })
+
 </script>

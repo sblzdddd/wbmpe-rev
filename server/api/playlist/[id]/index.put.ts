@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
 
     const playlist = await checkPlaylistOwnership(event, playlistId);
 
-    const result = PlaylistInfoUpdateRequest.safeParse(await readValidatedBody(event, PlaylistInfoUpdateRequest.parse));
+    const result = await readValidatedBody(event, PlaylistInfoUpdateRequest.safeParse);
     if (!result.success) {
       throw createError({statusCode: 400, statusMessage: result.error.message});
     }
@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
     if (coverUrl !== undefined) {
       // If coverUrl is empty string, remove the cover
       if (coverUrl === '' && playlist.coverUrl) {
-        await imageUploadService.deleteImage(playlist.coverUrl);
+        await mediaUploadService.deleteMedia(playlist.coverUrl);
       }
       updateData.coverUrl = coverUrl;
     }

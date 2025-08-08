@@ -9,6 +9,7 @@ import type { RoutePath } from "#types/Utils/RoutePath"
 const router = useRouter();
 const backgroundStore = useBackground();
 const { paddingClass } = useContentPadding()
+const { clearSearch } = useSearch()
 
 const route = useRoute();
 
@@ -20,6 +21,9 @@ const routePath = useState<RoutePath>('routePath', () => ({
 router.beforeEach((to, from, next) => {
   if (to.path === '/') {
     backgroundStore.resetBackground();
+  }
+  if(!to.path.includes('/search')) {
+    clearSearch()
   }
   routePath.value.last = from.path
   routePath.value.next = to.path

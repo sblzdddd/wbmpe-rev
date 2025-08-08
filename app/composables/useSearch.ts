@@ -1,21 +1,23 @@
 export const useSearch = () => {
   // Global search state
-  const searchKeyword = useState<string>('search.keyword', () => '')
-  const searchSuggestions = useState<string[]>('search.suggestions', () => [])
-  const showSuggestions = useState<boolean>('search.showSuggestions', () => false)
-  const suggestionsPending = ref(false)
+  const searchState = useState('searchState', () => ({
+    keyword: '',
+    suggestions: [] as string[],
+    showSuggestions: false,
+    suggestionsPending: false
+  }))
 
   // Debounced search functionality
   let debounceTimer: NodeJS.Timeout | null = null
 
   const fetchSuggestions = async (keyword: string) => {
     if (keyword.length < 2) {
-      searchSuggestions.value = []
-      showSuggestions.value = false
+      searchState.value.suggestions = []
+      searchState.value.showSuggestions = false
       return
     }
 
-    suggestionsPending.value = true
+    searchState.value.suggestionsPending = true
     
     try {
       const data = await $fetch<{ suggestions: string[] }>('/api/search/suggestions', {
@@ -23,27 +25,27 @@ export const useSearch = () => {
       })
       
       if (data?.suggestions) {
-        searchSuggestions.value = data.suggestions
-        showSuggestions.value = true
+        searchState.value.suggestions = data.suggestions
+        searchState.value.showSuggestions = true
       }
     } catch (error) {
       console.error('Error fetching suggestions:', error)
-      searchSuggestions.value = []
-      showSuggestions.value = false
+      searchState.value.suggestions = []
+      searchState.value.showSuggestions = false
     } finally {
-      suggestionsPending.value = false
+      searchState.value.suggestionsPending = false
     }
   }
 
   // Watch for keyword changes and debounce
-  watch(searchKeyword, (newKeyword) => {
+  watch(() => searchState.value.keyword, (newKeyword) => {
     if (debounceTimer) {
       clearTimeout(debounceTimer)
     }
 
     if (!newKeyword || newKeyword.length < 2) {
-      searchSuggestions.value = []
-      showSuggestions.value = false
+      searchState.value.suggestions = []
+      searchState.value.showSuggestions = false
       return
     }
     
@@ -54,35 +56,53 @@ export const useSearch = () => {
 
   // Navigation functions
   const router = useRouter()
+  const route = useRoute()
 
   const performSearch = (keyword?: string) => {
-    const searchTerm = keyword || searchKeyword.value
+    const searchTerm = keyword || searchState.value.keyword
     if (!searchTerm.trim()) return
 
     // Hide suggestions
-    showSuggestions.value = false
-    
-    // Navigate to search results
-    router.push(`/search/${encodeURIComponent(searchTerm.trim())}/1`)
+    searchState.value.showSuggestions = false
+
+    const newPath = `/search/${encodeURIComponent(searchTerm.trim())}`
+
+    if(route.path.includes(newPath)) {
+      router.go(0)
+    } else {
+      router.push(newPath)
+    }
   }
 
   const selectSuggestion = (suggestion: string) => {
-    searchKeyword.value = suggestion
+    searchState.value.keyword = suggestion
     performSearch(suggestion)
   }
 
   const clearSearch = () => {
-    searchKeyword.value = ''
-    searchSuggestions.value = []
-    showSuggestions.value = false
+    searchState.value.keyword = ''
+    searchState.value.suggestions = []
+    searchState.value.showSuggestions = false
   }
 
   return {
     // State
-    searchKeyword,
-    searchSuggestions,
-    showSuggestions,
-    suggestionsPending,
+    searchKeyword: computed({
+      get: () => searchState.value.keyword,
+      set: (value) => searchState.value.keyword = value
+    }),
+    searchSuggestions: computed({
+      get: () => searchState.value.suggestions,
+      set: (value) => searchState.value.suggestions = value
+    }),
+    showSuggestions: computed({
+      get: () => searchState.value.showSuggestions,
+      set: (value) => searchState.value.showSuggestions = value
+    }),
+    suggestionsPending: computed({
+      get: () => searchState.value.suggestionsPending,
+      set: (value) => searchState.value.suggestionsPending = value
+    }),
     
     // Actions
     performSearch,

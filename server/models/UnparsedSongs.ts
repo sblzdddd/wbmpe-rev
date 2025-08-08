@@ -36,5 +36,4 @@ export const UnparsedSongSchema = new mongoose.Schema({
 });
 
 const UnparsedSongs = mongoose.model('UnparsedSongs', UnparsedSongSchema);
-logger.debug('model loaded')
 export default UnparsedSongs;

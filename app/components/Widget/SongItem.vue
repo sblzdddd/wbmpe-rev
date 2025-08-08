@@ -24,21 +24,9 @@ const { isPlaying, pause } = usePlayer()
 const { currentSong } = useQueue()
 
 const { isFavorite, toggleFavorite } = useFavorites()
-const { createParseTask } = useTasks()
 
 const playSong = async () => {
-  // For unparsed songs, create a parse task instead of playing
-  if (props.song.src && typeof props.song.src === 'string' && props.song.src.startsWith('http')) {
-    try {
-      await createParseTask(props.song._id)
-      console.log('Parse task created for song:', props.song.name)
-    } catch (error) {
-      console.error('Failed to create parse task:', error)
-    }
-  } else {
-    // For parsed songs, emit play event
-    emit('play', props.index, props.song)
-  }
+  emit('play', props.index, props.song)
 }
 
 const pauseSong = async () => {

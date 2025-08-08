@@ -16,12 +16,11 @@ const { data: exploreData } = await useFetch<ExploreResponse>('/api/explore', {
 
 const route = useRoute()
 
-const { paddingClass } = useContentPadding()
 </script>
 
 <template>
   <div class="flex flex-1 flex-col gap-4">
-    <div class=" my-4 xl:my-6 w-full flex gap-2" :class="paddingClass">
+    <div class=" my-4 xl:my-6 w-full flex gap-2">
       <NuxtLink v-for="item in exploreData?.data?.categories" :key="item" :to="`?category=${item}`">
         <Button size="sm" variant="secondary" :class="{'bg-white text-black hover:bg-white/80': route.query.category === item}">
           {{ item }}

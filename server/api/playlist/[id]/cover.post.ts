@@ -18,32 +18,25 @@ export default defineEventHandler(async (event) => {
     }
     const { cover } = result.data;
 
-    // Find image file in form data
-    const imageFile = cover;
-    if (!imageFile || !imageFile.data) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'No cover image file provided'
-      });
-    }
-
     // Validate file type and size
-    const filename = imageFile.filename || 'cover.jpg';
+    const filename = cover.filename || 'cover.jpg';
     const filenameWithoutExtension = filename.split('.').slice(0, -1).join('.');
     const extension = filename.split('.').pop();
-    const buffer = imageFile.data;
+    const buffer = cover.data;
 
     // Delete old cover if it exists
     if (playlist.coverUrl) {
       logger.info('PlaylistCoverAPI: Old cover URL found');
-      await imageUploadService.deleteImage(playlist.coverUrl);
+      await mediaUploadService.deleteMedia(playlist.coverUrl);
     }
 
     // Upload new cover to OSS
-    const uploadResult = await imageUploadService.uploadPlaylistCover(
+    const uploadResult = await mediaUploadService.uploadMediaFromBuffer(
       buffer, 
-      `${filenameWithoutExtension}-${makeid(10)}.${extension}`, 
-      playlistId.toString()
+      `playlist-covers/${playlistId}/${filenameWithoutExtension}-${makeid(10)}.${extension}`, 
+      {
+        'x-oss-meta-playlist-id': playlistId.toString(),
+      }
     );
 
     // Update playlist with new cover URL
@@ -101,17 +94,7 @@ defineRouteMeta({
       required: true,
       content: {
         'multipart/form-data': {
-          schema: {
-            type: 'object',
-            properties: {
-              cover: {
-                type: 'string',
-                format: 'binary',
-                description: 'Cover image file'
-              }
-            },
-            required: ['cover']
-          }
+          schema: { $ref: '#/components/schemas/PlaylistCoverUploadRequest' }
         }
       }
     },

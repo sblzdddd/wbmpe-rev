@@ -1,9 +1,7 @@
-import ParseTasks from '~/server/models/ParseTasks';
-
 const logger = BakaLogger.child({service: 'TasksAPI'});
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuthUser(event);
+  const user = await event.context.user?.id;
   
   const query = getQuery(event);
   const limit = Number(query.limit) || 10;
@@ -15,7 +13,7 @@ export default defineEventHandler(async (event) => {
     if (status) {
       // Filter by status if provided
       tasks = await ParseTasks.find({ 
-        userId: user._id,
+        userId: user,
         status: status
       })
       .sort({ createdAt: -1 })
@@ -23,7 +21,7 @@ export default defineEventHandler(async (event) => {
       .lean();
     } else {
       // Get all tasks for user
-      tasks = await ParseTasks.getUserTasks(user._id.toString(), limit);
+      tasks = await ParseTasks.getUserTasks(user, limit);
     }
 
     return {

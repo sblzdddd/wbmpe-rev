@@ -83,7 +83,7 @@ ParseTasks.updateProgress = async function(taskId: string, progress: number, mes
 };
 
 ParseTasks.updateStatus = async function(taskId: string, status: TaskStatus, errorMessage?: string) {
-  const updateData: any = { status };
+  const updateData: { status: TaskStatus; errorMessage?: string; completedAt?: Date; startedAt?: Date } = { status };
   
   if (status === 'failed' && errorMessage) {
     updateData.errorMessage = errorMessage;
@@ -111,8 +111,5 @@ ParseTasks.completeTask = async function(taskId: string) {
     completedAt: new Date()
   });
 };
-
-const logger = BakaLogger.child({service: 'ParseTasks'});
-logger.debug('ParseTasks model loaded');
 
 export default ParseTasks;

@@ -91,12 +91,6 @@ export const imageFileSchema = (label = 'Image File', sizeLimit = 5 * 1024 * 102
     }
   });
 
-export const imageFileSchemaCoerced = (label = 'Image File', sizeLimit = 5 * 1024 * 1024) => imageFileSchema(label, sizeLimit)
-  .transform((file) => {
-    if (Buffer.isBuffer(file.data)) return file.data;
-    else return file.buffer;
-  });
-
 // -----------PAGINATION-----------
 
 export const paginationQuerySchema = z.object({

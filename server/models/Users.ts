@@ -255,5 +255,4 @@ const userSchema = new mongoose.Schema({
 });
 
 const Users = mongoose.model('Users', userSchema);
-logger.debug('model loaded')
 export default Users;

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { imageFileSchemaCoerced } from './common';
+import { imageFileSchema } from './common';
 
 // -----------UPLOAD SCHEMAS-----------
 
@@ -21,7 +21,7 @@ export const uploadResultSchema = z.object({
 // -----------REQUEST SCHEMAS-----------
 
 export const imageUploadRequest = z.object({
-  image: imageFileSchemaCoerced("Image File", 5 * 1024 * 1024).meta({
+  image: imageFileSchema("Image File", 5 * 1024 * 1024).meta({
     description: 'Image file to upload',
     example: '[no example]',
   }),

@@ -1,5 +1,4 @@
 import tailwindcss from "@tailwindcss/vite";
-import transform from "./server/internal/hooks/openapi";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -74,20 +73,10 @@ export default defineNuxtConfig({
     ],
   },
 
-  modules: [
-    'shadcn-nuxt',
-    '@nuxtjs/color-mode',
-    '@nuxt/eslint',
-    '@nuxt/fonts',
-    '@nuxt/icon',
-    '@nuxt/image',
-    '@nuxt/test-utils',
-    // '@vite-pwa/nuxt',
-    'nuxt-auth-utils',
-    // 'nuxt-security',
-    // '@sentry/nuxt/module',
-    'motion-v/nuxt'
-  ],
+  modules: ['shadcn-nuxt', '@nuxtjs/color-mode', '@nuxt/eslint', '@nuxt/fonts', '@nuxt/icon', '@nuxt/image', '@nuxt/test-utils', // '@vite-pwa/nuxt',
+  'nuxt-auth-utils', // 'nuxt-security',
+  // '@sentry/nuxt/module',
+  'motion-v/nuxt', '@vueuse/nuxt'],
 
 
   image: {
@@ -207,6 +196,7 @@ export default defineNuxtConfig({
     },
     experimental: {
       openAPI: true,
+      websocket: true,
       tasks: true,
     },
     openAPI: {

@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import CollectionSongItemSchema from "./CollectionSongItem";
+import BakaLogger from "../utils/logger/BakaLogger";
+
 const logger = BakaLogger.child({service: 'Albums'})
 
 export interface AlbumDocument extends mongoose.Document {
@@ -11,7 +13,7 @@ export interface AlbumDocument extends mongoose.Document {
   description?: string;
   artists: ObjectId[];
   songs: Array<{ _id: ObjectId; song: ObjectId; }>;
-  platform?: string;
+  platform: string;
 }
 
 interface AlbumModel extends mongoose.Model<AlbumDocument> {
@@ -25,13 +27,13 @@ interface AlbumModel extends mongoose.Model<AlbumDocument> {
 }
 
 const albumsSchema = new mongoose.Schema({
-  externalId: {type: String, required: true, unique: true, index: true},
+  externalId: {type: String, required: false, unique: true, index: true},
   name: {type: String, required: true},
   coverUrl: {type: String, required: false},
   description: {type: String, required: false},
   artists: [{type: ObjectId, ref: 'Artists'}],
   songs: [CollectionSongItemSchema],
-  platform: {type: String, required: false},
+  platform: {type: String, required: false, default: 'local'},
 }, {
   timestamps: true, // Adds createdAt and updatedAt fields
 });
@@ -47,7 +49,8 @@ Albums.findOrCreateByExternalId = async function(externalId: string, albumData: 
 }): Promise<AlbumDocument> {
   try {
     // Try to find existing album by externalId
-    let album = await this.findOne({ externalId });
+    let album = await this.findOne({ platform: albumData.platform || 'local', externalId });
+    if(!album) album = await this.findOne({ name: albumData.name });
     
     if (!album) {
       // Create new album if not found
@@ -101,6 +104,5 @@ Albums.addSongToAlbum = async function(albumId: ObjectId, songId: ObjectId): Pro
   }
 };
 
-logger.debug('model loaded')
 export default Albums;
 

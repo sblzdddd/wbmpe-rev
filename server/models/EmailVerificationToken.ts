@@ -15,5 +15,4 @@ const emailVerificationTokenSchema = new mongoose.Schema({
 emailVerificationTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const EmailVerificationToken = mongoose.model('EmailVerificationToken', emailVerificationTokenSchema);
-logger.debug('model loaded')
 export default EmailVerificationToken;

@@ -22,13 +22,21 @@ interface TaskUpdate {
   errorMessage?: string;
 }
 
+interface SSEState {
+  tasks: ParseTask[];
+  isConnected: boolean;
+  reconnectTimeout: NodeJS.Timeout | null;
+  eventSource: EventSource | null;
+}
+
 export const useTasks = () => {
-  const tasks = ref<ParseTask[]>([]);
-  const isConnected = ref(false);
+  const sseState = useState<SSEState>('sseState', () => ({
+    tasks: [],
+    isConnected: false,
+    reconnectTimeout: null,
+    eventSource: null,
+  }))
   const { user } = useAuth();
-  
-  let ws: WebSocket | null = null;
-  let reconnectTimeout: NodeJS.Timeout | null = null;
   
   // Fetch initial tasks
   const fetchTasks = async () => {
@@ -43,33 +51,42 @@ export const useTasks = () => {
       });
       
       if (response.success && response.tasks) {
-        tasks.value = response.tasks;
+        sseState.value.tasks = response.tasks as unknown as ParseTask[];
       }
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
     }
   };
   
+
+
   // Connect to SSE
-  const connectSSE = () => {
-    if (!user.data.value?._id || isConnected.value) return;
+  const connectSSE = (force = false) => {
+    if (!user.data.value?._id || sseState.value.isConnected && !force) return;
+    if (sseState.value.eventSource) {
+      if(!force) return
+      sseState.value.eventSource.close();
+      sseState.value.eventSource = null;
+    }
     
     try {
       // Create EventSource for SSE
-      const eventSource = new EventSource('/api/tasks/events');
+      sseState.value.eventSource = new EventSource('/api/tasks/events', {
+        withCredentials: true
+      });
       
-      eventSource.onopen = () => {
-        isConnected.value = true;
+      sseState.value.eventSource.onopen = () => {
+        sseState.value.isConnected = true;
         console.log('SSE connected');
         
         // Clear any existing reconnect timeout
-        if (reconnectTimeout) {
-          clearTimeout(reconnectTimeout);
-          reconnectTimeout = null;
+        if (sseState.value.reconnectTimeout) {
+          clearTimeout(sseState.value.reconnectTimeout);
+          sseState.value.reconnectTimeout = null;
         }
       };
       
-      eventSource.onmessage = (event) => {
+      sseState.value.eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           
@@ -85,21 +102,18 @@ export const useTasks = () => {
         }
       };
       
-      eventSource.onerror = () => {
-        isConnected.value = false;
+      sseState.value.eventSource.onerror = () => {
+        sseState.value.isConnected = false;
         console.log('SSE disconnected');
-        eventSource.close();
+        sseState.value.eventSource?.close();
         
         // Attempt to reconnect after 3 seconds
-        if (!reconnectTimeout) {
-          reconnectTimeout = setTimeout(() => {
+        if (!sseState.value.reconnectTimeout) {
+          sseState.value.reconnectTimeout = setTimeout(() => {
             connectSSE();
           }, 3000);
         }
       };
-      
-      // Store eventSource reference for cleanup
-      ws = eventSource as unknown as WebSocket;
       
     } catch (error) {
       console.error('Failed to connect SSE:', error);
@@ -108,10 +122,10 @@ export const useTasks = () => {
   
   // Handle task updates from SSE
   const handleTaskUpdate = (update: TaskUpdate) => {
-    const taskIndex = tasks.value.findIndex(task => task._id === update.taskId);
+    const taskIndex = sseState.value.tasks.findIndex(task => task._id === update.taskId);
     
     if (taskIndex >= 0) {
-      const task = tasks.value[taskIndex];
+      const task = sseState.value.tasks[taskIndex];
       if (!task) return;
       
       if (update.type === 'task_progress') {
@@ -122,16 +136,20 @@ export const useTasks = () => {
         task.status = update.status as ParseTask['status'];
         task.errorMessage = update.errorMessage;
         
+        const { openUserPanel } = useUserPanel();
+        
         if (update.status === 'completed') {
           task.progress = 100;
           task.completedAt = new Date().toISOString();
+          openUserPanel();
         } else if (update.status === 'failed') {
           task.completedAt = new Date().toISOString();
+          openUserPanel();
         }
       }
       
       // Trigger reactivity
-      tasks.value = [...tasks.value];
+      sseState.value.tasks = [...sseState.value.tasks];
     } else {
       // If task not found, refetch tasks to get the latest
       fetchTasks();
@@ -140,14 +158,14 @@ export const useTasks = () => {
   
   // Get active tasks (not completed or failed)
   const activeTasks = computed(() => 
-    tasks.value.filter(task => 
+    sseState.value.tasks.filter(task => 
       task.status !== 'completed' && task.status !== 'failed'
     )
   );
   
   // Get recent completed tasks
   const recentTasks = computed(() => 
-    tasks.value
+    sseState.value.tasks
       .filter(task => task.status === 'completed' || task.status === 'failed')
       .slice(0, 5)
   );
@@ -157,6 +175,7 @@ export const useTasks = () => {
   
   // Create a new parsing task
   const createParseTask = async (songId: string) => {
+    console.log('Creating parse task for song:', songId)
     try {
       const response = await $fetch('/api/tasks/parse', {
         method: 'POST',
@@ -165,7 +184,9 @@ export const useTasks = () => {
       
       if (response.success && response.task) {
         // Add the new task to the beginning of the list
-        tasks.value.unshift(response.task as unknown as ParseTask);
+        sseState.value.tasks.unshift(response.task as unknown as ParseTask);
+        const { openUserPanel } = useUserPanel();
+        openUserPanel();
         return response.task as unknown as ParseTask;
       }
     } catch (error) {
@@ -176,14 +197,14 @@ export const useTasks = () => {
   
   // Clean up SSE connection
   const cleanup = () => {
-    if (ws) {
-      ws.close();
-      ws = null;
+    if (sseState.value.eventSource) {
+      sseState.value.eventSource.close();
+      sseState.value.eventSource = null;
     }
     
-    if (reconnectTimeout) {
-      clearTimeout(reconnectTimeout);
-      reconnectTimeout = null;
+    if (sseState.value.reconnectTimeout) {
+      clearTimeout(sseState.value.reconnectTimeout);
+      sseState.value.reconnectTimeout = null;
     }
   };
   
@@ -192,10 +213,10 @@ export const useTasks = () => {
     if (userId) {
       fetchTasks();
       if (typeof window !== 'undefined') {
-        connectSSE();
+        connectSSE(true);
       }
     } else {
-      tasks.value = [];
+      sseState.value.tasks = [];
       cleanup();
     }
   }, { immediate: true });
@@ -206,11 +227,11 @@ export const useTasks = () => {
   });
   
   return {
-    tasks,
+    tasks: computed(() => sseState.value.tasks),
     activeTasks,
     recentTasks,
     notificationCount,
-    isConnected,
+    isConnected: computed(() => sseState.value.isConnected),
     fetchTasks,
     createParseTask,
     connectSSE,

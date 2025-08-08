@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
+import BakaLogger from '../utils/logger/BakaLogger';
+
 const logger = BakaLogger.child({service: 'Songs'})
 
 export type SongDocument = {
@@ -43,5 +45,4 @@ Songs.searchMultipleFullInfo = async function(keyword: string): Promise<SongType
   .lean()
   return songs as unknown as SongType[]
 }
-logger.debug('model loaded')
 export default Songs;

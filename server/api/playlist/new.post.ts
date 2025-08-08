@@ -20,22 +20,24 @@ export default defineEventHandler(async (event) => {
     if (!result.success) {
       throw createError({statusCode: 400, statusMessage: result.error.message});
     }
-    const { name, description, isPublic, cover: buffer } = result.data;
+    const { name, description, isPublic, cover: coverFile } = result.data;
 
     logger.info('PlaylistAPI: Creating new playlist', { userId });
 
     // Handle optional image upload
     let coverUrl = '';
-    if (buffer) {
+    if (coverFile) {
       // Generate temporary playlist ID for upload
       const tempId = makeid(24);
-      const filename = 'cover.jpg';
+      const filename = coverFile.filename || 'cover.jpg';
+      const filenameWithoutExtension = filename.split('.').slice(0, -1).join('.');
+      const extension = filename.split('.').pop();
+      const buffer = coverFile.data;
 
       // Upload image to OSS
-      const uploadResult = await imageUploadService.uploadPlaylistCover(
+      const uploadResult = await mediaUploadService.uploadMediaFromBuffer(
         buffer, 
-        `${filename}-${makeid(10)}`, 
-        tempId
+        `playlist-covers/${filenameWithoutExtension}-${tempId}.${extension}`
       );
       coverUrl = uploadResult.url;
     }
@@ -85,16 +87,7 @@ defineRouteMeta({
       required: true,
       content: {
         'multipart/form-data': {
-          schema: {
-            type: 'object',
-            properties: {
-              name: { type: 'string' },
-              description: { type: 'string' },
-              isPublic: { type: 'string' },
-              cover: { type: 'string', format: 'binary' }
-            },
-            required: ['name', 'isPublic']
-          }
+          schema: { $ref: '#/components/schemas/PlaylistCreateRequest' }
         }
       }
     },

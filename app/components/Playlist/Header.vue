@@ -1,6 +1,6 @@
 <template>
   <div class="w-full" v-bind="$attrs">
-    <div class="w-full mx-auto px-4 md:px-0 flex items-center gap-4" :class="{'lg:!w-[90%]': !open}">
+    <div class="w-full mx-auto md:px-0 flex items-center gap-4" :class="{'lg:!w-[90%]': !open}">
       <Picture
         v-if="playlist.data.value?.data?.coverUrl" 
         :src="playlist.data.value?.data?.coverUrl" 

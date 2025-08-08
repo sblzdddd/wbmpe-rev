@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import type { ObjectId } from "mongodb";
 import CollectionSongItemSchema from "./CollectionSongItem";
+import BakaLogger from "../utils/logger/BakaLogger";
+
 const logger = BakaLogger.child({service: 'Artists'})
 
 export interface ArtistDocument extends mongoose.Document {
@@ -24,12 +26,12 @@ interface ArtistModel extends mongoose.Model<ArtistDocument> {
 }
 
 const artistsSchema = new mongoose.Schema({
-  externalId: {type: String, required: true, unique: true, index: true},
+  externalId: {type: String, required: false, unique: true, index: true},
   avatarUrl: {type: String, required: false},
   name: {type: String, required: true},
   description: {type: String, required: false},
   songs: [CollectionSongItemSchema],
-  platform: {type: String, required: false},
+  platform: {type: String, required: false, default: 'local'},
 }, {
   timestamps: true, // Adds createdAt and updatedAt fields
 });
@@ -45,7 +47,8 @@ Artists.findOrCreateByExternalId = async function(externalId: string, artistData
 }): Promise<ArtistDocument> {
   try {
     // Try to find existing artist by externalId
-    let artist = await this.findOne({ externalId });
+    let artist = await this.findOne({ platform: artistData.platform || 'local', externalId });
+    if(!artist) artist = await this.findOne({ name: artistData.name });
     
     if (!artist) {
       // Create new artist if not found
@@ -98,5 +101,4 @@ Artists.addSongToArtist = async function(artistId: ObjectId, songId: ObjectId): 
   }
 };
 
-logger.debug('model loaded')
 export default Artists;

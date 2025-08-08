@@ -9,6 +9,5 @@ const UnparsedEntitySchema = new mongoose.Schema({
   timestamps: true, // Adds createdAt and updatedAt fields
 });
 
-logger.debug('model loaded')
 export default UnparsedEntitySchema;
 

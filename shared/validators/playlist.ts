@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { objectIdSchemaCoerced, imageFileSchemaCoerced, formBooleanSchemaCoerced, successResponseSchema } from './common';
+import { objectIdSchemaCoerced, imageFileSchema, formBooleanSchemaCoerced, successResponseSchema } from './common';
 import { simpleUserSchema } from './user';
 
 // -----------PLAYLIST SCHEMAS-----------
@@ -116,7 +116,7 @@ export const PlaylistCreateRequest = z.object({
     description: 'Whether the playlist is public',
     example: true,
   }),
-  cover: imageFileSchemaCoerced("Cover Image", 5 * 1024 * 1024).meta({
+  cover: imageFileSchema("Cover Image", 5 * 1024 * 1024).meta({
     description: 'The cover image of the playlist',
     example: '[no example]',
     override: {
@@ -135,7 +135,7 @@ export const PlaylistInfoUpdateRequest = z.object({
     description: 'The description of the playlist',
     example: 'This is my playlist',
   }),
-  coverUrl: z.url().optional().meta({
+  coverUrl: z.string().optional().meta({
     description: 'The URL of the playlist cover',
     example: 'https://example.com/cover.jpg',
   }),
@@ -146,7 +146,7 @@ export const PlaylistInfoUpdateRequest = z.object({
 });
 
 export const PlaylistCoverUpdateRequest = z.object({
-  cover: imageFileSchemaCoerced("Cover Image", 5 * 1024 * 1024).meta({
+  cover: imageFileSchema("Cover Image", 5 * 1024 * 1024).meta({
     description: 'The cover image of the playlist',
     example: '[no example]',
   }),

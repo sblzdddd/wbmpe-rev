@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto";
+
 const logger = BakaLogger.child({ service: 'ImageUploadAPI' });
 
 export default defineEventHandler(async (event) => {
@@ -47,7 +49,8 @@ export default defineEventHandler(async (event) => {
     }
 
     // Upload to OSS
-    const result = await imageUploadService.uploadImage(buffer, filename, folder);
+    const fileName = `${randomUUID()}.${filename.split('.').pop()?.toLowerCase() || 'jpg'}`;
+    const result = await mediaUploadService.uploadMediaFromBuffer(buffer, `${folder}/${fileName}`);
 
     logger.info('ImageUploadAPI: Image uploaded successfully', { 
       userId,

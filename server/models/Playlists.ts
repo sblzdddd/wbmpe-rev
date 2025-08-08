@@ -117,5 +117,4 @@ const playlistsSchema = new mongoose.Schema({
 });
 
 const Playlists = mongoose.model('Playlists', playlistsSchema);
-logger.debug('model loaded')
 export default Playlists;

@@ -1,13 +1,8 @@
 // Removed unused ParseTasks import
+import { connections, type TaskUpdate } from '../../utils/sse/parse_task_sse';
 
 const logger = BakaLogger.child({service: 'TaskEventsAPI'});
 
-// Store active SSE connections
-const connections = new Map<string, { 
-  res: any; 
-  userId: string; 
-  lastHeartbeat: number;
-}>();
 
 // Cleanup connections older than 5 minutes
 setInterval(() => {
@@ -23,7 +18,7 @@ setInterval(() => {
 }, 60000); // Check every minute
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuthUser(event);
+  const user = await event.context.user?.id;
   
   // Set SSE headers
   setHeader(event, 'Content-Type', 'text/event-stream');
@@ -32,16 +27,16 @@ export default defineEventHandler(async (event) => {
   setHeader(event, 'Access-Control-Allow-Origin', '*');
   setHeader(event, 'Access-Control-Allow-Headers', 'Cache-Control');
 
-  const connectionId = `${user._id}_${Date.now()}_${Math.random()}`;
+  const connectionId = `${user}_${Date.now()}_${Math.random()}`;
   
   // Store connection
   connections.set(connectionId, {
     res: event.node.res,
-    userId: user._id.toString(),
+    userId: user,
     lastHeartbeat: Date.now()
   });
 
-  logger.info(`SSE connection established for user ${user._id}: ${connectionId}`);
+  logger.info(`SSE connection established for user ${user}: ${connectionId}`);
 
   // Send initial connection message
   event.node.res.write(`data: ${JSON.stringify({
@@ -60,7 +55,7 @@ export default defineEventHandler(async (event) => {
         })}\n\n`);
         connection.lastHeartbeat = Date.now();
       } catch (_error) {
-        logger.debug(`Failed to send heartbeat, removing connection: ${connectionId}`);
+        logger.debug(`Failed to send heartbeat: ${_error}, removing connection: ${connectionId}`);
         clearInterval(heartbeatInterval);
         connections.delete(connectionId);
       }
@@ -89,7 +84,7 @@ export default defineEventHandler(async (event) => {
 });
 
 // Helper function to send updates to specific user
-export function sendTaskUpdateToUser(userId: string, data: any) {
+export function sendTaskUpdateToUser(userId: string, data: TaskUpdate) {
   const userConnections = Array.from(connections.entries())
     .filter(([_, connection]) => connection.userId === userId);
   
@@ -107,7 +102,7 @@ export function sendTaskUpdateToUser(userId: string, data: any) {
       connection.lastHeartbeat = Date.now();
       sentCount++;
     } catch (_error) {
-      logger.debug(`Failed to send to connection ${connectionId}, removing`);
+      logger.debug(`Failed to send to connection ${connectionId}, removing: ${_error}`);
       connections.delete(connectionId);
     }
   });

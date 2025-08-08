@@ -37,5 +37,4 @@ const userSubscriptionsSchema = new mongoose.Schema({
 });
 
 const User_Subscriptions = mongoose.model('User_Subscriptions', userSubscriptionsSchema);
-logger.debug('model loaded')
 export default User_Subscriptions;

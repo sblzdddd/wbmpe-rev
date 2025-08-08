@@ -88,12 +88,16 @@ Streams.parseSong = async function(songId: string, taskId?: string, userId?: str
       throw new Error('Album data is missing from unparsed song');
     }
 
+    logger.info(`creating album ${albumData.name}...`)
+
     // Create/update album using externalId
     const album = await Albums.findOrCreateByExternalId(albumData.id, {
       name: albumData.name,
       coverUrl: albumData.coverUrl || undefined,
       platform: albumData.platform,
     });
+
+    logger.info(`creating artist(s) ${artistsData.map((artist) => artist.name).join(', ')}...`)
 
     // Create/update artists using externalId
     const artistIds = [];
@@ -150,5 +154,4 @@ Streams.parseSong = async function(songId: string, taskId?: string, userId?: str
   }
 };
 
-logger.debug('model loaded')
 export default Streams;

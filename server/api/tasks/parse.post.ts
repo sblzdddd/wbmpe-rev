@@ -5,7 +5,7 @@ import { sendTaskStatus } from './events.get';
 const logger = BakaLogger.child({service: 'ParseTaskAPI'});
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuthUser(event);
+  const user = await event.context.user?.id;
   
   const body = await readBody(event);
   const { songId } = body;
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
 
     // Check if task already exists for this user and song
     const existingTask = await ParseTasks.findOne({
-      userId: user._id,
+      userId: user,
       songId: songId,
       status: { $nin: ['completed', 'failed'] }
     });
@@ -43,18 +43,18 @@ export default defineEventHandler(async (event) => {
     }
 
     // Create new parsing task
-    const task = await ParseTasks.createTask(user._id.toString(), {
+    const task = await ParseTasks.createTask(user, {
       songId: songId,
       songName: unparsedSong.name,
-      artistName: unparsedSong.artists.map((a: any) => a.name).join(', '),
-      albumName: unparsedSong.album.name
+      artistName: unparsedSong.artists.map((a: {name: string}) => a.name).join(', '),
+      albumName: unparsedSong.album?.name || ''
     });
 
-    logger.info(`Created parsing task ${task._id} for user ${user._id}, song ${songId}`);
+    logger.info(`Created parsing task ${task._id} for user ${user}, song ${songId}`);
 
     // Send SSE notification
     sendTaskStatus(
-      user._id.toString(),
+      user,
       task._id.toString(),
       'pending'
     );
@@ -105,8 +105,6 @@ async function processParseTask(taskId: string) {
       'downloading'
     );
 
-    // Import Streams model and start parsing
-    const Streams = (await import('../../models/Streams')).default;
     await Streams.parseSong(task.songId.toString(), taskId, task.userId.toString());
 
     // Complete the task

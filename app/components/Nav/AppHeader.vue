@@ -14,13 +14,6 @@ const {
   selectSuggestion 
 } = useSearch()
 
-// Create a computed that safely handles SSR
-const logoSrc = computed(() => {
-  return colorMode.value === 'light' 
-    ? '/images/logo/logo-light_256.png' 
-    : '/images/logo/logo-dark_256.png'
-})
-
 withDefaults(defineProps<{
   containerAttrs?: unknown
 }>(), {
@@ -72,19 +65,20 @@ const handleHeaderKeydown = (event: KeyboardEvent) => {
       :class="`${isOnTop ? '' : 'bg-sidebar/80 backdrop-blur-sm border-b-[1.5px]'}`"
     >
       <header class="flex h-12 md:h-16 items-center" v-bind="containerAttrs">
-        <div v-if="!open" class="flex items-center gap-1 mr-2 ">
+        <div v-if="!open" class="hidden md:flex items-center gap-1 mr-2 ">
           <ClientOnly fallback-tag="div" class="min-w-37 min-h-7.5">
-            <Image :src="logoSrc" alt="logo" class="min-w-37 min-h-7.5 hidden md:block" />
+            <Image v-if="colorMode.value === 'light'" src="/images/logo/logo-light_256.png" alt="logo" class="min-w-37 min-h-7.5" />
+            <Image v-else src="/images/logo/logo-dark_256.png" alt="logo" class="min-w-37 min-h-7.5" />
             <template #fallback>
               <!-- Fallback for SSR - use a neutral logo or placeholder -->
-              <Image src="/images/logo/logo-light_256.png" alt="logo" class="min-w-37 min-h-7.5 hidden md:block" />
+              <Image src="/images/logo/logo-light_256.png" alt="logo" class="min-w-37 min-h-7.5" />
             </template>
           </ClientOnly>
         </div>
-        <Button variant="ghost" size="icon" class="h-q0 pr-2 flex lg:hidden" @click="toggleSidebar">
+        <Button variant="ghost" size="icon" class="md:pr-2 flex lg:hidden size-6" @click="toggleSidebar">
           <Icon name="lucide:list" size="20" />
         </Button>
-        <div v-if="route.path !== '/search'" class="relative w-full max-w-sm">
+        <div v-if="route.path !== '/search'" class="relative w-full max-w-sm mx-2 md:mx-0">
           <Input 
             ref="headerInputRef"
             v-model="searchKeyword"

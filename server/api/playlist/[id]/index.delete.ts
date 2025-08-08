@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     try {
       if (playlist.coverUrl) {
         try {
-          await imageUploadService.deleteImage(playlist.coverUrl);
+          await mediaUploadService.deleteMedia(playlist.coverUrl);
         } catch (error) {
           logger.warn('PlaylistDeleteAPI: Failed to delete playlist cover image', { error });
         }

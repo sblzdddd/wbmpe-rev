@@ -14,5 +14,4 @@ const lyricsSchema = new mongoose.Schema({
 });
 
 const Lyrics = mongoose.model('Lyrics', lyricsSchema);
-logger.debug('model loaded')
 export default Lyrics;
