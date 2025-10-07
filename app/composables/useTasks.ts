@@ -1,3 +1,5 @@
+import type { SongType } from '#types/Song'
+
 interface ParseTask {
   _id: string;
   songId: string;
@@ -14,12 +16,30 @@ interface ParseTask {
 }
 
 interface TaskUpdate {
-  type: 'task_progress' | 'task_status';
+  type: 'task_progress' | 'task_status' | 'task_completed';
   taskId: string;
   progress?: number;
   message?: string;
   status: string;
   errorMessage?: string;
+  song?: SongType;
+  streams?: {
+    songId: string;
+    audio: {
+      normal: string | null;
+      high: string | null;
+      lossless: string | null;
+    };
+    video: string | null;
+  };
+}
+
+interface DeferredPlayback {
+  taskId: string;
+  songId: string;
+  songName: string;
+  artistName: string;
+  albumName: string;
 }
 
 interface SSEState {
@@ -27,6 +47,7 @@ interface SSEState {
   isConnected: boolean;
   reconnectTimeout: NodeJS.Timeout | null;
   eventSource: EventSource | null;
+  deferredPlaybacks: DeferredPlayback[];
 }
 
 export const useTasks = () => {
@@ -35,6 +56,7 @@ export const useTasks = () => {
     isConnected: false,
     reconnectTimeout: null,
     eventSource: null,
+    deferredPlaybacks: [],
   }))
   const { user } = useAuth();
   
@@ -120,7 +142,82 @@ export const useTasks = () => {
     }
   };
   
-  // Handle task updates from SSE
+  // Handle deferred playback with song data directly from SSE
+  const handleDeferredPlaybackWithSong = async (taskId: string, song: SongType) => {
+    const deferredIndex = sseState.value.deferredPlaybacks.findIndex(
+      deferred => deferred.taskId === taskId
+    );
+    
+    if (deferredIndex >= 0) {
+      const deferred = sseState.value.deferredPlaybacks[deferredIndex];
+      if (deferred) {
+        console.log('Starting deferred playback for song (with SSE data):', song.name, 'songId:', song._id);
+        
+        try {
+          // Get the parsed song and start playing using the song data from SSE
+          const { addSong } = usePlayer();
+          
+          console.log('Song received via SSE, starting playback...');
+          await addSong(song, true); // true = play immediately
+          console.log('Deferred playback started successfully for:', song.name);
+        } catch (error) {
+          console.error('Failed to start deferred playback with SSE song data:', error);
+        } finally {
+          // Remove the deferred playback entry
+          sseState.value.deferredPlaybacks.splice(deferredIndex, 1);
+        }
+      }
+    } else {
+      console.log('No deferred playback found for task:', taskId);
+    }
+  };
+
+  // Handle deferred playback asynchronously (separate from main update logic)
+  const handleDeferredPlayback = async (taskId: string) => {
+    const deferredIndex = sseState.value.deferredPlaybacks.findIndex(
+      deferred => deferred.taskId === taskId
+    );
+    
+    if (deferredIndex >= 0) {
+      const deferred = sseState.value.deferredPlaybacks[deferredIndex];
+      if (deferred) {
+        console.log('Starting deferred playback for song:', deferred.songName, 'songId:', deferred.songId);
+        
+        // Validate songId before making the request
+        if (!deferred.songId || deferred.songId === 'undefined') {
+          console.error('Invalid songId for deferred playback:', deferred.songId);
+          sseState.value.deferredPlaybacks.splice(deferredIndex, 1);
+          return;
+        }
+        
+        try {
+          // Get the parsed song and start playing
+          const { addSong } = usePlayer();
+          
+          // Fetch the song details first
+          console.log('Fetching song details from:', `/api/song/${deferred.songId}`);
+          const songResponse = await $fetch(`/api/song/${deferred.songId}`) as { success: boolean; song?: SongType };
+          
+          if (songResponse?.success && songResponse?.song) {
+            console.log('Song fetched successfully, starting playback...');
+            await addSong(songResponse.song, true); // true = play immediately
+            console.log('Deferred playback started successfully for:', songResponse.song.name);
+          } else {
+            console.error('Failed to fetch song details:', songResponse);
+          }
+        } catch (error) {
+          console.error('Failed to start deferred playback:', error);
+        } finally {
+          // Remove the deferred playback entry
+          sseState.value.deferredPlaybacks.splice(deferredIndex, 1);
+        }
+      }
+    } else {
+      console.log('No deferred playback found for task:', taskId);
+    }
+  };
+
+  // Handle task updates from SSE (synchronous to avoid breaking SSE)
   const handleTaskUpdate = (update: TaskUpdate) => {
     const taskIndex = sseState.value.tasks.findIndex(task => task._id === update.taskId);
     
@@ -132,6 +229,23 @@ export const useTasks = () => {
         task.progress = update.progress ?? task.progress;
         task.progressMessage = update.message ?? task.progressMessage;
         task.status = update.status as ParseTask['status'];
+      } else if (update.type === 'task_completed') {
+        // Handle task completion with song data
+        task.status = 'completed';
+        task.progress = 100;
+        task.completedAt = new Date().toISOString();
+        
+        const { openUserPanel } = useUserPanel();
+        
+        // Handle deferred playback using the song data from SSE
+        if (update.song) {
+          handleDeferredPlaybackWithSong(update.taskId, update.song);
+        } else {
+          // Fallback to old method if song data is missing
+          handleDeferredPlayback(update.taskId);
+        }
+        
+        openUserPanel();
       } else if (update.type === 'task_status') {
         task.status = update.status as ParseTask['status'];
         task.errorMessage = update.errorMessage;
@@ -139,11 +253,26 @@ export const useTasks = () => {
         const { openUserPanel } = useUserPanel();
         
         if (update.status === 'completed') {
+          // This shouldn't happen anymore with the new system, but keeping as fallback
           task.progress = 100;
           task.completedAt = new Date().toISOString();
+          
+          // Handle deferred playback asynchronously (don't await to avoid blocking SSE)
+          handleDeferredPlayback(update.taskId);
+          
           openUserPanel();
         } else if (update.status === 'failed') {
           task.completedAt = new Date().toISOString();
+          
+          // Remove deferred playback if task failed (synchronously)
+          const deferredIndex = sseState.value.deferredPlaybacks.findIndex(
+            deferred => deferred.taskId === update.taskId
+          );
+          if (deferredIndex >= 0) {
+            console.log('Removing deferred playback for failed task:', update.taskId);
+            sseState.value.deferredPlaybacks.splice(deferredIndex, 1);
+          }
+          
           openUserPanel();
         }
       }
@@ -174,8 +303,8 @@ export const useTasks = () => {
   const notificationCount = computed(() => activeTasks.value.length);
   
   // Create a new parsing task
-  const createParseTask = async (songId: string) => {
-    console.log('Creating parse task for song:', songId)
+  const createParseTask = async (songId: string, autoPlay = false) => {
+    console.log('Creating parse task for song:', songId, 'autoPlay:', autoPlay)
     try {
       const response = await $fetch('/api/tasks/parse', {
         method: 'POST',
@@ -183,11 +312,27 @@ export const useTasks = () => {
       });
       
       if (response.success && response.task) {
+        const task = response.task as unknown as ParseTask;
+        
         // Add the new task to the beginning of the list
-        sseState.value.tasks.unshift(response.task as unknown as ParseTask);
+        sseState.value.tasks.unshift(task);
+        
+        // If autoPlay is enabled, add to deferred playbacks
+        if (autoPlay) {
+          const deferredPlayback: DeferredPlayback = {
+            taskId: task._id,
+            songId: songId, // Use the original songId parameter instead of task.songId
+            songName: task.songName,
+            artistName: task.artistName,
+            albumName: task.albumName
+          };
+          sseState.value.deferredPlaybacks.push(deferredPlayback);
+          console.log('Added deferred playback for task:', task._id, 'songId:', songId);
+        }
+        
         const { openUserPanel } = useUserPanel();
         openUserPanel();
-        return response.task as unknown as ParseTask;
+        return task;
       }
     } catch (error) {
       console.error('Failed to create parse task:', error);
@@ -226,15 +371,31 @@ export const useTasks = () => {
     cleanup();
   });
   
+  // Check if a song has pending deferred playback
+  const hasDeferredPlayback = (songId: string) => {
+    return sseState.value.deferredPlaybacks.some(deferred => deferred.songId === songId);
+  };
+
+  // Remove deferred playback for a song (if user manually plays something else)
+  const removeDeferredPlayback = (songId: string) => {
+    const index = sseState.value.deferredPlaybacks.findIndex(deferred => deferred.songId === songId);
+    if (index >= 0) {
+      sseState.value.deferredPlaybacks.splice(index, 1);
+    }
+  };
+
   return {
     tasks: computed(() => sseState.value.tasks),
     activeTasks,
     recentTasks,
     notificationCount,
+    deferredPlaybacks: computed(() => sseState.value.deferredPlaybacks),
     isConnected: computed(() => sseState.value.isConnected),
     fetchTasks,
     createParseTask,
     connectSSE,
-    cleanup
+    cleanup,
+    hasDeferredPlayback,
+    removeDeferredPlayback
   };
 };

@@ -1,12 +1,12 @@
-import tailwindcss from "@tailwindcss/vite";
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
+  future: {
+    compatibilityVersion: 4,
+  },
 
   alias: {
     '#types': '../types',
-    '#shadcn': '../app/components/ui',
     '#composables': '../app/composables',
     '#utils': '~/utils',
     '#models': '~/models',
@@ -68,15 +68,29 @@ export default defineNuxtConfig({
   // },
 
   vite: {
-    plugins: [
-      tailwindcss(),
-    ],
+    plugins: [],
   },
 
-  modules: ['shadcn-nuxt', '@nuxtjs/color-mode', '@nuxt/eslint', '@nuxt/fonts', '@nuxt/icon', '@nuxt/image', '@nuxt/test-utils', // '@vite-pwa/nuxt',
-  'nuxt-auth-utils', // 'nuxt-security',
-  // '@sentry/nuxt/module',
-  'motion-v/nuxt', '@vueuse/nuxt'],
+  postcss: {
+    plugins: {
+      '@tailwindcss/postcss': {},
+    },
+  },
+
+  modules: [
+    '@nuxtjs/color-mode',
+    '@nuxt/eslint',
+    '@nuxt/fonts',
+    '@nuxt/icon',
+    '@nuxt/image',
+    '@vite-pwa/nuxt',
+    '@nuxt/test-utils', 
+    // 'nuxt-security',
+    'nuxt-auth-utils', 
+    // '@sentry/nuxt/module',
+    'motion-v/nuxt',
+    '@vueuse/nuxt'
+  ],
 
 
   image: {
@@ -172,16 +186,20 @@ export default defineNuxtConfig({
       'composables/**',
       '../types/**',
       '../shared/validators/**',
-      'components/ui/sidebar/'
+      './components/ui/sidebar',
     ],
     presets: [
       {
         from: 'animejs',
-        imports: ['animate', 'createSpring', 'createTimeline', {name: 'Timeline', type: true}]
+        imports: ['animate', 'spring', 'createTimeline', {name: 'Timeline', type: true}]
       },
       {
         from: 'nitropack',
         imports: [{name: 'InternalApi', type: true}]
+      },
+      {
+        from: 'vue',
+        imports: [{name: 'HTMLAttributes', type: true}]
       }
     ]
   },
@@ -221,28 +239,20 @@ export default defineNuxtConfig({
       // Run `cleanup:password-reset-token` task every hour
       '0 * * * *': ['cleanup:tokens']
     },
-    hooks: {
-      // "rollup:before": (nitro, config) => {
-      //   if (Array.isArray(config?.plugins)) {
-      //     config.plugins.unshift({
-      //       name: "openapi-schema-inject",
-      //       transform,
-      //     });
-      //   }
-      // },
-    },
   },
 
-  shadcn: {
-    /**
-     * Prefix for all the imported component
-     */
-    prefix: '',
-    /**
-     * Directory that the component lives in.
-     */
-    componentDir: './app/components/ui',
-  },
+  components: [],
+
+  // shadcn: {
+  //   /**
+  //    * Prefix for all the imported component
+  //    */
+  //   prefix: '',
+  //   /**
+  //    * Directory that the component lives in.
+  //    */
+  //   componentDir: './app/components/ui',
+  // },
 
   // sentry: {
   //   sourceMapsUploadOptions: {

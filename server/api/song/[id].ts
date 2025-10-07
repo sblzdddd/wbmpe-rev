@@ -1,11 +1,59 @@
-// const logger = BakaLogger.child({service: 'SongAPI'})
+import Songs from '../../models/Songs';
 
-export default defineEventHandler(async (_event) => {
-  // TODO: Implement song retrieval by ID
-  throw createError({
-    statusCode: 501,
-    statusMessage: 'Not implemented'
-  })
+const logger = BakaLogger.child({service: 'SongAPI'});
+
+export default defineEventHandler(async (event) => {
+  const songId = getRouterParam(event, 'id');
+  
+  if (!songId || !isValidObjectIdString(songId)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Invalid song ID"
+    });
+  }
+
+  try {
+    logger.info(`Fetching song details for ID: ${songId}`);
+    
+    // Find song and populate album and artists
+    const song = await Songs.findById(songId)
+      .populate({
+        path: 'album',
+        select: 'name coverUrl platform'
+      })
+      .populate({
+        path: 'artists', 
+        select: 'name platform'
+      })
+      .select('-__v')
+      .lean();
+
+    if (!song) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Song not found"
+      });
+    }
+
+    logger.info(`Successfully fetched song: ${song.name}`);
+
+    return {
+      success: true,
+      song: song as unknown as SongType
+    };
+
+  } catch (error) {
+    logger.error(`Error fetching song ${songId}:`, error);
+    
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      throw error;
+    }
+    
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to fetch song details"
+    });
+  }
 })
 
 defineRouteMeta({

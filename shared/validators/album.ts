@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { paginationQuerySchema, paginationResponseSchema } from './common';
+import mongoose from 'mongoose';
 
 // -----------ALBUM SCHEMAS-----------
 
@@ -55,6 +56,25 @@ export const albumIdParam = z.string().meta({
   param: { in: 'path', name: 'id', required: true },
 });
 
+export const albumUpdateRequest = z.object({
+  name: z.string().min(1).optional().meta({
+    description: 'Album name',
+    example: 'Updated Album Name',
+  }),
+  description: z.string().optional().meta({
+    description: 'Album description',
+    example: 'Updated album description',
+  }),
+  coverUrl: z.url().optional().meta({
+    description: 'Album cover image URL',
+    example: 'https://example.com/new-cover.jpg',
+  }),
+});
+
+export const albumRequestParamsInternal = z.object({
+  id: z.string().transform((val) => new mongoose.Types.ObjectId(val))
+});
+
 // -----------RESPONSE SCHEMAS-----------
 
 export const albumListResponse = z.object({
@@ -66,4 +86,14 @@ export const albumListResponse = z.object({
 
 export const albumResponse = z.object({
   data: albumDetailSchema,
+});
+
+export const albumUpdateResponse = z.object({
+  success: z.boolean(),
+  data: albumDetailSchema,
+});
+
+export const albumDeleteResponse = z.object({
+  success: z.boolean(),
+  message: z.string(),
 });

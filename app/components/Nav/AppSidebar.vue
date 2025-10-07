@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import type { SidebarProps } from '#shadcn/sidebar'
 import { fallbackUserPlaylists } from '~/lib/fallback_data';
+import {type SidebarProps, Sidebar, SidebarHeader, SidebarContent} from "~/components/ui/sidebar"
+import NavTitle from './NavTitle.vue';
+import NavMain from './NavMain.vue';
+import NavPlaylist from './NavPlaylist.vue';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',

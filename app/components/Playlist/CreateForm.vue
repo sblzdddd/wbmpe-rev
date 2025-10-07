@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { BACKGROUND } from '@/lib/background_settings';
+import FormField from './FormField.vue';
+import CoverUpload from './CoverUpload.vue';
+import Button from '../ui/button/Button.vue';
+import Checkbox from '../ui/checkbox/Checkbox.vue';
 
 const { setBackground, resetBackground } = useBackground();
 
@@ -80,15 +84,15 @@ watch(() => createForm.value.coverUrl, (newVal) => {
     </div>
 
     <!-- Cover Image Upload -->
-    <Playlist-CoverUpload 
+    <CoverUpload 
       v-model="createForm.coverUrl" 
       mode="preview"
       @file-selected="handleFileSelected"
     />
 
     <!-- Playlist Name -->
-    <Playlist-FormField
-      id="playlist-name"
+    <FormField
+      id="name"
       v-model="createForm.name"
       label="Playlist Name"
       icon="lucide:music"
@@ -99,8 +103,8 @@ watch(() => createForm.value.coverUrl, (newVal) => {
     />
 
     <!-- Description -->
-    <Playlist-FormField
-      id="playlist-description"
+    <FormField
+      id="description"
       v-model="createForm.description"
       label="Description"
       icon="lucide:file-text"

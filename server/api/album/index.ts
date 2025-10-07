@@ -1,9 +1,42 @@
-export default defineEventHandler(async (_event) => {
-  // TODO: Implement album listing
-  throw createError({
-    statusCode: 501,
-    statusMessage: 'Not implemented'
-  })
+const logger = BakaLogger.child({ service: 'AlbumAPI' });
+
+export default defineEventHandler(async (event) => {
+  try {
+    logger.info('AlbumAPI: Getting albums list');
+
+    // Get pagination parameters from query
+    const query = getQuery(event);
+    const page = parseInt(query.page as string) || 1;
+    const limit = Math.min(parseInt(query.limit as string) || 100, 1000); // Cap at 1000
+
+    // Get albums from database
+    const { albums, total } = await Albums.getAllAlbums(page, limit);
+    
+    // Calculate pagination info
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    return {
+      data: albums,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: total,
+        itemsPerPage: limit,
+        hasNextPage,
+        hasPrevPage
+      }
+    };
+
+  } catch (error) {
+    logger.error('AlbumAPI: Server Error getting albums list', { error });
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 })
 
 defineRouteMeta({

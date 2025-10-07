@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { motion } from "motion-v"
+import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator } from "~/components/ui/sidebar"
 
 defineProps<{
   data: {

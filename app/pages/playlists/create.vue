@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SEOData } from '#types/Utils/SEO';
+import PlaylistCreateForm from '~/components/Playlist/CreateForm.vue';
 
 const { paddingClass } = useContentPadding();
 const seoData = useState<SEOData>('seoData')

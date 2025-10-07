@@ -28,6 +28,8 @@
   </div>
 </template>
 <script setup lang="ts">
+import Button from '../ui/button/Button.vue';
+import Picture from '../Picture.vue';
 
 const route = useRoute();
 const id = route.params.id;

@@ -28,7 +28,12 @@
   </div>
 </template>
 <script setup lang="ts">
+import Button from '../ui/button/Button.vue';
+
 const closeWindow = () => {
-  document.getElementsByTagName('html')[0].remove();
+  const htmlElement = document.getElementsByTagName('html')[0];
+  if (htmlElement) {
+    htmlElement.remove();
+  }
 }
 </script>

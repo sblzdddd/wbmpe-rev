@@ -1,6 +1,9 @@
 // Removed unused ParseTasks import
 import { connections, type TaskUpdate } from '../../utils/sse/parse_task_sse';
 
+// Re-export SSE functions for easier importing
+export { sendTaskProgress, sendTaskStatus, sendTaskCompletion } from '../../utils/sse/parse_task_sse';
+
 const logger = BakaLogger.child({service: 'TaskEventsAPI'});
 
 
@@ -110,25 +113,4 @@ export function sendTaskUpdateToUser(userId: string, data: TaskUpdate) {
   logger.debug(`Sent task update to ${sentCount} SSE connections for user: ${userId}`);
 }
 
-// Helper function to send task progress
-export function sendTaskProgress(userId: string, taskId: string, progress: number, message?: string, status = 'downloading') {
-  sendTaskUpdateToUser(userId, {
-    type: 'task_progress',
-    taskId,
-    progress,
-    message,
-    status,
-    timestamp: new Date().toISOString()
-  });
-}
-
-// Helper function to send task status
-export function sendTaskStatus(userId: string, taskId: string, status: string, errorMessage?: string) {
-  sendTaskUpdateToUser(userId, {
-    type: 'task_status',
-    taskId,
-    status,
-    errorMessage,
-    timestamp: new Date().toISOString()
-  });
-}
+// These functions are re-exported from parse_task_sse.ts above

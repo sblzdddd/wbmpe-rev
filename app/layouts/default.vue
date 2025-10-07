@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import {
-  SidebarInset,
-  SidebarProvider,
-} from '@/components/ui/sidebar'
 import AppBackdrop from '@/components/Background/AppBackdrop.vue'
 import type { RoutePath } from "#types/Utils/RoutePath"
+import AppHeader from '@/components/Nav/AppHeader.vue'
+import AppSidebar from '@/components/Nav/AppSidebar.vue'
+import PlayBar from '@/components/Player/PlayBar.vue'
+import SidebarProvider from '~/components/ui/sidebar/SidebarProvider.vue'
+import SidebarInset from '~/components/ui/sidebar/SidebarInset.vue'
 
 const router = useRouter();
 const backgroundStore = useBackground();
@@ -44,14 +45,14 @@ defineOptions({
       src="/images/bg.jpg"
     >
     <AppBackdrop />
-    <Nav-AppSidebar />
+    <AppSidebar />
     <SidebarInset class="bg-transparent">
-      <Nav-AppHeader :container-attrs="{class: 'w-full px-4 md:px-0 ' + paddingClass}" />
+      <AppHeader :container-attrs="{class: 'w-full px-4 md:px-0 ' + paddingClass}" />
       <div class="w-full h-full mb-10" :class="paddingClass">
         <slot />
       </div>
     </SidebarInset>
-    <Player-PlayBar />
+    <PlayBar />
   </SidebarProvider>
 </template>
 <style lang="postcss">
@@ -79,5 +80,14 @@ defineOptions({
 .layout-enter-from,
 .layout-leave-to {
   opacity: 0;
+}
+</style>
+<style>
+.scrollbar-container {
+  @apply relative w-screen h-screen overflow-x-hidden overflow-y-auto;
+}
+
+.scrollbar__thumb {
+  background-color: var(--secondary);
 }
 </style>

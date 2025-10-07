@@ -119,6 +119,39 @@ export const songIdParam = objectIdSchemaCoerced('Song ID').meta({
   param: { in: 'path', name: 'id', required: true },
 });
 
+export const songUpdateRequest = z.object({
+  name: z.string().min(1).optional().meta({
+    description: 'Song name',
+    example: 'Hey Jude',
+  }),
+  album: z.string().optional().meta({
+    description: 'Album ID',
+    example: '6863722013b04be86cb7a555',
+  }),
+  artists: z.array(z.string()).optional().meta({
+    description: 'Array of artist IDs',
+    example: ['6863722013b04be86cb7a555'],
+  }),
+  duration: z.number().positive().optional().meta({
+    description: 'Song duration in seconds',
+    example: 431,
+  }),
+});
+
+export const albumSearchRequest = z.object({
+  name: z.string().min(1).meta({
+    description: 'Album name to search',
+    example: 'Abbey Road',
+  }),
+});
+
+export const artistSearchRequest = z.object({
+  name: z.string().min(1).meta({
+    description: 'Artist name to search',
+    example: 'The Beatles',
+  }),
+});
+
 // -----------RESPONSE SCHEMAS-----------
 
 export const songListResponse = z.object({
@@ -138,4 +171,38 @@ export const songParseResponse = z.object({
 
 export const songStreamResponse = z.object({
   data: z.array(songStreamSchema),
+});
+
+export const songUpdateResponse = z.object({
+  success: z.boolean(),
+  data: z.object({
+    _id: z.string(),
+    name: z.string(),
+    album: z.string(),
+    artists: z.array(z.string()),
+    duration: z.number(),
+  }),
+});
+
+export const songDeleteResponse = z.object({
+  success: z.boolean(),
+  message: z.string(),
+});
+
+export const albumSearchResponse = z.object({
+  data: z.array(z.object({
+    _id: z.string(),
+    name: z.string(),
+    coverUrl: z.string().optional(),
+    platform: z.string().optional(),
+  })),
+});
+
+export const artistSearchResponse = z.object({
+  data: z.array(z.object({
+    _id: z.string(),
+    name: z.string(),
+    avatarUrl: z.string().optional(),
+    platform: z.string().optional(),
+  })),
 });

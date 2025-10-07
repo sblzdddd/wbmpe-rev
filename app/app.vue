@@ -8,6 +8,7 @@
 </template>
 <script setup lang="ts">
 import { fallbackQueue } from './lib/fallback_data';
+import PlayerQueueSidebar from '~/components/Player/QueueSidebar.vue';
 
 await useFetch('/api/user/queue', {
   key: 'queue',

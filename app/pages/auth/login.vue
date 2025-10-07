@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AuthLoginForm from '~/components/Auth/LoginForm.vue';
+
 definePageMeta({
   layout: 'fullscreen',
   middleware: 'guest'

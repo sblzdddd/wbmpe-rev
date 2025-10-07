@@ -19,13 +19,6 @@ export const useUserPanel = () => {
 
   let timeline: Timeline;
 
-  // Animation spring configuration
-  const spring = createSpring({
-    stiffness: 200,
-    damping: 50,
-    velocity: 18,
-  })
-
   // Watch for color mode changes
   watch(() => colorMode.value, () => {
     if (userPanelState.value.showUserPanel) {
@@ -79,6 +72,8 @@ export const useUserPanel = () => {
     const backdropEndWidth = userPanelRoot.clientWidth || 240
     const backdropEndHeight = userPanelRoot.clientHeight || 500
 
+    const padding = 8
+
     await nextTick()
     if (timeline) {
       timeline.cancel()
@@ -87,17 +82,19 @@ export const useUserPanel = () => {
       userPanelState.value.showUserPanelDOM = true
     }})
     timeline.add(userPanelBackdrop, {
-      scale: 1.07,
-      width: `${backdropEndWidth}px`,
-      height: `${backdropEndHeight}px`,
-      right: "0px",
-      top: "0px",
+      scale: 1,
+      width: `${backdropEndWidth + padding * 2}px`,
+      height: `${backdropEndHeight + padding * 2}px`,
+      right: `-${padding}px`,
+      top: `-${padding}px`,
       backgroundColor: `#${isOnTop.value ? colorMode.value == "dark" ? contentBGDark: contentBGLight : colorMode.value == "dark" ? contentBGDarkSolid: contentBGLightSolid}`,
-      ease: spring,
+      ease: "outQuint",
+      duration: 300,
     }, 0)
     timeline.add(".user-panel-header, .user-panel-content", {
       opacity: 1,
-      ease: spring
+      ease: "outQuint",
+      duration: 300,
     }, 150)
   }
 
@@ -125,7 +122,8 @@ export const useUserPanel = () => {
     }})
     timeline.add(".user-panel-header, .user-panel-content", {
       opacity: 0,
-      ease: spring
+      ease: "outQuint",
+      duration: 300
     }, 0)
     timeline.add(userPanelBackdrop, {
       scale: 1,
@@ -134,7 +132,8 @@ export const useUserPanel = () => {
       right: "0px",
       top: "0px",
       backgroundColor: `#${colorMode.value == "dark" ? primaryBGDark : primaryBGLight}`,
-      ease: spring,
+      ease: "outQuint",
+      duration: 300,
     }, 0)
   }
 

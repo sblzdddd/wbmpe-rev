@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import Label from '../ui/label/Label.vue';
+import Input from '../ui/input/Input.vue';
+
 interface Props {
   modelValue: string
   label: string

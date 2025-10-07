@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import Image from '../Image.vue'
+import Input from '../ui/input/Input.vue';
+import Button from '../ui/button/Button.vue';
+import UserInfo from './UserInfo.vue';
+import LoginDialog from '../Auth/LoginDialog.vue';
+import ForgotPasswordDialog from '../Auth/ForgotPasswordDialog.vue';
+import PlaylistHeader from '../Playlist/Header.vue';
+
 const colorMode = useColorMode()
 const { isOnTop } = useScrollBar()
 const route = useRoute()
@@ -64,7 +72,7 @@ const handleHeaderKeydown = (event: KeyboardEvent) => {
       class="header-wrapper w-full transition-[background-color,border-color] duration-200"
       :class="`${isOnTop ? '' : 'bg-sidebar/80 backdrop-blur-sm border-b-[1.5px]'}`"
     >
-      <header class="flex h-12 md:h-16 items-center" v-bind="containerAttrs">
+      <header class="flex h-12 md:h-16 items-center" v-bind="containerAttrs || {}">
         <div v-if="!open" class="hidden md:flex items-center gap-1 mr-2 ">
           <ClientOnly fallback-tag="div" class="min-w-37 min-h-7.5">
             <Image v-if="colorMode.value === 'light'" src="/images/logo/logo-light_256.png" alt="logo" class="min-w-37 min-h-7.5" />
@@ -119,16 +127,16 @@ const handleHeaderKeydown = (event: KeyboardEvent) => {
         </div>
         <div class="grow" />
         <div class="flex items-center gap-2">
-          <Nav-UserInfo />
-          <Auth-LoginDialog />
-          <Auth-ForgotPasswordDialog />
+          <UserInfo />
+          <LoginDialog />
+          <ForgotPasswordDialog />
 
           <!-- <Widget-WindowButtons/> -->
         </div>
       </header>
     </div>
     <div v-if="scrollY > 225 && isPlaylistPage" class="w-full border-t py-2 absolute top-12 md:top-16 left-0 bg-sidebar/80 backdrop-blur-sm border-b-[1.5px]">
-      <Playlist-Header v-bind="containerAttrs" />
+      <Playlist-Header v-bind="containerAttrs || {}" />
     </div>
   </div>
 </template>

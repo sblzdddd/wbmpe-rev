@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Button from '../ui/button/Button.vue';
+import Picture from '../Picture.vue';
 
 const props = defineProps({
   index: {
@@ -13,6 +15,11 @@ const props = defineProps({
     type: Boolean,
     required: false,
     default: false
+  },
+  isDeferredPlayback: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 })
 
@@ -22,6 +29,7 @@ const emit = defineEmits({
 
 const { isPlaying, pause } = usePlayer()
 const { currentSong } = useQueue()
+const router = useRouter()
 
 const { isFavorite, toggleFavorite } = useFavorites()
 
@@ -51,14 +59,17 @@ const formatDuration = (seconds: number) => {
 <template>
   <div
     class="songItem"
-    :class="`${isPlayingThis ? 'active' : 'hover-highlight'} ${index % 2 === 0 ? 'bg-black/3 dark:bg-white/3' : ''}`"
+    :class="`${isPlayingThis ? 'active' : isDeferredPlayback ? 'processing' : 'hover-highlight'} ${index % 2 === 0 ? 'bg-black/3 dark:bg-white/3' : ''}`"
     @dblclick="playSong()"
   >
     <div class="hidden md:flex justify-start w-full">
       <p class="songItem-index" :class="{ 'not_stored': false }">
         {{ index + 1 }}
       </p>
-      <button v-if="!isPlaying.value || !isPlayingThis" class="songItem-play" @click.stop="playSong()">
+      <button v-if="isDeferredPlayback" class="songItem-processing" disabled>
+        <Icon name="svg-spinners:ring-resize" size="20" class="text-blue-500" />
+      </button>
+      <button v-else-if="!isPlaying.value || !isPlayingThis" class="songItem-play" @click.stop="playSong()">
         <Icon name="material-symbols:play-arrow-rounded" size="24" />
       </button>
       <button v-else class="songItem-pause" @click.stop="pauseSong()">
@@ -66,10 +77,10 @@ const formatDuration = (seconds: number) => {
       </button>
     </div>
     <div class="flex gap-2 items-center grow pr-6">
-      <Picture :src="song.album.coverUrl" class="block size-9 min-w-9 min-h-9 rounded-sm" :img-attrs="{class: 'w-9 h-9 rounded-sm'}" :modifiers="{resize: {s: 100}}" :alt="song.name" />
+      <Picture :src="song.album.coverUrl" class="block size-9 min-w-9 min-h-9 rounded-[6px]" :img-attrs="{class: 'w-9 h-9 rounded-[6px]'}" :modifiers="{resize: {s: 100}}" :alt="song.name" />
       <div class="grow pb-0.5 flex flex-col items-left h-full gap-1">
         <div class="flex justify-start">
-          <a class="songItem-title">{{ song.name }}</a>
+          <a class="songItem-title" @click.stop="router.push(`/songs/${song._id}`)">{{ song.name }}</a>
         </div>
         <p class="songItem-artist">
           <span v-for="(artist, index) in song.artists" :key="index">
@@ -90,7 +101,7 @@ const formatDuration = (seconds: number) => {
       </div>
     </div>
     <div class="hidden md:flex justify-start">
-      <span class="songItem-album">{{ song.album.name }}</span>
+      <a class="songItem-album" @click.stop="router.push(`/albums/${song.album._id}`)">{{ song.album.name }}</a>
     </div>
     
     <Button variant="ghost" size="sm" class="size-8 p-0" @click.stop="">
@@ -142,6 +153,18 @@ const formatDuration = (seconds: number) => {
       @apply hidden;
     }
   }
+  &.processing {
+    @apply md:border-l-2 border-blue-500 bg-blue-500/20 text-blue-700 dark:text-blue-300 transition-[background-color] duration-200;
+    &:hover {
+      @apply bg-blue-500/30;
+    }
+    .songItem-processing {
+      @apply flex;
+    }
+    .songItem-index {
+      @apply hidden;
+    }
+  }
 
 }
 
@@ -173,6 +196,10 @@ const formatDuration = (seconds: number) => {
 
 .songItem-play, .songItem-pause {
   @apply p-0 hidden justify-center text-muted-foreground hover:text-black dark:hover:text-white hover:scale-105 active:scale-95 active:opacity-80 cursor-pointer;
+}
+
+.songItem-processing {
+  @apply p-0 hidden justify-center items-center cursor-not-allowed;
 }
 
 .not_stored {

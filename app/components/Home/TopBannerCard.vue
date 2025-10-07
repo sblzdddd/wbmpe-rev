@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/first-attribute-linebreak -->
 <template>
-  <div class="h-44 px-3 md:px-0" ref="bannerRef" v-bind="$attrs">
+  <div ref="bannerRef" class="h-44 px-3 md:px-0" v-bind="$attrs">
     <div class="banner__container">
       <Card v-for="item in banner" :key="item.title" :to="item.link"
             class="banner__slide"
@@ -22,6 +22,7 @@
 import emblaCarouselVue from 'embla-carousel-vue'
 import type {EmblaCarouselType} from 'embla-carousel'
 import Autoplay from 'embla-carousel-autoplay'
+import {Card, CardFooter, CardTitle} from '../ui/card';
 
 defineProps({
   banner: {

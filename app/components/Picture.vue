@@ -11,6 +11,8 @@
   <img
     v-if="isLoaded"
     v-bind="imgAttrs"
+    :alt="alt"
+    src=""
   >
   <Skeleton v-else-if="showSkeleton" v-bind="imgAttrs" />
   <slot v-else name="placeholder" v-bind="imgAttrs" />
@@ -19,6 +21,7 @@
 
 <script setup lang="ts">
 import { useImageProxy } from '~/lib/useImageProxy'
+import {Skeleton} from "~/components/ui/skeleton";
 
 const props = defineProps({
   src: {

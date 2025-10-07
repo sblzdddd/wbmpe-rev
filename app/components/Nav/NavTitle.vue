@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import Button from '../ui/button/Button.vue';
+import { SidebarMenu, SidebarMenuItem } from '#imports';
+import Image from '../Image.vue';
 
 const colorMode = useColorMode()
 const { toggleSidebar } = useSidebar()

@@ -1,6 +1,10 @@
-import ffmpeg from 'fluent-ffmpeg';
+import ffmpeg from 'ffmpeg-static';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 const logger = BakaLogger.child({service: 'AudioAnalyzer'})
 
@@ -13,32 +17,37 @@ export interface AudioInfo {
 }
 
 export async function analyzeAudioFile(filePath: string): Promise<AudioInfo | null> {
-  return new Promise((resolve) => {
-    ffmpeg.ffprobe(filePath, (err, metadata) => {
-      if (err) {
-        logger.error(`Error analyzing ${filePath}:`, err.message);
-        resolve(null);
-        return;
-      }
+  try {
+    if (!ffmpeg) {
+      logger.error('FFmpeg binary not found');
+      return null;
+    }
+    
+    const ffprobePath = ffmpeg.replace('ffmpeg', 'ffprobe');
+    const command = `"${ffprobePath}" -v quiet -print_format json -show_format -show_streams "${filePath}"`;
+    
+    const { stdout } = await execAsync(command);
+    const metadata = JSON.parse(stdout);
 
-      const audioStream = metadata.streams?.find(stream => stream.codec_type === 'audio');
-      if (!audioStream) {
-        logger.error(`No audio stream found in ${filePath}`);
-        resolve(null);
-        return;
-      }
+    const audioStream = metadata.streams?.find((stream: {codec_type: string}) => stream.codec_type === 'audio');
+    if (!audioStream) {
+      logger.error(`No audio stream found in ${filePath}`);
+      return null;
+    }
 
-      const info: AudioInfo = {
-        bitrate: parseInt(String(audioStream.bit_rate || '0')),
-        sampleRate: parseInt(String(audioStream.sample_rate || '0')),
-        channels: audioStream.channels || 0,
-        duration: parseFloat(String(metadata.format?.duration || '0')),
-        format: metadata.format?.format_name || 'unknown'
-      };
+    const info: AudioInfo = {
+      bitrate: parseInt(String(audioStream.bit_rate || '0')),
+      sampleRate: parseInt(String(audioStream.sample_rate || '0')),
+      channels: audioStream.channels || 0,
+      duration: parseFloat(String(metadata.format?.duration || '0')),
+      format: metadata.format?.format_name || 'unknown'
+    };
 
-      resolve(info);
-    });
-  });
+    return info;
+  } catch (err) {
+    logger.error(`Error analyzing ${filePath}:`, err);
+    return null;
+  }
 }
 
 export function determineAudioQuality(audioInfo: AudioInfo): 'normal' | 'high' | 'lossless' | 'unknown' {
@@ -67,25 +76,23 @@ export async function decreaseAudioBitrate(
   outputPath: string, 
   quality: 'high' | 'normal'
 ): Promise<boolean> {
-  return new Promise((resolve) => {
+  try {
+    if (!ffmpeg) {
+      logger.error('FFmpeg binary not found');
+      return false;
+    }
+    
     const bitrate = quality === 'high' ? '320k' : '128k';
     
-    ffmpeg(inputPath)
-      .audioBitrate(bitrate)
-      .audioCodec('libmp3lame') // Use MP3 codec for compatibility
-      .audioChannels(2) // Stereo
-      .audioFrequency(44100) // 44.1kHz sample rate
-      .on('end', () => {
-        logger.info(`Successfully converted ${inputPath} to ${quality} quality (${bitrate})`);
-        resolve(true);
-      })
-      .on('error', (err) => {
-        logger.error(`Error converting ${inputPath} to ${quality} quality:`, err.message);
-        resolve(false);
-      })
-      .save(outputPath);
+    const command = `"${ffmpeg}" -i "${inputPath}" -b:a ${bitrate} -acodec libmp3lame -ac 2 -ar 44100 "${outputPath}"`;
+    
+    await execAsync(command);
+    logger.info(`Successfully converted ${inputPath} to ${quality} quality (${bitrate})`);
     return true;
-  });
+  } catch (err) {
+    logger.error(`Error converting ${inputPath} to ${quality} quality:`, err);
+    return false;
+  }
 }
 
 export async function createQualityVersions(

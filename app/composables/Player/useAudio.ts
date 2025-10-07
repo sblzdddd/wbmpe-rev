@@ -9,6 +9,9 @@ interface AudioState {
   volume: number
   currentTime: number
   duration: number
+  bufferedTime: number
+  isUserSeeking: boolean
+  seekPreviewTime: number
 }
 
 export const useAudio = () => {
@@ -21,7 +24,10 @@ export const useAudio = () => {
     currentUrl: '',
     volume: 0.8,
     currentTime: 0,
-    duration: 0
+    duration: 0,
+    bufferedTime: 0,
+    isUserSeeking: false,
+    seekPreviewTime: 0
   }))
 
   // Store song end callback separately to avoid serialization issues
@@ -143,8 +149,19 @@ export const useAudio = () => {
 
     // Add timeupdate event listener for reactive currentTime
     audio.addEventListener('timeupdate', () => {
-      audioState.value.currentTime = audio.currentTime
+      if (!audioState.value.isUserSeeking) {
+        audioState.value.currentTime = audio.currentTime
+      }
       audioState.value.duration = audio.duration
+    })
+
+    // Add progress event listener for buffered time tracking
+    audio.addEventListener('progress', () => {
+      if (audio.buffered.length > 0) {
+        // Get the end of the last buffered range
+        const bufferedEnd = audio.buffered.end(audio.buffered.length - 1)
+        audioState.value.bufferedTime = bufferedEnd
+      }
     })
 
     return audio
@@ -301,6 +318,24 @@ export const useAudio = () => {
     }
   }
 
+  function startSeeking() {
+    audioState.value.isUserSeeking = true
+    audioState.value.seekPreviewTime = audioState.value.currentTime
+  }
+
+  function updateSeekPreview(time: number) {
+    if (audioState.value.isUserSeeking) {
+      audioState.value.seekPreviewTime = time
+    }
+  }
+
+  function stopSeeking(seekToTime?: number) {
+    audioState.value.isUserSeeking = false
+    if (seekToTime !== undefined) {
+      seek(seekToTime)
+    }
+  }
+
   function togglePlayPause() {
     if (audioState.value.isPlaying) {
       pause()
@@ -347,6 +382,9 @@ export const useAudio = () => {
     currentTime: computed({get: () => audioState.value.currentTime, set: (value) => seek(value)}),
     duration: computed(() => audioState.value.duration),
     volume: computed({get: () => audioState.value.volume, set: (value) => setVolume(value)}),
+    bufferedTime: computed(() => audioState.value.bufferedTime),
+    isUserSeeking: computed(() => audioState.value.isUserSeeking),
+    seekPreviewTime: computed(() => audioState.value.seekPreviewTime),
     onSongEnd: computed({
       get: () => onSongEndCallback.value, 
       set: (callback) => { onSongEndCallback.value = callback }
@@ -357,6 +395,9 @@ export const useAudio = () => {
     unPause,
     seek,
     setVolume,
+    startSeeking,
+    updateSeekPreview,
+    stopSeeking,
     cleanup,
   }
 }

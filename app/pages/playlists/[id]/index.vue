@@ -68,7 +68,7 @@
         </div>
         <div v-if="songs && songs.length > 0" class="flex flex-col">
           <WindowVirtualizer v-slot="{ item, index }" :data="songs" :item-size="54" :overscan="10" :ssr-count="10">
-            <SongItem
+            <Widget-SongItem
               :song="item"
               :index="index"
               @play="playSong"
@@ -93,16 +93,17 @@
 </template>
 
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
-import SongItem from '@/components/Widget/SongItem.vue';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { TabPages } from '@/components/ui/tabs';
 import { BACKGROUND } from '@/lib/background_settings';
 import type { SEOData } from '#types/Utils/SEO';
-import { WindowVirtualizer } from '~/components/ui/Virtua/'
 import type { RoutePath } from "#types/Utils/RoutePath"
 import type { PlaylistResponse } from '#types/Playlist';
-
+import Picture from '~/components/Picture.vue';
+import PlaylistCoverImageTile from '~/components/Playlist/CoverImageTile.vue';
+import TabPages from '~/components/ui/tab-pages/TabPages.vue';
+import { WindowVirtualizer } from '~/components/ui/Virtua';
+import WidgetSongItem from '~/components/Widget/SongItem.vue';
+import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui/tooltip';
+import Button from '~/components/ui/button/Button.vue';
 
 const seoData = useState<SEOData>('seoData')
 const route = useRoute();
@@ -171,14 +172,14 @@ watch([() => sortMode.value, () => sortOrder.value], async ([newSortMode, newSor
   isUpdatingFromRoute.value = false;
 }, {deep: true})
 
-const { error, refresh: refreshFetch } = await useFetch(`/api/playlist/${id}`, {
+const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/playlist/:id']['get']>(`/api/playlist/${id}`, {
   key: computed(() => `playlist-page-${id}`),
   onResponse({ response }) {
     // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {
       setBackground(response._data.data.coverUrl, BACKGROUND.playlist);
     }
-    seoData.value.title = `${response._data.data.name || 'Playlist'}`
+    seoData.value.title = `${response._data?.data?.name || 'Playlist'}`
   },
   lazy: false
 })

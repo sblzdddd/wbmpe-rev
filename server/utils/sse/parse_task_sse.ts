@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ServerResponse } from 'http';
 import BakaLogger from '../logger/BakaLogger';
 
@@ -27,7 +28,24 @@ export interface TaskStatusUpdate {
   timestamp?: string;
 }
 
-export type TaskUpdate = TaskProgressUpdate | TaskStatusUpdate;
+export interface TaskCompletionUpdate {
+  type: 'task_completed';
+  taskId: string;
+  status: 'completed';
+  song: any; // SongType with populated album and artists
+  streams: {
+    songId: string;
+    audio: {
+      normal: string | null;
+      high: string | null;
+      lossless: string | null;
+    };
+    video: string | null;
+  };
+  timestamp?: string;
+}
+
+export type TaskUpdate = TaskProgressUpdate | TaskStatusUpdate | TaskCompletionUpdate;
 
 const logger = BakaLogger.child({service: 'ParseTaskSSE'});
 
@@ -77,6 +95,18 @@ export function sendTaskStatus(userId: string, taskId: string, status: string, e
     taskId,
     status,
     errorMessage,
+    timestamp: new Date().toISOString()
+  });
+}
+
+// Helper function to send task completion with song data
+export function sendTaskCompletion(userId: string, taskId: string, song: any, streams: any) {
+  sendTaskUpdateToUser(userId, {
+    type: 'task_completed',
+    taskId,
+    status: 'completed',
+    song,
+    streams,
     timestamp: new Date().toISOString()
   });
 }

@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { fallbackUserInfo } from '~/lib/fallback_data';
+import Image from '../Image.vue';
+import Button from '../ui/button/Button.vue';
+import ThemeSwitcher from '../Widget/ThemeSwitcher.vue';
+import UserPanelInbox from './UserPanelInbox.vue';
 
 const colorMode = useColorMode()
 const { openDialog } = useDialog()
@@ -31,7 +35,7 @@ const handleLogout = async () => {
         <div v-show="showUserPanelDOM" class="user-panel-root">
           <div class="user-panel-backdrop" :class="{'backdrop-blur-md': isOnTop}" />
           <div class="user-panel-header" style="opacity: 0;">
-            <Widget-ThemeSwitcher class="rounded-full" />
+            <ThemeSwitcher class="rounded-full" />
             <Button variant="ghost" size="icon" class="w-7 h-7 rounded-full" @click.stop="toggleUserPanel">
               <Icon name="lucide:align-justify" size="14" />
             </Button>
@@ -53,7 +57,7 @@ const handleLogout = async () => {
                 </div>
               </div>
             </div>
-            <Nav-UserPanelInbox />
+            <UserPanelInbox />
           </div>
         </div>
       </div>

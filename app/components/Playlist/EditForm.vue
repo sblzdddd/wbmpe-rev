@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import { BACKGROUND } from '@/lib/background_settings';
+import FormField from './FormField.vue';
+import CoverUpload from './CoverUpload.vue';
+import Button from '../ui/button/Button.vue';
+import Checkbox from '../ui/checkbox/Checkbox.vue';
+import Label from '../ui/label/Label.vue';
+import type { PlaylistResponse } from '#types/Playlist';
 
 const route = useRoute();
 const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
@@ -29,7 +35,7 @@ const isDeleting = ref(false);
 const updateError = ref('');
 const isUpdating = ref(false);
 
-const { data: playlist } = useNuxtData<PlaylistResponse>(`playlist-page-${id}`)
+const { data: playlist } = useNuxtData<PlaylistResponse>(`page-${id}`)
 
 // Store original values for fallback
 const originalValues = ref({
@@ -84,7 +90,7 @@ const optimisticUpdate = async (field: keyof typeof editForm.value) => {
         else if (field === 'isPublic') playlist.value.data.isPublic = fieldValue as boolean;
       },
       onResponse: () => {
-        refreshNuxtData(`playlist-page-${id}`);
+        refreshNuxtData(`page-${id}`);
         refreshNuxtData('userPlaylists')
       },
     });
@@ -200,9 +206,9 @@ watch(() => editForm.value.coverUrl, (newVal) => {
       </div>
 
       <!-- Cover Image Upload -->
-      <Playlist-CoverUpload 
+      <CoverUpload 
         v-model="editForm.coverUrl" 
-        :playlist-id="id"
+        :id="id"
         mode="upload"
         :disabled="isUpdating"
         @uploading="handleImageUploading"
@@ -210,8 +216,8 @@ watch(() => editForm.value.coverUrl, (newVal) => {
       />
 
       <!-- Playlist Name -->
-      <Playlist-FormField
-        id="playlist-name"
+      <FormField
+        id="name"
         v-model="editForm.name"
         label="Playlist Name"
         icon="lucide:music"
@@ -222,8 +228,8 @@ watch(() => editForm.value.coverUrl, (newVal) => {
       />
 
       <!-- Description -->
-      <Playlist-FormField
-        id="playlist-description"
+      <FormField
+        id="description"
         v-model="editForm.description"
         label="Description"
         icon="lucide:file-text"

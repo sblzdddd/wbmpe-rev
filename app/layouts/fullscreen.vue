@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import Image from '~/components/Image.vue';
+import Button from '~/components/ui/button/Button.vue';
+import ThemeSwitcher from '~/components/Widget/ThemeSwitcher.vue';
 
 
 defineOptions({
@@ -24,6 +26,7 @@ const logoSrc = computed(() => {
       class="absolute top-0 left-0 w-full h-full z-[-2] transition-opacity duration-500 ease-in-out object-cover opacity-10 dark:opacity-60"
       :style="{ maskImage: 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 100%)' }"
       src="/images/bg.jpg"
+      alt="background image"
     >
     <div :style="{ opacity: opacity }" class="absolute top-0 left-[20vh] w-[100vh] z-[-1] rotate-90 transition-opacity duration-1000 ease-in-out" style="transform-origin: top left;">
       <ClientOnly fallback-tag="div">
@@ -38,7 +41,7 @@ const logoSrc = computed(() => {
       <Button variant="ghost" size="icon" class="w-10 h-10" @click="router.push('/')">
         <Icon name="lucide:home" size="20" />
       </Button>
-      <Widget-ThemeSwitcher icon-size="20" class="w-10 h-10" />
+      <ThemeSwitcher icon-size="20" class="w-10 h-10" />
     </div>
     <slot />
   </div>

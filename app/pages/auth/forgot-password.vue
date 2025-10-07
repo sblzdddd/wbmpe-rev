@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AuthForgotPasswordForm from '~/components/Auth/ForgotPasswordForm.vue';
+
 definePageMeta({
   layout: 'fullscreen',
   middleware: 'guest'

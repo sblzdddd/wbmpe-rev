@@ -2,6 +2,8 @@
 import type { ExploreResponse } from '#types/explore'
 import type { SEOData } from '#types/Utils/SEO';
 import { fallbackExplorePage } from '~/lib/fallback_data';
+import HomeRecommendRow from '~/components/Home/RecommendRow.vue';
+import Button from '~/components/ui/button/Button.vue';
 
 const seoData = useState<SEOData>('seoData')
 

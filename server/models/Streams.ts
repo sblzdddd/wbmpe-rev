@@ -83,6 +83,7 @@ Streams.parseSong = async function(songId: string, taskId?: string, userId?: str
     // Create or update Albums and Artists records
     const albumData = unparsedSong.album;
     const artistsData = unparsedSong.artists;
+    const thumbnailUrl = downloadResult.thumbnail;
 
     if (!albumData) {
       throw new Error('Album data is missing from unparsed song');
@@ -93,7 +94,7 @@ Streams.parseSong = async function(songId: string, taskId?: string, userId?: str
     // Create/update album using externalId
     const album = await Albums.findOrCreateByExternalId(albumData.id, {
       name: albumData.name,
-      coverUrl: albumData.coverUrl || undefined,
+      coverUrl: thumbnailUrl || albumData.coverUrl || undefined,
       platform: albumData.platform,
     });
 

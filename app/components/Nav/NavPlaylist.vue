@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from '../ui/context-menu';
 import { motion } from "motion-v"
+import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarSeparator } from '../ui/sidebar';
+import Image from '../Image.vue';
 
 defineProps<{
   data: PlaylistMeta[]
@@ -139,7 +142,7 @@ const routePath = useState<RoutePath>('routePath')
 @reference "../../assets/css/tailwind.css";
 .image-icon {
   &:is(:where(.group)[data-collapsible="icon"] *) {
-    padding: 0rem !important;
+    padding: 0 !important;
   }
 }
 </style>

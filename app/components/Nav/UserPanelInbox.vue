@@ -39,7 +39,7 @@ const { activeTasks, recentTasks, notificationCount, isConnected } = useTasks()
                   'progress-processing': task.status === 'processing',
                   'progress-pending': task.status === 'pending'
                 }"
-              ></div>
+              />
             </div>
             <div class="progress-text">{{ task.progress }}%</div>
           </div>
@@ -58,6 +58,7 @@ const { activeTasks, recentTasks, notificationCount, isConnected } = useTasks()
               <Icon 
                 :name="task.status === 'completed' ? 'lucide:check-circle' : 'lucide:x-circle'" 
                 size="12" 
+                class="size-3 min-w-3 min-h-3"
                 :class="task.status === 'completed' ? 'text-green-500' : 'text-red-500'"
               />
               {{ task.status === 'completed' ? 'Completed' : 'Failed' }}
@@ -80,7 +81,7 @@ const { activeTasks, recentTasks, notificationCount, isConnected } = useTasks()
 @reference '../../assets/css/tailwind.css';
 /* User panel inbox styles */
 .user-panel-inbox {
-  @apply flex flex-col items-start gap-2 py-2 px-1 border-t border-border;
+  @apply flex flex-col items-start gap-2 p-1 pt-2 border-t border-border;
 }
 
 .user-panel-inbox-header {
@@ -120,7 +121,16 @@ const { activeTasks, recentTasks, notificationCount, isConnected } = useTasks()
 }
 
 .inbox-task-list {
-  @apply space-y-1 max-h-[30vh] overflow-y-auto overflow-x-hidden;
+  @apply space-y-1 max-h-[20vh] overflow-y-auto overflow-x-hidden rounded-[10px];
+  &::-webkit-scrollbar {
+    @apply w-1 h-1 bg-transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded-full w-1 h-1;
+  }
+  &::-webkit-scrollbar-track {
+    @apply w-1 h-1 bg-transparent;
+  }
 }
 
 .inbox-task-item {
@@ -180,6 +190,6 @@ const { activeTasks, recentTasks, notificationCount, isConnected } = useTasks()
 }
 
 .error-message {
-  @apply text-red-500 text-xs;
+  @apply text-red-500 text-xs truncate;
 }
 </style>

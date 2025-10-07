@@ -38,7 +38,8 @@
             <SongItem
               :song="item"
               :index="index"
-              @play="(index, song) => {createParseTask(song._id.toString())}"
+              :is-deferred-playback="hasDeferredPlayback(item._id)"
+              @play="(index, song) => {createParseTask(song._id.toString(), true)}"
             />
           </WindowVirtualizer>
         </div>
@@ -73,13 +74,15 @@ import type { InternalApi } from "nitropack"
 import type { UnparsedSongType } from '#types/Search/UnparsedSongs'
 import type { SongType } from '#types/Song'
 import type { SEOData } from '#types/Utils/SEO'
+import { WindowVirtualizer } from '~/components/ui/Virtua'
+import Skeleton from '~/components/ui/skeleton/Skeleton.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 // Use the search composable
 const { searchKeyword } = useSearch()
-const { createParseTask } = useTasks()
+const { createParseTask, hasDeferredPlayback } = useTasks()
 
 // Parse route parameters: /search/keyword (remove page from URL)
 const routeParams = computed(() => {

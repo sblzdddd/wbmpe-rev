@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Picture from '../Picture.vue';
+import type { PlaylistResponse } from '~~/types/Playlist';
 
 const id = useRoute().params.id as string;
 const backgroundImages = ref<string[]>([]);

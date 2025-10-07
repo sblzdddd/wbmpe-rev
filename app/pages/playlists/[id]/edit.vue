@@ -35,10 +35,13 @@
 </template>
 
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
-import { TabPages } from '@/components/ui/tabs';
 import { BACKGROUND } from '@/lib/background_settings';
-import { WindowVirtualizer } from '@/components/ui/Virtua';
+import type { PlaylistResponse } from '#types/Playlist';
+import TabPages from '~/components/ui/tab-pages/TabPages.vue';
+import { WindowVirtualizer } from '~/components/ui/Virtua';
+import PlaylistEditForm from '~/components/Playlist/EditForm.vue';
+import PlaylistSortItem from '~/components/Playlist/SortItem.vue';
+import Button from '~/components/ui/button/Button.vue';
 
 const seoData = useState<SEOData>('seoData')
 const route = useRoute();
@@ -91,14 +94,14 @@ watch([() => route.query.tab], async ([newTab]) => {
   isUpdatingFromRoute.value = false;
 }, {deep: true, immediate: true})
 
-const { error, refresh: refreshFetch } = await useFetch(`/api/playlist/${id}`, {
+const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/playlist/:id']['get']>(`/api/playlist/${id}`, {
   key: computed(() => `playlist-page-${id}`),
   onResponse({ response }) {
     // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {
       setBackground(response._data.data.coverUrl, BACKGROUND.playlist_edit);
     }
-    seoData.value.title = `Edit Playlist ${response._data.data.name || 'Unknown'}`
+    seoData.value.title = `Edit Playlist ${response._data?.data?.name || 'Unknown'}`
   },
   lazy: false
 })

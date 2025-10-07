@@ -1,6 +1,7 @@
 import ParseTasks from '../../models/ParseTasks';
 import UnparsedSongs from '../../models/UnparsedSongs';
-import { sendTaskStatus } from './events.get';
+import Songs from '../../models/Songs';
+import { sendTaskStatus, sendTaskCompletion } from './events.get';
 
 const logger = BakaLogger.child({service: 'ParseTaskAPI'});
 
@@ -105,15 +106,40 @@ async function processParseTask(taskId: string) {
       'downloading'
     );
 
-    await Streams.parseSong(task.songId.toString(), taskId, task.userId.toString());
+    const streams = await Streams.parseSong(task.songId.toString(), taskId, task.userId.toString());
 
     // Complete the task
     await ParseTasks.completeTask(taskId);
-    sendTaskStatus(
-      task.userId.toString(),
-      taskId,
-      'completed'
-    );
+
+    // Fetch the complete song data with populated fields
+    const song = await Songs.findById(task.songId)
+      .populate({
+        path: 'album',
+        select: 'name coverUrl platform'
+      })
+      .populate({
+        path: 'artists', 
+        select: 'name platform'
+      })
+      .select('-__v -createdAt -updatedAt')
+      .lean();
+
+    if (song && streams) {
+      // Send completion with song data and streams
+      sendTaskCompletion(
+        task.userId.toString(),
+        taskId,
+        song,
+        streams
+      );
+    } else {
+      // Fallback to status-only if song data is missing
+      sendTaskStatus(
+        task.userId.toString(),
+        taskId,
+        'completed'
+      );
+    }
 
     logger.info(`Successfully completed task ${taskId}`);
 

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import TopBanner from "~/components/Home/TopBannerCard.vue";
 import TopRecommend from "~/components/Home/TopRecommendCard.vue";
-import RecommendItem from '~/components/Home/RecommendRow.vue'
-import type { HomeResponse } from '~~/types/Home'
+import RecommendItem from '~/components/Home/RecommendRow.vue';
 import type { SEOData } from '#types/Utils/SEO';
 import { fallbackHomePage } from '~/lib/fallback_data';
 

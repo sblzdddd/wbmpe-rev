@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { VList } from '~/components/ui/Virtua'
 import { useDebounceFn } from '@vueuse/core'
+import Button from '../ui/button/Button.vue';
+import { VList } from '../ui/Virtua';
+import Picture from '../Picture.vue';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
 
 const { open, changeOpen } = useDialog()
 const { clearQueue, playQueueIndex, removeFromQueue } = usePlayer()
@@ -51,7 +54,7 @@ const handleRemoveFromQueue = (itemId: string) => {
 
 // Filter queue to hide removing items
 const filteredQueue = computed(() => {
-  return queue.value.filter(item => !removingItems.value.has(item._id))
+  return queue.value.filter(item => item && !removingItems.value.has(item._id))
 })
 
 // Helper function to get original queue index from item ID
@@ -92,7 +95,7 @@ watch(() => hasQueue.value, (newVal) => {
       </SheetHeader>
       <div class="queue-list overflow-y-auto h-full">
         <VList 
-          v-slot="{ item, index }"
+          v-slot="{ item, index } = {}"
           :data="filteredQueue"
         >
           <div :class="{ 'bg-muted/40': index % 2 === 0 }" class="queue-item flex items-center gap-3 p-2 hover:bg-muted cursor-pointer" @click="playQueueIndex(getOriginalIndex(item._id))">

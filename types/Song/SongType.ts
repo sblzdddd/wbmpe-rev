@@ -9,5 +9,6 @@ export type SongType = {
   artists: SimpleArtist[];
   album: SimpleAlbum;
   duration: number;
+  addedBy?: string;
 } & TimeMetadata
 
