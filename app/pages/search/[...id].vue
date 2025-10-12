@@ -69,13 +69,11 @@
 </template>
 
 <script setup lang="ts">
-import SongItem from '~/components/Widget/SongItem.vue'
 import type { InternalApi } from "nitropack"
 import type { UnparsedSongType } from '#types/Search/UnparsedSongs'
 import type { SongType } from '#types/Song'
 import type { SEOData } from '#types/Utils/SEO'
 import { WindowVirtualizer } from '~/components/ui/Virtua'
-import Skeleton from '~/components/ui/skeleton/Skeleton.vue'
 
 const route = useRoute()
 const router = useRouter()

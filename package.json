@@ -51,6 +51,9 @@
     "zod-openapi": "^5.4.3"
   },
   "devDependencies": {
-    "@types/node": "^24.7.1"
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/node": "^24.7.1",
+    "embla-carousel": "^8.6.0",
+    "shadcn-nuxt": "^2.3.1"
   }
 }

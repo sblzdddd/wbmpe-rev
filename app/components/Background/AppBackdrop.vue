@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { src, opacity, blur, height, refreshKey } = useBackground()
+const { src, opacity, blur, height, refreshKey, maskOpacity } = useBackground()
 
 // Cross-fade state management
 const isTransitioning = ref(false)
@@ -97,7 +97,14 @@ watch(refreshKey, async () => {
       scale: blur.value > 0 ? blur.value/200+1 : 1,
       height: `${height.value}%`,
       duration: 500,
-      easing: 'ease-in-out'
+      easing: 'ease-out'
+    })
+    animate(next, {
+      filter: `blur(${blur.value}px)`,
+      scale: blur.value > 0 ? blur.value/200+1 : 1,
+      height: `${height.value}%`,
+      duration: 500,
+      easing: 'ease-out'
     })
   }
 })
@@ -107,10 +114,10 @@ watch(refreshKey, async () => {
   <!-- Current/Main background image -->
   <img
     id="backdrop-A"
-    class="left-0 absolute top-0 w-screen z-[-1] mask object-cover object-center"
+    class="left-0 fixed top-0 w-screen z-[-1] mask object-cover object-center"
     :style="{
       opacity: 0,
-      maskImage: 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 100%)',
+      maskImage: `linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, ${1-maskOpacity}) 100%)`,
     }"
     alt="Background"
     @load="onNextImageLoad('A')"
@@ -119,12 +126,18 @@ watch(refreshKey, async () => {
   <!-- Next background image (for cross-fade transition) -->
   <img
     id="backdrop-B"
-    class="left-0 absolute top-0 w-screen z-[-1] mask object-cover object-center"
+    class="left-0 fixed top-0 w-screen z-[-1] mask object-cover object-center"
     :style="{
       opacity: 0,
-      maskImage: 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 100%)',
+      maskImage: `linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, ${1-maskOpacity}) 100%)`,
     }"
     alt="Background"
     @load="onNextImageLoad('B')"
   >
 </template>
+
+<style>
+#backdrop-0, #backdrop-1 {
+  transition: none;
+}
+</style>

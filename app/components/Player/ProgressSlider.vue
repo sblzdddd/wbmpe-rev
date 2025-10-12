@@ -1,8 +1,13 @@
 <template>
   <div v-bind="$attrs">
-    <p class="duration_start">
-      {{ currentLen }}
-    </p>
+    <div class="flex justify-between" :class="mobileMode?'mb-1':''">
+      <p class="duration_start">
+        {{ currentLen }}
+      </p>
+      <p v-if="mobileMode" class="duration_end">
+        {{ remainLen }}
+      </p>
+    </div>
     <div class="progress-container">
 
       <!-- Buffered progress -->
@@ -24,18 +29,17 @@
         @mouseup="onProgressMouse(false)"
       >
     </div>
-    <div class="lg:hidden text-xs text-gray-300 w-full px-0.5 flex justify-between">
-      <p>{{ currentLen }}</p>
-      <p>{{ remainLen }}</p>
-    </div>
 
-    <p class="duration_end">
+    <p v-if="!mobileMode" class="duration_end">
       {{ remainLen }}
     </p>
   </div>
 </template>
 <script setup lang="ts">
-import {ref, computed, watch} from "vue";
+
+defineProps({
+  mobileMode: Boolean
+})
 
 // Utility function to format seconds to mm:ss
 function formatSeconds(seconds: number): string {

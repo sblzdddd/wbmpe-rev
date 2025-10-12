@@ -35,7 +35,7 @@ const isDeleting = ref(false);
 const updateError = ref('');
 const isUpdating = ref(false);
 
-const { data: playlist } = useNuxtData<PlaylistResponse>(`page-${id}`)
+const { data: playlist } = useNuxtData<PlaylistResponse>(`playlist-page-${id}`)
 
 // Store original values for fallback
 const originalValues = ref({

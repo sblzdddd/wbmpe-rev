@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { fallbackUserPlaylists } from '~/lib/fallback_data';
-import {type SidebarProps, Sidebar, SidebarHeader, SidebarContent} from "~/components/ui/sidebar"
-import NavTitle from './NavTitle.vue';
-import NavMain from './NavMain.vue';
-import NavPlaylist from './NavPlaylist.vue';
+import type { SidebarProps } from "~/components/ui/sidebar"
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
@@ -81,11 +78,11 @@ const { loggedIn } = useAuth()
 <template>
   <Sidebar v-bind="props">
     <SidebarHeader>
-      <NavTitle />
+      <Nav-Title />
     </SidebarHeader>
     <SidebarContent class="gap-0">
-      <NavMain :data="data.navMain" />
-      <NavPlaylist 
+      <Nav-Main :data="data.navMain" />
+      <Nav-Playlist 
         v-if="loggedIn && playlists.data.value"
         :data="playlists.data.value.createdPlaylists" 
         :favorites="playlists.data.value.favorites ?? null" 

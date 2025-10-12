@@ -110,14 +110,9 @@
 </template>
 
 <script setup lang="ts">
-import SongItem from '@/components/Widget/SongItem.vue';
 import { BACKGROUND } from '@/lib/background_settings';
 import type { SEOData } from '#types/Utils/SEO';
 import type { AlbumResponse } from '#types/Album';
-import Picture from '@/components/Picture.vue';
-import Button from '@/components/ui/button/Button.vue';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import TabPages from '~/components/ui/tab-pages/TabPages.vue';
 import { WindowVirtualizer } from '~/components/ui/Virtua';
 
 const seoData = useState<SEOData>('seoData')

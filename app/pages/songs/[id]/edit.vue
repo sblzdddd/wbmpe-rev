@@ -200,11 +200,6 @@
 
 <script setup lang="ts">
 import { BACKGROUND } from '@/lib/background_settings';
-import Label from '~/components/ui/label/Label.vue';
-import Input from '~/components/ui/input/Input.vue';
-import Button from '~/components/ui/button/Button.vue';
-import Picture from '~/components/Picture.vue';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '~/components/ui/dialog';
 
 const seoData = useState<SEOData>('seoData');
 const route = useRoute();

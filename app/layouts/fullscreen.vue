@@ -1,7 +1,4 @@
 <script lang="ts" setup>
-import Image from '~/components/Image.vue';
-import Button from '~/components/ui/button/Button.vue';
-import ThemeSwitcher from '~/components/Widget/ThemeSwitcher.vue';
 
 
 defineOptions({
@@ -41,7 +38,7 @@ const logoSrc = computed(() => {
       <Button variant="ghost" size="icon" class="w-10 h-10" @click="router.push('/')">
         <Icon name="lucide:home" size="20" />
       </Button>
-      <ThemeSwitcher icon-size="20" class="w-10 h-10" />
+      <Widget-Theme-Switcher icon-size="20" class="w-10 h-10" />
     </div>
     <slot />
   </div>

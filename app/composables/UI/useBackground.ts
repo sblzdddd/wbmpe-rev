@@ -1,6 +1,16 @@
 import type { backgroundSettings } from "@/lib/background_settings"
+import { useQueue } from "#imports"
+import { BACKGROUND } from "@/lib/background_settings"
+import { is } from "zod/v4/locales"
+import { set } from "mongoose"
 
 export function useBackground() {
+  const isFullscreen = useState<boolean>('isFullscreen', () => false)
+  const { currentSong } = useQueue()
+  const route = useRoute()
+  const router = useRouter()
+  const { isPlaying } = useAudio()
+
   // Grouped background state
   const backgroundState = useState('background', () => ({
     src: "",
@@ -8,14 +18,52 @@ export function useBackground() {
     blur: 0,
     height: 0,
     isLoaded: false,
+    maskOpacity: 1,
     refreshKey: 0
   }))
   
   const img = useImage()
 
+  const isInSpecialPage = computed(() => {
+    return route.path.startsWith('/playlists/') || route.path.startsWith('/songs/') || route.path.startsWith('/albums/') || route.path.startsWith('/artists/');
+  })
+
+  watch(() => isPlaying.value, (newVal) => {
+    if(!(currentSong.value && currentSong.value.album && currentSong.value.album.coverUrl)) return
+    if(isInSpecialPage.value || isFullscreen.value) return;
+    if(newVal) {
+      setBackground(currentSong.value.album.coverUrl, BACKGROUND.playlist);
+    } else {
+      resetBackground();
+    }
+    
+  })
+
+  watch([() => isFullscreen.value, () => currentSong.value], () => {
+    if(!(currentSong.value && currentSong.value.album && currentSong.value.album.coverUrl)) return
+    if(isFullscreen.value) {
+      setBackground(currentSong.value.album.coverUrl, BACKGROUND.fullscreen);
+    } else if (!isInSpecialPage.value) {
+      if(!isPlaying.value) {
+        resetBackground();
+        return;
+      }
+      setBackground(currentSong.value.album.coverUrl, BACKGROUND.playlist);
+    }
+  })
+
+  router.beforeEach((to, _, next) => {
+    const isInSpecialPage = to.path.startsWith('/playlists/') || to.path.startsWith('/songs/') || to.path.startsWith('/albums/') || to.path.startsWith('/artists/');
+    if (!isInSpecialPage && currentSong.value && isPlaying.value) {
+      setBackground(currentSong.value.album.coverUrl, BACKGROUND.playlist);
+    } else if (!isInSpecialPage) {
+      resetBackground();
+    }
+    next();
+  });
   
   const setBackground = (src: string, settings: backgroundSettings) => {
-    const { opacity: setOpacity, blur, height } = settings
+    const { opacity: setOpacity, blur, height, maskOpacity } = settings
     if (!src) {
       resetBackground()
       return
@@ -26,17 +74,19 @@ export function useBackground() {
       backgroundState.value.blur = blur
       backgroundState.value.height = height
       backgroundState.value.isLoaded = true
+      backgroundState.value.maskOpacity = maskOpacity ?? 1
       backgroundState.value.refreshKey++
       return
     }
     // Process the image URL consistently for both SSR and client
-    const processedSrc = img(src.replace('cdn://', '/'), {}, {provider: src.startsWith('cdn://') ? 'aliyun':'ipx'})
+    const processedSrc = img(src.replace('cdn://', '/'), {size: 1000}, {provider: src.startsWith('cdn://') ? 'aliyun':'ipx'})
 
     if(backgroundState.value.src == processedSrc) {
       backgroundState.value.opacity = setOpacity
       backgroundState.value.blur = blur
       backgroundState.value.height = height
       backgroundState.value.isLoaded = true
+      backgroundState.value.maskOpacity = maskOpacity ?? 1
       backgroundState.value.refreshKey++
       return
     }
@@ -47,11 +97,13 @@ export function useBackground() {
     backgroundState.value.opacity = setOpacity
     backgroundState.value.blur = blur
     backgroundState.value.height = height
+    backgroundState.value.maskOpacity = maskOpacity ?? 1
   }
   
   const resetBackground = () => {
     backgroundState.value.opacity = 0
     backgroundState.value.blur = 0
+    backgroundState.value.maskOpacity = 1
     backgroundState.value.refreshKey++
   }
   
@@ -63,8 +115,10 @@ export function useBackground() {
     height: computed(() => backgroundState.value.height),
     isLoaded: computed(() => backgroundState.value.isLoaded),
     refreshKey: computed(() => backgroundState.value.refreshKey),
+    maskOpacity: computed(() => backgroundState.value.maskOpacity),
     // Actions
     setBackground,
-    resetBackground
+    resetBackground,
+    isInSpecialPage
   }
 } 

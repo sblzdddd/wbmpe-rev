@@ -135,9 +135,6 @@
 
 <script setup lang="ts">
 import { BACKGROUND } from '@/lib/background_settings';
-import Button from '~/components/ui/button/Button.vue';
-import Picture from '~/components/Picture.vue';
-import TabPages from '~/components/ui/tab-pages/TabPages.vue';
 
 const seoData = useState<SEOData>('seoData');
 const route = useRoute();

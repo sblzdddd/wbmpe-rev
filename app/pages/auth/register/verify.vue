@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import Button from '~/components/ui/button/Button.vue'
-import { PinInput, PinInputGroup, PinInputSlot } from '~/components/ui/pin-input'
 
 definePageMeta({
   layout: 'fullscreen',

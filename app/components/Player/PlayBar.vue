@@ -5,7 +5,7 @@
   >
 
     <div class="playbar-content flex md:grid grid-cols-3 gap-1 md:gap-4 px-3 py-2">
-      <div class="song-info flex items-center gap-3 min-w-0 flex-1">
+      <div @click="isFullscreen = true" class="song-info flex items-center gap-3 min-w-0 flex-1">
         <Picture 
           v-if="currentSong?.album?.coverUrl" 
           :src="currentSong.album.coverUrl" 
@@ -172,9 +172,6 @@
 import { DialogType } from '@/composables/UI/useDialog';
 import type { PlayMode } from '@/composables/Player/usePlayer';
 import ProgressSlider from '@/components/Player/ProgressSlider.vue';
-import Button from '@/components/ui/button/Button.vue';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import Picture from '../Picture.vue';
 
 const { 
   playerState, 
@@ -184,6 +181,8 @@ const {
   playSong,
   togglePlayMode
 } = usePlayer()
+
+const isFullscreen = useState('isFullscreen')
 
 const { volume, togglePlayPause, setVolume, isPlaying } = useAudio()
 

@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import type { SEOData } from '#types/Utils/SEO';
-import Button from '~/components/ui/button/Button.vue';
-import Picture from '~/components/Picture.vue';
 
 const { paddingClass } = useContentPadding();
 const seoData = useState<SEOData>('seoData');

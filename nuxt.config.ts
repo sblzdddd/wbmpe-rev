@@ -1,3 +1,4 @@
+import tailwindcss from '@tailwindcss/vite'
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -29,8 +30,14 @@ export default defineNuxtConfig({
     '@nuxtjs/color-mode',
     'nuxt-auth-utils',
     'motion-v/nuxt',
-    '@vueuse/nuxt'
+    '@vueuse/nuxt',
+    'shadcn-nuxt'
   ],
+
+  shadcn: {
+    prefix: '',
+    componentDir: './app/components/ui'
+  },
 
   image: {
     aliyun: {
@@ -72,10 +79,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true, timeline: { enabled: true } },
   css: ['~/assets/css/tailwind.css'],
 
-  postcss: {
-    plugins: {
-      '@tailwindcss/postcss': {},
-    },
+  vite: {
+    plugins: [
+      tailwindcss(),
+    ],
   },
 
   colorMode: {
@@ -151,5 +158,19 @@ export default defineNuxtConfig({
     },
   },
 
-  components: [],
+  components: {
+    dirs: [
+      {
+        path: '~/components',
+        ignore: ['~/components/ui/**/*'],
+        global: true,
+        watch: true,
+      },
+      {
+        path: '~/components/Widget',
+        global: true,
+        watch: true,
+      }
+    ],
+  },
 })

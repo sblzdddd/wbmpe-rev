@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import Image from '~/components/Image.vue'
 import type { SEOData } from '#types/Utils/SEO';
-import Input from '~/components/ui/input/Input.vue'
-import Button from '~/components/ui/button/Button.vue';
 
 const seoData = useState<SEOData>('seoData')
 

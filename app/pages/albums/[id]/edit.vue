@@ -37,9 +37,6 @@
 <script setup lang="ts">
 import { BACKGROUND } from '@/lib/background_settings';
 import type { AlbumResponse } from '#types/Album';
-import TabPages from '~/components/ui/tab-pages/TabPages.vue';
-import AlbumEditForm from '~/components/Album/EditForm.vue';
-import AlbumSongItem from '~/components/Album/SongItem.vue';
 import { WindowVirtualizer } from '~/components/ui/Virtua';
 
 const seoData = useState<SEOData>('seoData')

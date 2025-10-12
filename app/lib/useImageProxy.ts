@@ -1,5 +1,8 @@
 // Image proxy utilities for handling CORS domains and providers
-export function useImageProxy(src: string) {
+import { computed, toValue } from 'vue'
+import type { MaybeRefOrGetter } from 'vue'
+
+export function useImageProxy(src: MaybeRefOrGetter<string>) {
   // Domains that require CORS proxy
   const corsProxyDomains = [
     'i1.hdslb.com',
@@ -35,7 +38,7 @@ export function useImageProxy(src: string) {
   }
 
   const processedSrc = computed(() => {
-    let processedUrl = src
+    let processedUrl = toValue(src) ?? ''
     
     // Handle cdn:// prefix first
     if (processedUrl.startsWith('cdn://')) {
@@ -56,7 +59,7 @@ export function useImageProxy(src: string) {
   })
 
   const provider = computed(() => {
-    let urlToCheck = src
+    let urlToCheck = toValue(src) ?? ''
     
     // Handle protocol-relative URLs for provider check
     if (urlToCheck.startsWith('//')) {
@@ -74,7 +77,7 @@ export function useImageProxy(src: string) {
     }
     
     // Original logic for cdn:// sources
-    if (src.startsWith('cdn://')) {
+    if ((toValue(src) ?? '').startsWith('cdn://')) {
       return 'aliyun'
     }
     

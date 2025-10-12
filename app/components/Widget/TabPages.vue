@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Tab buttons -->
-    <div class="w-full flex gap-2 mb-6" v-bind="tabContainerAttrs">
+    <div class="w-full flex gap-2 mb-6" v-bind="safeTabContainerAttrs">
       <NuxtLink 
         v-for="tab in tabs" 
         :key="tab.key" 
@@ -46,13 +46,20 @@ interface Props {
   layoutId?: string
   activeTab?: string
   defaultTab?: string
-  tabContainerAttrs?: unknown
+  tabContainerAttrs?: Record<string, any>
 }
 
 const props = withDefaults(defineProps<Props>(), {
   layoutId: 'tab-highlighter',
   tabContainerAttrs: () => ({})
 })
+
+// Ensure tabContainerAttrs is always an object
+const safeTabContainerAttrs = computed(() => {
+  return typeof props.tabContainerAttrs === 'object' && props.tabContainerAttrs !== null
+    ? props.tabContainerAttrs
+    : {};
+});
 
 const route = useRoute()
 
@@ -73,7 +80,7 @@ const activeTabSlot = computed(() => {
 </script>
 
 <style scoped>
-@reference '../../../assets/css/tailwind.css';
+@reference '../../assets/css/tailwind.css';
 .tab-active {
   @apply !bg-none;
   &::before {

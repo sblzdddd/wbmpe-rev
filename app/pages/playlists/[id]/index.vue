@@ -68,7 +68,7 @@
         </div>
         <div v-if="songs && songs.length > 0" class="flex flex-col">
           <WindowVirtualizer v-slot="{ item, index }" :data="songs" :item-size="54" :overscan="10" :ssr-count="10">
-            <Widget-SongItem
+            <SongItem
               :song="item"
               :index="index"
               @play="playSong"
@@ -97,17 +97,18 @@ import { BACKGROUND } from '@/lib/background_settings';
 import type { SEOData } from '#types/Utils/SEO';
 import type { RoutePath } from "#types/Utils/RoutePath"
 import type { PlaylistResponse } from '#types/Playlist';
-import Picture from '~/components/Picture.vue';
-import PlaylistCoverImageTile from '~/components/Playlist/CoverImageTile.vue';
-import TabPages from '~/components/ui/tab-pages/TabPages.vue';
 import { WindowVirtualizer } from '~/components/ui/Virtua';
-import WidgetSongItem from '~/components/Widget/SongItem.vue';
-import { Tooltip, TooltipTrigger, TooltipContent } from '~/components/ui/tooltip';
-import Button from '~/components/ui/button/Button.vue';
 
 const seoData = useState<SEOData>('seoData')
 const route = useRoute();
-const id = route.params.id;
+const id = route.params.id as string;
+
+definePageMeta({
+  validate: async (route) => {
+    // Check if the id is a valid ObjectId (24-character hexadecimal string)
+    return typeof route.params.id === 'string' && /^[0-9a-fA-F]{24}$/.test(route.params.id)
+  },
+});
 
 const { open } = useSidebar()
 

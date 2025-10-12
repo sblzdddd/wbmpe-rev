@@ -6,6 +6,7 @@
     :custom="true"
     v-bind="$attrs"
     :provider="provider"
+    :key="processedSrc"
   >
     <img
       v-if="isLoaded"
@@ -21,6 +22,7 @@
 <script setup lang="ts">
 import { useImageProxy } from '~/lib/useImageProxy'
 import {Skeleton} from "~/components/ui/skeleton";
+import { toRef } from 'vue'
 
 const props = defineProps({
   src: {
@@ -38,7 +40,9 @@ const props = defineProps({
   },
 })
 
-const { processedSrc, provider } = useImageProxy(props.src)
+// Make src reactive for the composable so changes trigger recomputation
+const srcRef = toRef(props, 'src')
+const { processedSrc, provider } = useImageProxy(srcRef)
 </script>
 
 <style scoped>

@@ -69,7 +69,7 @@ const handleHeaderKeydown = (event: KeyboardEvent) => {
     class="sticky top-0 shrink-0 z-[50]"
   >
     <div
-      class="header-wrapper w-full transition-[background-color,border-color] duration-200"
+      class="header-wrapper relative z-30 w-full transition-[background-color,border-color] duration-200"
       :class="`${isOnTop ? '' : 'bg-sidebar/80 backdrop-blur-sm border-b-[1.5px]'}`"
     >
       <header class="flex h-12 md:h-16 items-center" v-bind="containerAttrs || {}">
@@ -135,7 +135,7 @@ const handleHeaderKeydown = (event: KeyboardEvent) => {
         </div>
       </header>
     </div>
-    <div v-if="scrollY > 225 && isPlaylistPage" class="w-full border-t py-2 absolute top-12 md:top-16 left-0 bg-sidebar/80 backdrop-blur-sm border-b-[1.5px]">
+    <div v-if="scrollY > 225 && isPlaylistPage" class="w-full border-t py-2 absolute top-12 md:top-16 left-0 bg-sidebar/80 backdrop-blur-sm border-b-[1.5px] z-10">
       <Playlist-Header v-bind="containerAttrs || {}" />
     </div>
   </div>

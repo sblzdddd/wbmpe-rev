@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app'
-import Button from '~/components/ui/button/Button.vue';
 
 defineProps({
   error: {type:Object as () => NuxtError, required: true}

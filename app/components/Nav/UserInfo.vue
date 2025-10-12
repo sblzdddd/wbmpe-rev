@@ -101,7 +101,7 @@ const userDisplayName = computed(() => {
 }
 
 .user-panel-toggle-icon {
-  @apply z-20 text-white pointer-events-none transition-all duration-200;
+  @apply z-80 text-white pointer-events-none transition-all duration-200;
 }
 
 .user-panel-toggle-icon--light-open {
@@ -110,7 +110,7 @@ const userDisplayName = computed(() => {
 
 /* User panel root styles */
 .user-panel-root {
-  @apply absolute top-0 right-0 flex flex-col rounded-lg;
+  @apply absolute top-0 right-0 z-[60] flex flex-col rounded-lg;
 }
 
 /* User panel backdrop styles */
@@ -120,7 +120,7 @@ const userDisplayName = computed(() => {
 
 /* User panel header styles */
 .user-panel-header {
-  @apply flex justify-end gap-2;
+  @apply relative z-10 flex justify-end gap-2;
 }
 
 /* User panel avatar styles */
@@ -135,7 +135,7 @@ const userDisplayName = computed(() => {
 
 /* User panel content styles */
 .user-panel-content {
-  @apply p-1 flex flex-col relative;
+  @apply p-1 flex flex-col relative z-10;
 }
 
 /* User panel user info styles */

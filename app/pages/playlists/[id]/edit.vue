@@ -37,11 +37,7 @@
 <script setup lang="ts">
 import { BACKGROUND } from '@/lib/background_settings';
 import type { PlaylistResponse } from '#types/Playlist';
-import TabPages from '~/components/ui/tab-pages/TabPages.vue';
 import { WindowVirtualizer } from '~/components/ui/Virtua';
-import PlaylistEditForm from '~/components/Playlist/EditForm.vue';
-import PlaylistSortItem from '~/components/Playlist/SortItem.vue';
-import Button from '~/components/ui/button/Button.vue';
 
 const seoData = useState<SEOData>('seoData')
 const route = useRoute();

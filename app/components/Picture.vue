@@ -7,6 +7,7 @@
     :custom="true"
     v-bind="$attrs"
     :provider="provider"
+    :key="processedSrc"
   >
   <img
     v-if="isLoaded"
@@ -21,7 +22,8 @@
 
 <script setup lang="ts">
 import { useImageProxy } from '~/lib/useImageProxy'
-import {Skeleton} from "~/components/ui/skeleton";
+import { toRef } from 'vue'
+import { Skeleton } from '~/components/ui/skeleton'
 
 const props = defineProps({
   src: {
@@ -40,5 +42,7 @@ const props = defineProps({
   },
 })
 
-const { processedSrc, provider } = useImageProxy(props.src)
+// Make src reactive so picture updates when src changes
+const srcRef = toRef(props, 'src')
+const { processedSrc, provider } = useImageProxy(srcRef)
 </script>

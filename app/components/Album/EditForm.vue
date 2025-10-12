@@ -76,10 +76,6 @@
 
 <script setup lang="ts">
 import type { AlbumResponse } from '#types/Album';
-import Label from '~/components/ui/label/Label.vue';
-import Input from '~/components/ui/input/Input.vue';
-import Button from '~/components/ui/button/Button.vue';
-import Picture from '../Picture.vue';
 
 const route = useRoute();
 const albumId = route.params.id as string;
