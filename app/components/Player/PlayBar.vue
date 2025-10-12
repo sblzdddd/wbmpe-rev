@@ -4,8 +4,9 @@
     class="playbar-container"
   >
 
-    <div class="playbar-content flex md:grid grid-cols-3 gap-1 md:gap-4 px-3 py-2">
-      <div @click="isFullscreen = true" class="song-info flex items-center gap-3 min-w-0 flex-1">
+    <div class="playbar-content flex md:grid grid-cols-3 gap-1 md:gap-4 py-1 px-1">
+      <div @click="isFullscreen = true" class="flex">
+      <div @click="isFullscreen = true" :class="SongInfoClass">
         <Picture 
           v-if="currentSong?.album?.coverUrl" 
           :src="currentSong.album.coverUrl" 
@@ -16,7 +17,7 @@
         />
         <div v-else class="w-12 h-12 bg-muted rounded-md flex-shrink-0" />
         
-        <div class="song-details min-w-0 flex-1">
+        <div class="song-details min-w-0">
           <p class="song-title text-sm font-medium truncate">
             {{ currentSong?.name || 'No song selected' }}
           </p>
@@ -26,6 +27,7 @@
             </span>
           </p>
         </div>
+      </div>
       </div>
       
       <div class="flex flex-col md:w-full gap-1 justify-center items-center">
@@ -172,6 +174,33 @@
 import { DialogType } from '@/composables/UI/useDialog';
 import type { PlayMode } from '@/composables/Player/usePlayer';
 import ProgressSlider from '@/components/Player/ProgressSlider.vue';
+
+const SongInfoClass = `song-info flex items-center gap-3 p-2 pr-4 rounded-md 
+relative active:scale-95 transition-all 
+cursor-pointer
+hover:text-accent-foreground
+hover:before:scale-100
+hover:before:shadow-xs
+hover:before:opacity-100
+active:before:shadow-none
+before:absolute
+before:content-[""]before:pointer-events-none
+before:top-0
+before:left-0
+before:w-full
+before:h-full
+before:z-[0]
+before:inset-0
+before:rounded-md
+before:bg-black/15 dark:before:bg-white/15
+before:opacity-0
+before:scale-80
+before:transition-[opacity,scale]
+before:ease-out
+before:duration-200
+active:before:duration-100
+before:ease-in-out`
+
 
 const { 
   playerState, 
