@@ -44,4 +44,8 @@ useSeoMeta({
   ogImage: computed(() => seoData.value.ogImage),
   twitterCard: computed(() => seoData.value.twitterCard),
 })
+
+onMounted(() => {
+  console.log('App mounted')
+})
 </script>

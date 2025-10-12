@@ -10,11 +10,6 @@ export default defineEventHandler(async (event) => {
 
     logger.info('PlaylistAPI: Getting playlist data', {playlistId})
 
-    // Get pagination parameters from query
-    // const query = getQuery(event)
-    // const page = parseInt(query.page as string) || 1
-    // const limit = parseInt(query.limit as string) || 100
-
     const playlist = await Playlists.findFullPlaylistData(playlistId)
     
     if (!playlistId || !playlist) {
@@ -76,10 +71,6 @@ defineRouteMeta({
         description: 'Playlist not found',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
-      '500': {
-        description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
-      }
     }
   }
 })

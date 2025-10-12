@@ -94,7 +94,7 @@ defineRouteMeta({
       required: true,
       content: {
         'multipart/form-data': {
-          schema: { $ref: '#/components/schemas/PlaylistCoverUploadRequest' }
+          schema: { $ref: '#/components/schemas/PlaylistCoverUpdateRequest' }
         }
       }
     },
@@ -119,10 +119,6 @@ defineRouteMeta({
         description: 'Playlist not found',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
-      '500': {
-        description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
-      }
     }
   }
 }); 

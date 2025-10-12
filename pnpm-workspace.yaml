@@ -1,0 +1,7 @@
+onlyBuiltDependencies:
+  - '@sentry/cli'
+  - '@tailwindcss/oxide'
+  - ffmpeg-static
+  - sharp
+  - vue-demi
+  - ytdlp-nodejs

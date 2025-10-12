@@ -4,6 +4,7 @@ import Image from '../Image.vue';
 import Button from '../ui/button/Button.vue';
 import ThemeSwitcher from '../Widget/ThemeSwitcher.vue';
 import UserPanelInbox from './UserPanelInbox.vue';
+import { log } from 'console';
 
 const colorMode = useColorMode()
 const { openDialog } = useDialog()
@@ -12,7 +13,7 @@ await useFetch('/api/user/me', {
   key: 'userInfo',
   default: () => (fallbackUserInfo)
 })
-const { user, logout } = useAuth()
+const { user, loggedIn, logout } = useAuth()
 
 // User panel state management
 const { showUserPanel, showUserPanelDOM, isOnTop, closeUserPanel, toggleUserPanel, onToggleClicked } = useUserPanel()
@@ -20,16 +21,19 @@ const { showUserPanel, showUserPanelDOM, isOnTop, closeUserPanel, toggleUserPane
 const handleLogout = async () => {
   closeUserPanel(async () => await logout())
 }
+
+const userDisplayName = computed(() => {
+  return user.data.value?.nickName || user.data.value?.userName || 'Unnamed User'
+})
 </script>
 
 <template>
-  <div v-if="user.data.value && user.data.value._id" class="flex items-center gap-2">
+  <div v-if="loggedIn && user.data.value" class="flex items-center gap-2">
     <div class="user-info-root">
       <div class="user-avatar">
         <Image :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" :img-attrs="{class: 'w-5 h-5'}" />
       </div>
-      <span class="user-name">{{ user.data.value.nickName || user.data.value.userName }}</span>
-
+      <span class="user-name">{{ userDisplayName }}</span>
       <div class="user-panel-toggle" :class="{'user-panel-toggle--interactive': !showUserPanel}" @click="onToggleClicked">
         <Icon name="lucide:align-justify" size="14" class="user-panel-toggle-icon" :class="{'user-panel-toggle-icon--light-open': colorMode.value == 'light' && showUserPanel}" />
         <div v-show="showUserPanelDOM" class="user-panel-root">
@@ -46,7 +50,7 @@ const handleLogout = async () => {
                 <Image class="w-full h-full" :src="user.data.value.avatarUrl || '/images/default_avatar.jpg'" alt="avatar" />
               </div>
               <div class="flex flex-col gap-2">
-                <span class="user-panel-name">{{ user.data.value.nickName || user.data.value.userName }}</span>
+                <span class="user-panel-name">{{ userDisplayName }}</span>
                 <div class="flex gap-1">
                   <Button variant="outline" size="sm" class="h-8 rounded-full">
                     <Icon name="lucide:user" size="16" /> Profile

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { reactiveOmit } from '@vueuse/core'
-import { SearchIcon } from 'lucide-vue-next'
 import { ComboboxInput, type ComboboxInputEmits, type ComboboxInputProps, useForwardPropsEmits } from 'reka-ui'
 import { cn } from '@/lib/utils'
 
@@ -34,7 +33,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
 
       v-bind="{ ...forwarded, ...$attrs }"
     >
-      <slot />
+      <Icon name="lucide:search-icon" />
     </ComboboxInput>
   </div>
 </template>

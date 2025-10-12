@@ -7,7 +7,7 @@ defineProps<{
   isPage?: boolean
 }>()
 
-const { login, loading, error, clearError } = useAuth()
+const { login, loading, error, clearError, loggedIn, openInPopup } = useAuth()
 const { closeDialog, openDialog } = useDialog()
 
 const canSubmit = computed(() => {
@@ -40,9 +40,17 @@ watch([email, password], () => {
   clearError()
 })
 
+
+
 const startOAuth = (provider: string) => {
-  window.location.href = `/auth/${provider}`
+  openInPopup(`/auth/${provider}`)
 }
+
+watch(loggedIn, (isLoggedIn) => {
+  if (isLoggedIn) {
+    closeDialog?.(DialogType.LOGIN)
+  }
+})
 </script>
 
 <template>

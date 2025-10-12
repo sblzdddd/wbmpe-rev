@@ -24,10 +24,6 @@ defineRouteMeta({
         description: 'Logout successful',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/successResponseSchema' } } }
       },
-      '500': {
-        description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
-      }
     }
   }
 }) 

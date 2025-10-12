@@ -15,10 +15,6 @@ defineRouteMeta({
         description: 'Successful response',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/exploreResponse' } } }
       },
-      '500': {
-        description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
-      }
     }
   }
 }) 

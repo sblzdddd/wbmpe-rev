@@ -32,8 +32,15 @@ async function getAllValidatorSchemas(): Promise<{
     // Import all validator modules directly
     const validatorModules = [
       () => import("../../../shared/validators/common"),
+      () => import("../../../shared/validators/content"),
       () => import("../../../shared/validators/auth"),
       () => import("../../../shared/validators/playlist"),
+      () => import("../../../shared/validators/album"),
+      () => import("../../../shared/validators/song"),
+      () => import("../../../shared/validators/lyric"),
+      () => import("../../../shared/validators/upload"),
+      () => import("../../../shared/validators/artist"),
+      () => import("../../../shared/validators/user"),
       () => import("../../../shared/validators/queue"),
       () => import("../../../shared/validators/register"),
       () => import("../../../shared/validators/search"),
@@ -136,24 +143,30 @@ function getHandlersMeta(): {
     },
   };
 
+
   for (const h of handlersMeta) {
-    // const { route, parameters } = normalizeRoute(h.route || "");
-    console.log(h.route);
     if(h.route?.startsWith('/_') || h.route === undefined) continue
+    console.log(h)
     const { route } = normalizeRoute(h.route || "");
     const tags = defaultTags(h.route || "");
     const method = (h.method || "get").toLowerCase() as Lowercase<HTTPMethod>;
     const { $global, ...openAPI } = h.meta?.openAPI || {};
 
+    
+
+    // Ensure responses.500 is always present/overridden
     const item: PathItemObject = {
       [method]: <OperationObject>{
-        tags,
-        // parameters,
-        responses: {
-          200: { description: "OK" },
-        },
-        // ...defu(openAPI, { parameters }),
-        ...defu(openAPI),
+      tags,
+      ...openAPI,
+      responses: {
+        200: { description: "OK" },
+        ...defu(openAPI)?.responses || {},
+        500: {
+          description: 'Internal server error',
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+        }
+      },
       },
     };
 

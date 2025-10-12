@@ -1,25 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2025-05-15',
-  future: {
-    compatibilityVersion: 4,
-  },
-
-  alias: {
-    '#types': '../types',
-    '#composables': '../app/composables',
-    '#utils': '~/utils',
-    '#models': '~/models',
-  },
+  compatibilityDate: '2025-07-15',
 
   runtimeConfig: {
     mongodbUri: process.env.MONGODB_URI, // Expose MONGODB_URI to runtime config
     oauth: {
-      // provider in lowercase (github, google, etc.)
-      heroku: {
-        clientId: process.env.NUXT_OAUTH_HEROKU_CLIENT_ID,
-        clientSecret: process.env.NUXT_OAUTH_HEROKU_CLIENT_SECRET
-      },
       github: {
         clientId: process.env.NUXT_OAUTH_GITHUB_CLIENT_ID,
         clientSecret: process.env.NUXT_OAUTH_GITHUB_CLIENT_SECRET
@@ -36,6 +21,34 @@ export default defineNuxtConfig({
     }
   },
 
+  modules: [
+    '@nuxt/fonts',
+    '@nuxt/icon',
+    '@nuxt/image',
+    '@nuxt/test-utils',
+    '@nuxtjs/color-mode',
+    'nuxt-auth-utils',
+    'motion-v/nuxt',
+    '@vueuse/nuxt'
+  ],
+
+  image: {
+    aliyun: {
+      baseURL: process.env.NUXT_IMAGE_ALIYUN_BASE_URL || 'https://no-cdn-you-baka.site'
+    },
+    providers: {
+      proxy: {
+        name: 'proxy',
+        provider: '~/providers/proxy-provider.ts'
+      },
+      netease: {
+        name: 'netease',
+        provider: '~/providers/netease-provider.ts'
+      }
+    },
+  },
+
+  
   app: {
       pageTransition: {name: 'page', mode: 'out-in'},
       layoutTransition: {name: 'layout', mode: 'out-in'},
@@ -59,127 +72,24 @@ export default defineNuxtConfig({
   devtools: { enabled: true, timeline: { enabled: true } },
   css: ['~/assets/css/tailwind.css'],
 
-  
-  // devServer: {
-    // https: {
-    //   key: './.cert/server.key',
-    //   cert: './.cert/server.crt'
-    // }
-  // },
-
-  vite: {
-    plugins: [],
-  },
-
   postcss: {
     plugins: {
       '@tailwindcss/postcss': {},
     },
   },
 
-  modules: [
-    '@nuxtjs/color-mode',
-    '@nuxt/eslint',
-    '@nuxt/fonts',
-    '@nuxt/icon',
-    '@nuxt/image',
-    '@vite-pwa/nuxt',
-    '@nuxt/test-utils', 
-    // 'nuxt-security',
-    'nuxt-auth-utils', 
-    // '@sentry/nuxt/module',
-    'motion-v/nuxt',
-    '@vueuse/nuxt'
-  ],
-
-
-  image: {
-    aliyun: {
-      baseURL: process.env.NUXT_IMAGE_ALIYUN_BASE_URL || 'https://no-cdn-you-baka.site'
-    },
-    providers: {
-      proxy: {
-        name: 'proxy',
-        provider: '~/providers/proxy-provider.ts'
-      },
-      netease: {
-        name: 'netease',
-        provider: '~/providers/netease-provider.ts'
-      }
-    },
-  },
-
-  // security: {
-  //   nonce: true, // Enables HTML nonce support in SSR mode
-  //   ssg: {
-  //     meta: true, // Enables CSP as a meta tag in SSG mode
-  //     hashScripts: true, // Enables CSP hash support for scripts in SSG mode
-  //     hashStyles: false // Disables CSP hash support for styles in SSG mode (recommended)
-  //   },
-  //   headers: {
-  //     contentSecurityPolicy: {
-  //       'img-src': ["'self'", 'data:', 'blob:', 'https://avatars.githubusercontent.com', 'https://lh3.googleusercontent.com', 'https://img.paulzzh.com/', 'https://*.music.126.net', process.env.NUXT_IMAGE_ALIYUN_BASE_URL || '']
-  //     }
-  //   }
-  // },
   colorMode: {
     classSuffix: '',
     storage: 'cookie',
     storageKey: 'baka-theme',
   },
-
-  // pwa: {
-  //   strategies: sw ? 'injectManifest' : 'generateSW',
-  //   srcDir: sw ? 'service-worker' : undefined,
-  //   filename: sw ? 'sw.ts' : undefined,
-  //   registerType: 'autoUpdate',
-  //   manifest: {
-  //     name: 'WBMPE Rev',
-  //     short_name: 'NuxtVitePWA',
-  //     theme_color: '#ffffff',
-  //     icons: [
-  //       {
-  //         src: '/images/icon/icon_64.png',
-  //         sizes: '64x64',
-  //         type: 'image/png'
-  //       },
-  //       {
-  //         src: '/images/icon/icon_192.png',
-  //         sizes: '192x192',
-  //         type: 'image/png',
-  //       },
-  //       {
-  //         src: '/images/icon/icon_512.png',
-  //         sizes: '512x512',
-  //         type: 'image/png',
-  //       },
-  //       {
-  //         src: '/images/icon/icon_512.png',
-  //         sizes: '512x512',
-  //         type: 'image/png',
-  //         purpose: 'any maskable',
-  //       },
-  //     ],
-  //   },
-  //   workbox: {
-  //     globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-  //   },
-  //   injectManifest: {
-  //     globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-  //   },
-  //   client: {
-  //     installPrompt: true,
-  //     periodicSyncForUpdates: 3600,
-  //   },
-  //   devOptions: {
-  //     enabled: true,
-  //     suppressWarnings: true,
-  //     navigateFallback: '/',
-  //     navigateFallbackAllowlist: [/^\/$/],
-  //     type: 'module',
-  //   },
-  // },
-
+  
+  alias: {
+    '#types': '../types',
+    '#composables': '../app/composables',
+    '#utils': '~/utils',
+    '#models': '~/models',
+  },
   
   imports: {
     dirs: [
@@ -242,26 +152,4 @@ export default defineNuxtConfig({
   },
 
   components: [],
-
-  // shadcn: {
-  //   /**
-  //    * Prefix for all the imported component
-  //    */
-  //   prefix: '',
-  //   /**
-  //    * Directory that the component lives in.
-  //    */
-  //   componentDir: './app/components/ui',
-  // },
-
-  // sentry: {
-  //   sourceMapsUploadOptions: {
-  //     org: 'sblzdddd',
-  //     project: 'wbmp-rev'
-  //   }
-  // },
-
-  sourcemap: {
-    client: 'hidden'
-  }
 })

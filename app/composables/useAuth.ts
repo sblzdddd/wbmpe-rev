@@ -1,3 +1,5 @@
+import { is } from "zod/v4/locales"
+
 const loading = ref(false)
 const error = ref<string | null>(null)
 
@@ -51,6 +53,29 @@ export const useAuth = () => {
     return { success: response.success }
   }
 
+  const popupListener = (e: StorageEvent) => {
+    if (e.key === "temp-nuxt-auth-utils-popup") {
+      refreshNuxtData('userInfo')
+      refreshNuxtData('userPlaylists')
+      refreshNuxtData('userFavorites')
+      window.removeEventListener("storage", popupListener);
+    }
+  };
+
+  const openInPopup = (route: string, size: { width?: number, height?: number } = {}) => {
+    localStorage.setItem("temp-nuxt-auth-utils-popup", "true");
+    const width = size.width ?? 960;
+    const height = size.height ?? 600;
+    const top = (window.top?.outerHeight ?? 0) / 2 + (window.top?.screenY ?? 0) - height / 2;
+    const left = (window.top?.outerWidth ?? 0) / 2 + (window.top?.screenX ?? 0) - width / 2;
+    window.open(
+      route,
+      "nuxt-auth-utils-popup",
+      `width=${width}, height=${height}, top=${top}, left=${left}, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no`
+    );
+    window.addEventListener("storage", popupListener);
+  };
+
   const register = async (email: string, password: string, userName: string) => {
     loading.value = true
     error.value = null
@@ -78,12 +103,14 @@ export const useAuth = () => {
 
   return {
     user,
+    loggedIn: computed(() => !!user.data.value && !!user.data.value._id),
     loading: computed(() => loading.value),
     error: computed(() => error.value),
 
     login,
     logout,
     register,
+    openInPopup,
     clearError
   }
 }

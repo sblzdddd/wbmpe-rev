@@ -18,7 +18,7 @@
       default-tab="general"
     >
       <template #general>
-        <Playlist-EditForm />
+        <PlaylistEditForm />
       </template>
 
       <template #manage>

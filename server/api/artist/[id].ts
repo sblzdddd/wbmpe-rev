@@ -26,10 +26,6 @@ defineRouteMeta({
         description: 'Artist not found',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
       },
-      '500': {
-        description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
-      }
     }
   }
 }) 

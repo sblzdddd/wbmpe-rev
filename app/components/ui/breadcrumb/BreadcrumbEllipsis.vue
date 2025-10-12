@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { MoreHorizontal } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 
 const props = defineProps<{
@@ -15,7 +14,7 @@ const props = defineProps<{
     :class="cn('flex size-9 items-center justify-center', props.class)"
   >
     <slot>
-      <MoreHorizontal class="size-4" />
+      <Icon name="lucide:grip-horizontal" class="size-4" />
     </slot>
     <span class="sr-only">More</span>
   </span>

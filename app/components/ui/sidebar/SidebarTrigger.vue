@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { PanelLeft } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 import { useSidebar } from './utils'
 
@@ -19,7 +18,7 @@ const { toggleSidebar } = useSidebar()
     :class="cn('h-7 w-7', props.class)"
     @click.stop="toggleSidebar"
   >
-    <PanelLeft />
+    <Icon name="lucide:panel-left" />
     <span class="sr-only">Toggle Sidebar</span>
   </Button>
 </template>

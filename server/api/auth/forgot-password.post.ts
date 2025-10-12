@@ -66,10 +66,6 @@ defineRouteMeta({
         description: 'Bad Request',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
       },
-      '500': {
-        description: 'Internal server error',
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
-      }
     }
   }
 })

@@ -208,7 +208,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 
 const seoData = useState<SEOData>('seoData');
 const route = useRoute();
-const router = useRouter();
+const router = useRouter();w
 const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
 
 const { open } = useSidebar();

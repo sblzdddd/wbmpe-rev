@@ -1,4 +1,3 @@
-import type { ApiReferenceConfiguration } from "@scalar/api-reference";
 import { eventHandler } from "h3";
 
 // Served as /_scalar
@@ -9,13 +8,33 @@ export default eventHandler((event) => {
   const openAPIEndpoint = "/docs/openapi";
 
   // https://github.com/scalar/scalar
-  const _config = runtimeConfig.nitro.openAPI?.ui
-    ?.scalar as ApiReferenceConfiguration;
-  const scalarConfig: ApiReferenceConfiguration = {
-    ..._config,
-    url: openAPIEndpoint,
-    // @ts-expect-error spec is not in the type
-    spec: { url: openAPIEndpoint, ..._config?.spec },
+  const scalarConfig = {
+    theme: "kepler",
+    hideClientButton: true,
+    title: "API #1",
+    slug: "api-1",
+    showSidebar: true,
+    showToolbar: "never",
+    operationTitleSource: "summary",
+    _integration: "html",
+    persistAuth: false,
+    telemetry: true,
+    layout: "modern",
+    isEditable: false,
+    isLoading: false,
+    hideModels: false,
+    documentDownloadType: "both",
+    hideTestRequestButton: false,
+    hideSearch: false,
+    showOperationId: false,
+    hideDarkModeToggle: false,
+    withDefaultFonts: true,
+    defaultOpenAllTags: false,
+    expandAllModelSections: false,
+    expandAllResponses: false,
+    orderSchemaPropertiesBy: "alpha",
+    orderRequiredPropertiesFirst: true,
+    url: "/docs/openapi",
   };
 
   // The default page title
