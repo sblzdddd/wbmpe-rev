@@ -56,7 +56,7 @@ if (!rawId) {
 
 const id = rawId as string;
 
-const { setBackground, resetBackground } = useBackground();
+const { setBackground } = useBackground();
 
 const tabsConfig = [
   {
@@ -150,9 +150,6 @@ watch(() => playlist.data.value, (value) => {
   }
   else if (playlistData?.songList.songs && playlistData?.songList.songs.length > 0) {
     setBackground(playlistData?.songList.songs[0]?.song.album.coverUrl || "", BACKGROUND.playlist_edit);
-  } else {
-    console.log('resetting background')
-    resetBackground();  
   }
 }, {immediate: true})
 

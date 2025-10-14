@@ -141,7 +141,7 @@ const route = useRoute();
 const id = route.params.id;
 
 const { open } = useSidebar();
-const { setBackground, resetBackground } = useBackground();
+const { setBackground } = useBackground();
 
 // Use the song page composable for common functionality
 const { song, playSong, addToQueue } = useSongPage(id);
@@ -235,8 +235,6 @@ watch(() => song.data.value, (newVal) => {
     
     if (newVal.song.album?.coverUrl) {
       setBackground(newVal.song.album.coverUrl, BACKGROUND.playlist);
-    } else {
-      resetBackground();
     }
   }
 }, { immediate: true });

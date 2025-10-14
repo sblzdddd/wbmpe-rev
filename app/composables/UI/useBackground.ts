@@ -1,8 +1,6 @@
 import type { backgroundSettings } from "@/lib/background_settings"
 import { useQueue } from "#imports"
 import { BACKGROUND } from "@/lib/background_settings"
-import { is } from "zod/v4/locales"
-import { set } from "mongoose"
 
 export function useBackground() {
   const isFullscreen = useState<boolean>('isFullscreen', () => false)
@@ -15,11 +13,13 @@ export function useBackground() {
   const backgroundState = useState('background', () => ({
     src: "",
     opacity: 0,
+    lightOpacity: 0,
     blur: 0,
     height: 0,
     isLoaded: false,
     maskOpacity: 1,
-    refreshKey: 0
+    refreshKey: 1,
+    lastSpecialPageBGSrc: "",
   }))
   
   const img = useImage()
@@ -39,7 +39,27 @@ export function useBackground() {
     
   })
 
-  watch([() => isFullscreen.value, () => currentSong.value], () => {
+  watch(() => isFullscreen.value, () => {
+    if(!(currentSong.value && currentSong.value.album && currentSong.value.album.coverUrl)) return
+    if(isFullscreen.value) {
+      if(isInSpecialPage.value) {
+        console.log("Save last special page bg src:", backgroundState.value.src);
+        backgroundState.value.lastSpecialPageBGSrc = backgroundState.value.src;
+      }
+      setBackground(currentSong.value.album.coverUrl, BACKGROUND.fullscreen);
+    } else if (!isInSpecialPage.value) {
+      if(!isPlaying.value) {
+        resetBackground();
+        return;
+      }
+      setBackground(currentSong.value.album.coverUrl, BACKGROUND.playlist);
+    } 
+    if(isInSpecialPage.value && !isFullscreen.value) {
+      setBackground(backgroundState.value.lastSpecialPageBGSrc, BACKGROUND.playlist);
+    }
+  })
+
+  watch(() => currentSong.value, () => {
     if(!(currentSong.value && currentSong.value.album && currentSong.value.album.coverUrl)) return
     if(isFullscreen.value) {
       setBackground(currentSong.value.album.coverUrl, BACKGROUND.fullscreen);
@@ -63,44 +83,41 @@ export function useBackground() {
   });
   
   const setBackground = (src: string, settings: backgroundSettings) => {
-    const { opacity: setOpacity, blur, height, maskOpacity } = settings
+    const { opacity: setOpacity, lightOpacity, blur, height, maskOpacity } = settings
+    console.log('set Background:', backgroundState.value.src, settings)
     if (!src) {
       resetBackground()
       return
     }
 
-    if(src == "original") {
+    const updateState = (newSrc?: string) => {
+      if (newSrc) backgroundState.value.src = newSrc
       backgroundState.value.opacity = setOpacity
+      backgroundState.value.lightOpacity = lightOpacity ?? 0
       backgroundState.value.blur = blur
       backgroundState.value.height = height
       backgroundState.value.isLoaded = true
       backgroundState.value.maskOpacity = maskOpacity ?? 1
-      backgroundState.value.refreshKey++
+      backgroundState.value.refreshKey += 1
+    }
+
+    if(src === "original") {
+      updateState()
       return
     }
     // Process the image URL consistently for both SSR and client
     const processedSrc = img(src.replace('cdn://', '/'), {size: 1000}, {provider: src.startsWith('cdn://') ? 'aliyun':'ipx'})
 
-    if(backgroundState.value.src == processedSrc) {
-      backgroundState.value.opacity = setOpacity
-      backgroundState.value.blur = blur
-      backgroundState.value.height = height
-      backgroundState.value.isLoaded = true
-      backgroundState.value.maskOpacity = maskOpacity ?? 1
-      backgroundState.value.refreshKey++
+    if(backgroundState.value.src === processedSrc) {
+      updateState()
       return
     }
     
-    backgroundState.value.src = processedSrc
-    
-    console.log('set Background:', backgroundState.value.src)
-    backgroundState.value.opacity = setOpacity
-    backgroundState.value.blur = blur
-    backgroundState.value.height = height
-    backgroundState.value.maskOpacity = maskOpacity ?? 1
+    updateState(processedSrc)
   }
   
   const resetBackground = () => {
+    console.log('resetBackground')
     backgroundState.value.opacity = 0
     backgroundState.value.blur = 0
     backgroundState.value.maskOpacity = 1
@@ -109,13 +126,7 @@ export function useBackground() {
   
   return {
     // State
-    src: computed(() => backgroundState.value.src),
-    opacity: computed(() => backgroundState.value.opacity),
-    blur: computed(() => backgroundState.value.blur),
-    height: computed(() => backgroundState.value.height),
-    isLoaded: computed(() => backgroundState.value.isLoaded),
-    refreshKey: computed(() => backgroundState.value.refreshKey),
-    maskOpacity: computed(() => backgroundState.value.maskOpacity),
+    backgroundState,
     // Actions
     setBackground,
     resetBackground,

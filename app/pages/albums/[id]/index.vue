@@ -121,7 +121,7 @@ const id = route.params.id;
 
 const { open } = useSidebar()
 
-const { setBackground, resetBackground } = useBackground();
+const { setBackground } = useBackground();
 
 const sortMode = ref<'index' | 'title' | 'artist' | 'duration' | 'like'>('index');
 const sortOrder = ref<'asc' | 'desc'>('asc');
@@ -207,9 +207,6 @@ watch(() => album.data.value, (newVal) => {
   }
   else if (newVal?.data?.songList.songs && newVal?.data?.songList.songs.length > 0) {
     setBackground(newVal?.data?.songList.songs[0]?.song.album.coverUrl || "", BACKGROUND.playlist);
-  } else {
-    console.log('resetting background')
-    resetBackground();
   }
 }, {immediate: true})
 </script>

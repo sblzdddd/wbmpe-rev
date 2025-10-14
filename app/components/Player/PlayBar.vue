@@ -5,7 +5,7 @@
   >
 
     <div class="playbar-content flex md:grid grid-cols-3 gap-1 md:gap-4 py-1 px-1">
-      <div @click="isFullscreen = true" class="flex">
+      <div @click="isFullscreen = true" class="flex truncate">
       <div @click="isFullscreen = true" :class="SongInfoClass">
         <Picture 
           v-if="currentSong?.album?.coverUrl" 
@@ -124,7 +124,7 @@
         </div>
       </div>
 
-      <div class="right-controls flex items-center gap-2 justify-end">
+      <div class="right-controls flex items-center gap-2 justify-end pr-2">
         <div class="volume-control hidden lg:flex items-center gap-2">
 
         <Tooltip>
@@ -159,7 +159,7 @@
         <Button 
           variant="ghost" 
           size="sm" 
-          class="w-8 h-8 p-0"
+          class="size-8 p-0"
           :class="{ 'text-primary': open.queue }"
           @click="openDialog?.(DialogType.QUEUE);"
         >
@@ -199,7 +199,8 @@ before:transition-[opacity,scale]
 before:ease-out
 before:duration-200
 active:before:duration-100
-before:ease-in-out`
+before:ease-in-out
+truncate`
 
 
 const { 
@@ -270,7 +271,7 @@ const handlePlayPause = () => {
 <style scoped>
 @reference '../../assets/css/tailwind.css';
 .playbar-container {
-  @apply fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 border-t border-border;
+  @apply z-150 fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 border-t border-border;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
 }
 

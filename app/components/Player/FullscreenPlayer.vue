@@ -13,6 +13,9 @@ const {
   togglePlayMode
 } = usePlayer()
 
+
+const { open, openDialog } = useDialog()
+
 const { volume, togglePlayPause, setVolume, isPlaying } = useAudio()
 const { currentSong, hasQueue, queue, currentIndex } = useQueue()
 const { isFavorite, toggleFavorite } = useFavorites()
@@ -32,17 +35,6 @@ const artistsText = computed(() => {
 
 const albumText = computed(() => currentSong.value?.album?.name || '')
 const titleText = computed(() => currentSong.value?.name || 'No song selected')
-
-// Optional volume quick mute
-const volumeBeforeMute = ref(0.8)
-const toggleMute = () => {
-  if (volume.value === 0) {
-    setVolume(volumeBeforeMute.value)
-  } else {
-    volumeBeforeMute.value = volume.value
-    setVolume(0)
-  }
-}
 
 // Embla carousel setup for album art (prev/current/next)
 const emblaOptions = {
@@ -69,7 +61,7 @@ const canGoNext = computed(() => {
 onMounted(() => {
   // Start centered on the current item
   nextTick(() => {
-    emblaApi.value?.scrollTo(currentIndex.value)
+    emblaApi.value?.scrollTo(currentIndex.value, true)
   })
 })
 
@@ -98,9 +90,6 @@ const onSwipeStart = (e: PointerEvent) => {
   swipeState.startX = e.clientX
   swipeState.startY = e.clientY
 }
-const onSwipeMove = (_e: PointerEvent) => {
-  // no-op; we only need start and end to infer direction
-}
 const onSwipeEnd = (e: PointerEvent) => {
   if (!swipeState.active) return
   const dx = e.clientX - swipeState.startX
@@ -111,40 +100,63 @@ const onSwipeEnd = (e: PointerEvent) => {
     else onPrevClick()
   }
 }
-
-// const needPreload = computed(() => {
-//   return 
-// })
 </script>
 
 <template>
   <div class="fullscreen-player-container relative w-full h-full flex flex-col">
     <!-- Top bar with exit -->
-    <div class="fixed top-0 flex items-center gap-2 p-3">
-      <Button variant="ghost" size="sm" class="w-8 h-8 p-0" @click="emit('exit')">
-        <Icon name="lucide:chevron-left" size="18" />
+    <div class="fixed top-0 w-full flex items-center gap-2 p-3">
+      <div class="grow" />
+      <Button variant="ghost" size="sm" class="size-12 p-0" @click="emit('exit')">
+        <Icon name="lucide:shrink" size="24" />
       </Button>
     </div>
 
     <!-- Body -->
     <div class="flex items-center justify-center flex-1 overflow-auto">
-      <div class="max-w-[100vw] lg:max-w-[35vw] xl:max-w-[30vw] mx-auto p-6 flex flex-col items-center gap-5">
+      <div class="player-body-container">
         <div class="w-full overflow-hidden rounded-lg relative flex items-center justify-center">
-          <div class="embla h-full max-h-[50vh] aspect-square" ref="emblaRef">
-            <div class="embla__container h-full">
-              <div v-for="(song, i) in queue" :key="song?._id || `placeholder-${i}`" class="embla__slide h-full aspect-square px-2">
-                <div v-if="(currentIndex-2 <= i && i <=currentIndex+2) || i === 0 || i === queue.length - 1" class="w-full h-full rounded-2xl overflow-hidden">
-                  <Image
-                    v-if="song?.album?.coverUrl"
-                    :src="song.album.coverUrl"
-                    :modifiers="{ resize: { s: 800 } }"
-                    class="w-full h-full object-cover"
-                    :alt="song?.album?.name || 'Album cover'"
-                  />
-                  <div v-else class="w-full h-full grid place-items-center bg-muted/40 text-muted-foreground">
-                    <Icon name="lucide:music" class="w-10 h-10" />
+          <div class="embla h-full" ref="emblaRef">
+            <div class="embla__container">
+              <div
+                v-for="(song, i) in queue"
+                :key="song?._id || `placeholder-${i}`"
+                class="embla__slide h-full px-2"
+                :inert="i !== currentIndex"
+                :aria-hidden="i !== currentIndex"
+                :tabindex="i !== currentIndex ? -1 : undefined"
+              >
+                <template v-if="(currentIndex-2 <= i && i <=currentIndex+2) || i === 0 || i === queue.length - 1">
+                  <div class="w-full h-full rounded-2xl overflow-hidden">
+                    <Image
+                      v-if="song?.album?.coverUrl"
+                      :src="song.album.coverUrl"
+                      :modifiers="{ resize: { s: 800 } }"
+                      class="w-full h-full max-h-[50vh] object-cover"
+                      :alt="song?.album?.name || 'Album cover'"
+                    />
+                    <div v-else class="w-full h-full grid place-items-center bg-muted/40 text-muted-foreground">
+                      <Icon name="lucide:music" class="w-10 h-10" />
+                    </div>
                   </div>
-                </div>
+                  <div class="w-full flex mt-4">
+                    <div class="truncate">
+                      <h2 class="text-lg font-semibold truncate">{{ song?.name || 'Unknown' }}</h2>
+                      <p class="text-sm text-white/70 truncate">
+                        <span>{{ song?.artists.map(artist => artist.name).join(', ') }}</span>
+                      </p>
+                    </div>
+                    <div class="grow"></div>
+                    <Button
+                      v-if="currentSong" 
+                      variant="ghost" size="sm" class="w-8 h-8 p-0"
+                      :class="{ '!text-red-500': isFavorite(currentSong?._id ?? '') }"
+                      @click="toggleFavorite(currentSong?._id ?? '')"
+                    >
+                      <Icon :name="isFavorite(currentSong?._id ?? '') ? 'lucide:heart' : 'lucide:heart'" size="20" />
+                    </Button>
+                  </div>
+                </template>
                 <div v-else class="w-full h-full" />
               </div>
             </div>
@@ -153,33 +165,14 @@ const onSwipeEnd = (e: PointerEvent) => {
           <div
             class="absolute inset-0 z-10 swipe-overlay"
             @pointerdown="onSwipeStart"
-            @pointermove="onSwipeMove"
             @pointerup="onSwipeEnd"
             @pointercancel="onSwipeEnd"
           />
         </div>
 
-        <div class="w-full flex px-2">
-          <div class="truncate">
-            <h2 class="text-lg font-semibold truncate">{{ titleText }}</h2>
-            <p class="text-sm text-muted-foreground truncate">
-              <span>{{ artistsText }}</span>
-            </p>
-          </div>
-          <div class="grow"></div>
-          <Button
-            v-if="currentSong" 
-            variant="ghost" size="sm" class="w-8 h-8 p-0"
-            :class="{ '!text-red-500': isFavorite(currentSong?._id ?? '') }"
-            @click="toggleFavorite(currentSong?._id ?? '')"
-          >
-            <Icon :name="isFavorite(currentSong?._id ?? '') ? 'lucide:heart' : 'lucide:heart'" size="20" />
-          </Button>
-        </div>
-
         <div class="w-full flex flex-col items-center gap-3 px-2">
           <!-- Progress slider (desktop-like), optional on mobile as well -->
-          <div class="w-full">
+          <div class="w-full mb-2">
             <ProgressSlider class="w-full" mobile-mode />
           </div>
 
@@ -188,63 +181,65 @@ const onSwipeEnd = (e: PointerEvent) => {
             <Button 
               variant="ghost" 
               size="sm" 
-              class="w-8 h-8 p-0 mr-auto"
+              class="size-8 p-0 mr-auto"
               :class="{ 'text-primary': playerState.playMode !== 'queue' }"
               :title="`Current mode: ${playerState.playMode}`"
               @click="togglePlayMode"
             >
-              <Icon v-if="playerState.playMode === 'queue'" name="lucide:list-ordered" size="16" />
-              <Icon v-else-if="playerState.playMode === 'repeat'" name="lucide:repeat" size="16" />
-              <Icon v-else-if="playerState.playMode === 'repeat-one'" name="lucide:repeat-1" size="16" />
-              <Icon v-else-if="playerState.playMode === 'random'" name="lucide:shuffle" size="16" />
+              <Icon v-if="playerState.playMode === 'queue'" name="lucide:list-ordered" size="18" />
+              <Icon v-else-if="playerState.playMode === 'repeat'" name="lucide:repeat" size="18" />
+              <Icon v-else-if="playerState.playMode === 'repeat-one'" name="lucide:repeat-1" size="18" />
+              <Icon v-else-if="playerState.playMode === 'random'" name="lucide:shuffle" size="18" />
             </Button>
             <Button 
               variant="ghost" 
               size="lg" 
-              class="w-10 h-10 p-0"
+              class="size-10 p-0"
               :disabled="!hasQueue || !canGoPrev"
               @click="onPrevClick"
             >
-              <Icon name="lucide:skip-back" size="18" />
+              <Icon name="lucide:skip-back" size="22" />
             </Button>
 
             <Button 
               variant="ghost" 
               size="lg" 
-              class="w-12 h-12 p-0 rounded-full"
+              class="size-16 p-0 rounded-full"
               :disabled="!currentSong"
               @click="handlePlayPause"
             >
               <Icon
                 v-if="playerState.isLoading" 
                 name="lucide:loader-2" 
-                size="48" 
+                size="40" 
                 class="animate-spin" 
               />
               <Icon 
                 v-else
                 :name="isPlaying ? 'material-symbols-light:pause-rounded' : 'material-symbols:play-arrow-rounded'"
-                size="48"
+                size="60"
               />
             </Button>
 
             <Button 
               variant="ghost" 
               size="lg" 
-              class="w-10 h-10 p-0"
+              class="size-10 p-0"
               :disabled="!hasQueue || !canGoNext"
               @click="onNextClick"
             >
-              <Icon name="lucide:skip-forward" size="18" />
+              <Icon name="lucide:skip-forward" size="22" />
             </Button>
 
-            <Button variant="ghost" size="sm" class="w-8 h-8 p-0 ml-auto" @click="toggleMute">
-              <Icon :name="volume < 0.5 ? volume === 0 ? 'lucide:volume-x' : 'lucide:volume-1' : 'lucide:volume-2'" size="16" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              class="size-8 p-0 ml-auto"
+              :class="{ 'text-primary': open.queue }"
+              @click="openDialog?.(DialogType.QUEUE);"
+            >
+              <Icon name="lucide:list-music" size="18" />
             </Button>
-          </div>
-
-          <!-- Secondary controls row -->
-          <div class="flex items-center justify-center gap-2 mt-1">
           </div>
         </div>
       </div>
@@ -253,6 +248,8 @@ const onSwipeEnd = (e: PointerEvent) => {
 </template>
 
 <style scoped>
+@reference "../../assets/css/tailwind.css";
+
 /* Minimal Embla styles using utility classes */
 .embla {
   overflow: hidden;
@@ -269,5 +266,14 @@ const onSwipeEnd = (e: PointerEvent) => {
   .embla__slide {
     flex-basis: calc(100%);
   }
+}
+
+.player-body-container {
+  @apply max-w-[100vw] sm:max-w-[50vw] md:max-w-[40vw] lg:max-w-[35vw] xl:max-w-[30vw] 
+  mx-auto px-6 py-8 flex flex-col items-center gap-5 
+  sm:bg-white/40 sm:dark:bg-white/10 rounded-3xl 
+  overflow-hidden sm:backdrop-blur-xl 
+  sm:border sm:border-t-[2px] sm:border-white/50 sm:dark:border-white/10
+  shadow-xl/5 dark:shadow-none;
 }
 </style>

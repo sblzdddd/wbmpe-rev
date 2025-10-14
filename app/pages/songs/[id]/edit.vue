@@ -203,11 +203,11 @@ import { BACKGROUND } from '@/lib/background_settings';
 
 const seoData = useState<SEOData>('seoData');
 const route = useRoute();
-const router = useRouter();w
+const router = useRouter();
 const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
 
 const { open } = useSidebar();
-const { setBackground, resetBackground } = useBackground();
+const { setBackground } = useBackground();
 
 if (!rawId) {
   throw createError({
@@ -347,8 +347,6 @@ watch(() => song.data.value, (value) => {
   seoData.value.title = `Edit Song ${songData.name || 'Unknown'}`;
   if (songData.album?.coverUrl) {
     setBackground(songData.album.coverUrl, BACKGROUND.playlist_edit);
-  } else {
-    resetBackground();
   }
 }, { immediate: true });
 

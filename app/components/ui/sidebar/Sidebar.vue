@@ -55,7 +55,7 @@ const { isOnTop } = useScrollBar()
 
   <div
     v-else
-    class="group peer text-sidebar-foreground hidden lg:block"
+    class="group peer text-sidebar-foreground hidden lg:block z-100"
     data-slot="sidebar"
     :data-state="state"
     :data-collapsible="state === 'collapsed' ? collapsible : ''"

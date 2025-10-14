@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useDebounceFn } from '@vueuse/core'
 import Button from '../ui/button/Button.vue';
 import { VList } from '../ui/Virtua';
 import Picture from '../Picture.vue';
@@ -74,11 +73,13 @@ watch(() => hasQueue.value, (newVal) => {
     changeOpen(DialogType.QUEUE, false)
   }
 })
+
+const isFullscreen = useState('isFullscreen');
 </script>
 
 <template>
   <Sheet v-model:open="open.queue" @update:open="(e: boolean) => changeOpen?.call(null, DialogType.QUEUE, e)">
-    <SheetContent>
+    <SheetContent :class="`${isFullscreen ? 'bg-white/10' : ''} rounded-l-2xl`">
       <SheetHeader class="pt-3 pb-0 pr-10 gap-0 flex flex-row items-center justify-between">
         <div class="flex items-center gap-2">
           <SheetTitle>Queue </SheetTitle>
@@ -98,7 +99,7 @@ watch(() => hasQueue.value, (newVal) => {
           v-slot="{ item, index } = {}"
           :data="filteredQueue"
         >
-          <div :class="{ 'bg-muted/40': index % 2 === 0 }" class="queue-item flex items-center gap-3 p-2 hover:bg-muted cursor-pointer" @click="playQueueIndex(getOriginalIndex(item._id))">
+          <div :class="{ 'bg-muted/30': index % 2 === 0 }" class="queue-item flex items-center gap-3 p-2 hover:bg-muted cursor-pointer" @click="playQueueIndex(getOriginalIndex(item._id))">
             <div class="queue-index w-6 text-xs text-muted-foreground text-center">
               <Icon 
                 v-if="isCurrentlyPlaying(item)" 

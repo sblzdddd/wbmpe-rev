@@ -6,6 +6,7 @@ const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
 })
 
+const isFullscreen = useState<boolean>('isFullscreen', () => false)
 
 // This is sample data.
 const data = {
@@ -77,10 +78,12 @@ const { loggedIn } = useAuth()
 
 <template>
   <Sidebar v-bind="props">
-    <SidebarHeader>
-      <Nav-Title />
-    </SidebarHeader>
-    <SidebarContent class="gap-0">
+    <Transition name="titlebar" mode="out-in">
+      <SidebarHeader v-if="!isFullscreen">
+        <Nav-Title />
+      </SidebarHeader>
+    </Transition>
+    <SidebarContent class="gap-0 transition-all duration-300 ease-out" :class="{'fullscreen-mode': isFullscreen}">
       <Nav-Main :data="data.navMain" />
       <Nav-Playlist 
         v-if="loggedIn && playlists.data.value"
@@ -89,8 +92,17 @@ const { loggedIn } = useAuth()
         :recent="playlists.data.value.recent ?? null" 
       />
     </SidebarContent>
+    <div v-if="isFullscreen" class="h-16"></div>
     <!-- <SidebarFooter>
       <NavUser :user="data.user" />
     </SidebarFooter> -->
   </Sidebar>
 </template>
+
+<style scoped>
+@reference '../../assets/css/tailwind.css';
+
+.fullscreen-mode {
+  @apply translate-x-[-50%] hover:translate-x-0 opacity-0 hover:opacity-100;
+}
+</style>

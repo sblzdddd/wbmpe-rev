@@ -106,7 +106,7 @@ function onProgressChange() {
 }
 
 .appkit-slider-buffered {
-  @apply absolute w-full rounded-full z-[1] bg-muted/60 overflow-hidden h-full inset-0;
+  @apply absolute w-full rounded-full z-[1] bg-black/10 dark:bg-white/10 overflow-hidden h-full inset-0;
   appearance: none;
   pointer-events: none;
 }
@@ -119,20 +119,27 @@ function onProgressChange() {
 }
 
 .appkit-slider::-webkit-slider-thumb, .appkit-slider-buffered::-webkit-slider-thumb {
+  
   -webkit-appearance: none;
   appearance: none;
   height: 0;
   width: 0;
   background-color: transparent;
   border-radius: 50%;
-  box-shadow: -400px 0 0 400px var(--color-primary);
+  box-shadow: -400px 0 0 400px black;
+}
+.dark .appkit-slider::-webkit-slider-thumb {
+  box-shadow: -400px 0 0 400px white;
+}
+.dark .appkit-slider-buffered::-webkit-slider-thumb {
+  box-shadow: -400px 0 0 400px #fff3;
 }
 .appkit-slider-buffered::-webkit-slider-thumb {
-  box-shadow: -400px 0 0 400px var(--muted);
+  box-shadow: -400px 0 0 400px #0003;
 }
 
 .duration_start, .duration_end {
-  @apply text-[10px] hidden lg:block;
+  @apply text-xs hidden lg:block;
 }
 
 .duration_start {

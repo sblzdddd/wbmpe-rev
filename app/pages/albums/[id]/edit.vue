@@ -56,7 +56,7 @@ if (!rawId) {
 
 const id = rawId as string;
 
-const { setBackground, resetBackground } = useBackground();
+const { setBackground } = useBackground();
 
 const tabsConfig = [
   {
@@ -133,9 +133,6 @@ watch(() => album.data.value, (value) => {
   }
   else if (albumData?.songList.songs && albumData?.songList.songs.length > 0) {
     setBackground(albumData?.songList.songs[0]?.song.album.coverUrl || "", BACKGROUND.playlist_edit);
-  } else {
-    console.log('resetting background')
-    resetBackground();  
   }
 }, {immediate: true})
 
