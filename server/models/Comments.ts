@@ -19,7 +19,7 @@ export interface ICommentSchema extends Document {
 const CommentSchema = new Schema<IComment>({
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Users',
     required: true,
   },
   content: {

@@ -86,8 +86,8 @@ export const deleteCommentParams = z.object({
     description: 'Comment ID to delete',
     example: '6863722013b04be86cb7a555',
   }),
-  id: objectIdSchemaCoerced('Paint Request ID').meta({
-    description: 'Paint Request ID',
+  id: objectIdSchemaCoerced('Entity ID').meta({
+    description: 'Entity ID',
     example: '6863722013b04be86cb7a555',
   })
 });

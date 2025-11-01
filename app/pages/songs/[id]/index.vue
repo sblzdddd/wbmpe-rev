@@ -2,7 +2,32 @@
   <div class="flex flex-col my-4 lg:my-16 mx-auto w-full" :class="{'lg:!w-[90%]': !open}">
     <div class="flex gap-4 md:gap-7 mb-6 px-4 md:px-0 items-center">
       <div class="flex flex-col grow gap-2">
-        <h1 class="text-base md:text-2xl lg:text-3xl font-bold">{{ song.data.value?.song?.name }}</h1>
+        
+          <NuxtLink 
+            v-if="song.data.value?.song?.album"
+            :to="song.data.value?.song?.src"
+            class="hover:text-primary transition-colors"
+          >
+            <h1 class="text-base md:text-2xl lg:text-3xl font-bold">{{ song.data.value?.song?.name }}</h1>
+          </NuxtLink>
+        <div class="flex gap-2 text-xs md:text-sm text-muted-foreground">
+          <NuxtLink 
+            v-for="artist in song.data.value?.song?.artists"
+            :key="artist._id"
+            :to="`/artists/${artist._id}`"
+            class="hover:text-primary transition-colors"
+          >
+            <Picture 
+              v-if="artist.avatarUrl"
+              :src="artist.avatarUrl" 
+              class="w-2 h-2 rounded-full overflow-hidden inline-block" 
+              :modifiers="{resize: {s: 80}}" 
+              :alt="artist.name"
+              :img-attrs="{class: 'w-full h-full object-cover'}"
+            />
+            {{ artist.name }}
+          </NuxtLink>
+        </div>
         <div class="flex gap-2 text-xs md:text-sm text-muted-foreground">
           <NuxtLink 
             v-if="song.data.value?.song?.album"
@@ -42,83 +67,11 @@
       :tabs="tabsConfig"
       class="mt-6 md:px-0"
       layout-id="song-tab-highlighter"
-      default-tab="info"
+      default-tab="comments"
       :tab-container-attrs="{class: 'px-4 md:px-0'}"
     >
-      <template #info>
-        <div class="flex flex-col gap-4 px-4 md:px-0">
-          <div class="bg-card rounded-lg p-4">
-            <h3 class="text-lg font-semibold mb-2">Song Information</h3>
-            <div class="grid gap-2 text-sm">
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Duration:</span>
-                <span>{{ formatDuration(song.data.value?.song?.duration || 0) }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Added:</span>
-                <span>{{ new Date(song.data.value?.song?.createdAt || '').toLocaleDateString() || 'Unknown' }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Updated:</span>
-                <span>{{ new Date(song.data.value?.song?.updatedAt || '').toLocaleDateString() || 'Unknown' }}</span>
-              </div>
-              <div v-if="song.data.value?.song?.src" class="flex justify-between">
-                <span class="text-muted-foreground">Source:</span>
-                <span class="truncate max-w-xs">{{ song.data.value?.song?.src }}</span>
-              </div>
-            </div>
-          </div>
-          <div v-if="song.data.value?.song?.album" class="bg-card rounded-lg p-4">
-            <h3 class="text-lg font-semibold mb-2">Album</h3>
-            <NuxtLink 
-              :to="`/albums/${song.data.value?.song?.album._id}`"
-              class="flex items-center gap-3 hover:bg-accent rounded-lg p-2 transition-colors"
-            >
-              <Picture 
-                v-if="song.data.value?.song?.album.coverUrl"
-                :src="song.data.value?.song?.album.coverUrl" 
-                class="w-12 h-12 rounded overflow-hidden" 
-                :modifiers="{resize: {s: 96}}" 
-                :alt="song.data.value?.song?.album.name"
-                :img-attrs="{class: 'w-full h-full object-cover'}"
-              />
-              <div v-else class="w-12 h-12 rounded bg-muted flex items-center justify-center">
-                <Icon name="lucide:disc" class="w-4 h-4 text-muted-foreground" />
-              </div>
-              <div>
-                <div class="font-medium">{{ song.data.value?.song?.album.name }}</div>
-                <div class="text-sm text-muted-foreground">{{ song.data.value?.song?.album.platform || 'local' }}</div>
-              </div>
-            </NuxtLink>
-          </div>
-          <div v-if="song.data.value?.song?.artists?.length" class="bg-card rounded-lg p-4">
-            <h3 class="text-lg font-semibold mb-2">Artists</h3>
-            <div class="flex flex-col gap-2">
-              <NuxtLink 
-                v-for="artist in song.data.value?.song?.artists"
-                :key="artist._id"
-                :to="`/artists/${artist._id}`"
-                class="flex items-center gap-3 hover:bg-accent rounded-lg p-2 transition-colors"
-              >
-                <Picture 
-                  v-if="artist.avatarUrl"
-                  :src="artist.avatarUrl" 
-                  class="w-10 h-10 rounded-full overflow-hidden" 
-                  :modifiers="{resize: {s: 80}}" 
-                  :alt="artist.name"
-                  :img-attrs="{class: 'w-full h-full object-cover'}"
-                />
-                <div v-else class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                  <Icon name="lucide:user" class="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <div class="font-medium">{{ artist.name }}</div>
-                  <div class="text-sm text-muted-foreground">{{ artist.platform || 'local' }}</div>
-                </div>
-              </NuxtLink>
-            </div>
-          </div>
-        </div>
+      <template #comments>
+        <Comments :entity-id="route.params.id as string ?? ''" />
       </template>
 
       <template #lyrics>
@@ -153,10 +106,10 @@ const canEdit = computed(() => {
 // Tab configuration
 const tabsConfig = computed(() => [
   {
-    key: 'info',
-    label: 'Information',
-    to: '?tab=info',
-    slot: 'info'
+    key: 'comments',
+    label: 'Comments',
+    to: '?tab=comments',
+    slot: 'comments'
   },
   {
     key: 'lyrics',
@@ -165,13 +118,6 @@ const tabsConfig = computed(() => [
     slot: 'lyrics'
   }
 ]);
-
-// Format duration helper
-const formatDuration = (seconds: number) => {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-};
 
 const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/song/:id']['default']>(`/api/song/${id}`, {
   key: computed(() => `song-page-${id}`),

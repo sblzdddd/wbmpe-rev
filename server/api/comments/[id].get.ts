@@ -1,19 +1,21 @@
-import { Comments, IComment } from '../../models/Comments';
+import { availableMemory } from 'process';
+import { Comments, IComment, ICommentSchema } from '../../models/Comments';
+import type { Comments as CommentType } from '../../models/Comments';
 import type { ObjectId } from 'mongoose';
 
 const logger = BakaLogger.child({'service': 'CommentAPI'})
 
 export default defineEventHandler(async (event) => {
   try {
-    const { id } = await parseRouteParams(event, objectIdSchemaCoerced('id'))
-    const comments = await Comments.find({ entityId: id })
-      .populate('user', '_id nickName avatarUrl')
-      .lean();
+    const { id } = await parseRouteParams(event, PlaylistRequestParamsInternal)
+    const commentObj = await Comments.findOne({ entityId: id })
+      .populate('comments.user', '_id nickName userName avatarUrl')
+      .lean() as unknown as ICommentSchema;
 
-    if (!comments) {
+    if (!commentObj) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Paint request not found'
+        statusMessage: 'Comment not found'
       });
     }
     // Helper: recursively resolve replies and flatten them
@@ -42,9 +44,9 @@ export default defineEventHandler(async (event) => {
             replies: 1,
             user: {
               _id: '$user._id',
-              name: '$user.name',
-              email: '$user.email',
-              picture: '$user.picture'
+              userName: '$user.userName',
+              nickName: '$user.nickName',
+              avatarUrl: '$user.avatarUrl'
             }
           }
         }
@@ -68,8 +70,8 @@ export default defineEventHandler(async (event) => {
     };
 
     // Resolve replies for top-level comments
-    if (comments && comments.length > 0) {
-      for (const comment of comments as unknown as IComment[]) {
+    if (commentObj.comments && commentObj.comments.length > 0) {
+      for (const comment of commentObj.comments as unknown as IComment[]) {
         if (comment.replies && comment.replies.length > 0) {
           // @ts-expect-error - TODO: fix the type changing of replies
           comment.replies = await resolveReplies(
@@ -79,17 +81,17 @@ export default defineEventHandler(async (event) => {
       }
 
       // Remove reply comments from root comments list
-      const allReplyIds = comments.comments.flatMap((c) =>
-        (c.replies as unknown as Comment[]).map((r) => r._id?.toString())
+      const allReplyIds = commentObj.comments.flatMap((c) =>
+        (c.replies || []).map((r) => r._id?.toString())
       );
-      comments.comments = comments.comments.filter(
+      commentObj.comments = commentObj.comments.filter(
         (c) => !allReplyIds.includes(c._id.toString())
       );
     }
 
     return {
       success: true,
-      data: comments.comments as unknown as typeof PaintRequestType
+      data: commentObj.comments as unknown as typeof CommentType
     };
   } catch (error) {
     if (error && typeof error === 'object' && 'statusCode' in error && 'statusMessage' in error) {

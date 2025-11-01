@@ -26,13 +26,13 @@ export const useAlbumPage = (albumId: string | string[]) => {
   };
 
   const playSong = (song: SongType, index: number) => {
-    console.log(song, index);
     const songList = songs.value.map(item => item.song);
     addPlaylistToQueue(songList, songList[index]?._id || null);
   };
 
   return {
     songs,
+    album,
     playAll,
     addAllToQueue,
     playSong

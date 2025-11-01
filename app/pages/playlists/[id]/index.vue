@@ -78,9 +78,7 @@
       </template>
 
       <template #comments>
-        <div class="flex flex-col gap-2">
-          <p>Comments</p>
-        </div>
+        <Comments :entity-id="route.params.id as string ?? ''" />
       </template>
 
       <template #subscribers>

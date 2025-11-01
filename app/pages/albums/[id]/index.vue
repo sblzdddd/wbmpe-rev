@@ -13,7 +13,7 @@
         <Icon name="lucide:music" size="32" class="text-muted-foreground" />
       </div>
       <div class="flex flex-col grow gap-2">
-        <h1 class="text-base md:text-2xl font-bold">{{ album.data.value?.data?.name }}</h1>
+        <h1 class="text-base md:text-2xl font-bold truncate">{{ album.data.value?.data?.name }}</h1>
         <div class="flex gap-2 text-xs md:text-sm text-muted-foreground">
           <p>{{ album.data.value?.data?.songList.length }} songs</p>
           <p v-if="album.data.value?.data?.platform">{{ album.data.value?.data?.platform }}</p>
@@ -80,30 +80,12 @@
         </div>
       </template>
 
-      <template #info>
-        <div class="flex flex-col gap-4 p-4">
-          <div v-if="album.data.value?.data?.description">
-            <h3 class="font-medium mb-2">Description</h3>
-            <p class="text-muted-foreground">{{ album.data.value?.data?.description }}</p>
-          </div>
-          <div v-if="album.data.value?.data?.artists && album.data.value?.data?.artists.length > 0">
-            <h3 class="font-medium mb-2">Artists</h3>
-            <div class="flex flex-wrap gap-2">
-              <NuxtLink 
-                v-for="artist in album.data.value?.data?.artists" 
-                :key="artist._id" 
-                :to="`/artists/${artist._id}`"
-                class="text-primary hover:underline"
-              >
-                {{ artist.name }}
-              </NuxtLink>
-            </div>
-          </div>
-          <div v-if="album.data.value?.data?.platform">
-            <h3 class="font-medium mb-2">Platform</h3>
-            <p class="text-muted-foreground">{{ album.data.value?.data?.platform }}</p>
-          </div>
-        </div>
+      <template #comments>
+        <Comments :entity-id="route.params.id as string ?? ''" />
+      </template>
+
+      <template #subscribers>
+        <p>Subscribers</p>
       </template>
     </TabPages>
   </div>
@@ -112,7 +94,6 @@
 <script setup lang="ts">
 import { BACKGROUND } from '@/lib/background_settings';
 import type { SEOData } from '#types/Utils/SEO';
-import type { AlbumResponse } from '#types/Album';
 import { WindowVirtualizer } from '~/components/ui/Virtua';
 
 const seoData = useState<SEOData>('seoData')
@@ -127,21 +108,27 @@ const sortMode = ref<'index' | 'title' | 'artist' | 'duration' | 'like'>('index'
 const sortOrder = ref<'asc' | 'desc'>('asc');
 
 // Use the album page composable for common functionality
-const { songs, playAll, addAllToQueue, playSong } = useAlbumPage(id as string);
+const { album, songs, playAll, addAllToQueue, playSong } = useAlbumPage(id as string);
 
 // Tab configuration
 const tabsConfig = computed(() => [
   {
     key: 'songs',
-    label: `${album.data.value?.data?.songList.length || 0} Songs`,
+    label: ` Songs`,
     to: '?tab=songs',
     slot: 'songs'
   },
   {
-    key: 'info',
-    label: 'Info',
-    to: '?tab=info',
-    slot: 'info'
+    key: 'comments',
+    label: 'Comments',
+    to: '?tab=comments',
+    slot: 'comments'
+  },
+  {
+    key: 'subscribers',
+    label: 'Subscribers',
+    to: '?tab=subscribers',
+    slot: 'subscribers'
   }
 ]);
 
@@ -170,19 +157,19 @@ watch([() => sortMode.value, () => sortOrder.value], async ([newSortMode, newSor
   isUpdatingFromRoute.value = false;
 }, {deep: true})
 
-const { error } = await useFetch<InternalApi['/api/album/:id']>(`/api/album/${id}`, {
+const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/album/:id']['get']>(`/api/album/${id}`, {
   key: computed(() => `album-page-${id}`),
   onResponse({ response }) {
+    const album = response._data?.data;
+    if(!album) return;
     // Set background during SSR when data is received
-    if (response._data?.default?.data?.coverUrl) {
-      setBackground(response._data.default.data.coverUrl, BACKGROUND.playlist);
+    if (album.coverUrl) {
+      setBackground(album.coverUrl, BACKGROUND.playlist);
     }
-    seoData.value.title = `${response._data?.default.data.name || 'Album'}`
+    seoData.value.title = `${album.name || 'Album'}`
   },
   lazy: false
 })
-
-const album = useNuxtData<AlbumResponse>(`album-page-${id}`);
 
 if (error.value) {
   // Check if there's browser history to go back
@@ -209,6 +196,30 @@ watch(() => album.data.value, (newVal) => {
     setBackground(newVal?.data?.songList.songs[0]?.song.album.coverUrl || "", BACKGROUND.playlist);
   }
 }, {immediate: true})
+
+const routePath = useState<RoutePath>('routePath', () => ({
+  last: '',
+  next: route.path
+}));
+
+// Watch for route changes to detect coming from edit page
+watch(() => routePath.value.last, (newPath, oldPath) => {
+  if (oldPath && oldPath.includes(`/albums/${id}/edit`)) {
+    // Refresh data when coming back from edit page
+    refreshFetch();
+  }
+}, { immediate: false });
+
+// Also check on mount as fallback for direct navigation
+onMounted(() => {
+  // Check if coming from edit page (client-side only)
+  if (import.meta.client) {
+    const referrer = document.referrer;
+    if (referrer && referrer.includes(`/albums/${id}/edit`)) {
+      refreshFetch();
+    }
+  }
+});
 </script>
 
 <style scoped>

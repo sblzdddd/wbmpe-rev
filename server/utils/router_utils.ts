@@ -7,7 +7,6 @@ export async function parseRouteParams<T extends z.ZodTypeAny>(
 ): Promise<z.infer<T>> {
   const raw = Object.fromEntries(Object.entries(event.context.params || {}))
   const result = await schema.safeParseAsync(raw)
-  console.log(result.error?.issues)
   if (!result.success) {
     throw createError({
       statusCode: 400,

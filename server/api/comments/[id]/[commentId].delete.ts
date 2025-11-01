@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const comment = await Comments.findById(id);
+    const comment = await Comments.findOne({ entityId: id });
     if (!comment) {
       throw createError({
         statusCode: 404,
@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if user owns the comment
-    if (commentItem.user.toString() !== user._id.toString()) {
+    if (commentItem.user.toString() !== user.id.toString()) {
       throw createError({
         statusCode: 403,
         statusMessage: 'You can only delete your own comments'

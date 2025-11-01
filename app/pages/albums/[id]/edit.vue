@@ -90,7 +90,7 @@ watch([() => route.query.tab], async ([newTab]) => {
   isUpdatingFromRoute.value = false;
 }, {deep: true, immediate: true})
 
-const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/album/:id']['default']>(`/api/album/${id}`, {
+const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/album/:id']['get']>(`/api/album/${id}`, {
   key: computed(() => `album-page-${id}`),
   onResponse({ response }) {
     // Set background during SSR when data is received

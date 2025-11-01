@@ -8,19 +8,16 @@ export default defineEventHandler(async (event) => {
   try {
     // Get the current user from the session
     const user = event.context.user;
-    const id = await parseRouteParams(event, objectIdSchemaCoerced('commentId'))
+    const { id } = await parseRouteParams(event, PlaylistRequestParamsInternal)
     const result = await readValidatedBody(event, CommentPostRequest.safeParse)
     if (!result.success) {
       throw createError({statusCode: 400, statusMessage: result.error.message})
     }
     const { content, parentComment } = result.data
 
-    const comment = await Comments.findById(id);
+    let comment = await Comments.findOne({entityId: new mongoose.Types.ObjectId(id)});
     if (!comment) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Comment not found'
-      });
+      comment = await Comments.create({entityId: new mongoose.Types.ObjectId(id), comments: []})
     }
 
     // If this is a reply, validate the parent comment exists
@@ -39,7 +36,7 @@ export default defineEventHandler(async (event) => {
     // Create the new comment
     const newComment = {
       _id: new mongoose.Types.ObjectId(),
-      user: user._id,
+      user: new mongoose.Types.ObjectId(user.id),
       content: content.trim(),
       createdAt: new Date(),
       parentComment: parentComment || undefined,
@@ -63,9 +60,6 @@ export default defineEventHandler(async (event) => {
     }
 
     await comment.save();
-
-    // Populate the new comment with user info
-    await comment.populate('comments.user', 'name email picture');
 
     return {
       success: true,
