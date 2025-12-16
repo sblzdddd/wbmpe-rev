@@ -18,9 +18,6 @@ const logger = BakaLogger.child({
   service: "openapi",
 });
 
-/**
- * Dynamically import all Zod schemas from the validators directory
- */
 async function getAllValidatorSchemas(): Promise<{
   schemas: Record<string, ZodOpenApiSchemaObject>;
   parameters: Record<string, ZodOpenApiParameterObject>;
@@ -29,7 +26,6 @@ async function getAllValidatorSchemas(): Promise<{
   const parameters: Record<string, ZodOpenApiParameterObject> = {};
   
   try {
-    // Import all validator modules directly
     const validatorModules = [
       () => import("../../../shared/validators/common"),
       () => import("../../../shared/validators/content"),
@@ -46,12 +42,10 @@ async function getAllValidatorSchemas(): Promise<{
       () => import("../../../shared/validators/search"),
     ];
 
-    // Import each validator file and extract Zod schemas
     for (const importFn of validatorModules) {
       try {
         const module = await importFn();
         
-        // Extract all exported schemas that are Zod objects
         for (const [exportName, exportValue] of Object.entries(module)) {
           if(!exportValue) continue;
           let zodSchema: z.ZodSchema;
@@ -88,10 +82,8 @@ export default eventHandler(async (event) => {
     ...runtimeConfig.nitro?.openAPI?.meta,
   };
 
-  // const { paths, globals } = getHandlersMeta();
   const { paths } = getHandlersMeta();
 
-  // Get all validator schemas dynamically
   const { schemas, parameters } = await getAllValidatorSchemas();
   logger.info(`Discovered ${Object.keys(schemas).length} schemas`);
   logger.info(`Discovered ${Object.keys(parameters).length} parameters`);
@@ -150,17 +142,17 @@ function getHandlersMeta(): {
     const tags = defaultTags(h.route || "");
     const method = (h.method || "get").toLowerCase() as Lowercase<HTTPMethod>;
     const { $global, ...openAPI } = h.meta?.openAPI || {};
+    const mergedResponses = defu(openAPI)?.responses || {};
 
     
 
-    // Ensure responses.500 is always present/overridden
     const item: PathItemObject = {
       [method]: <OperationObject>{
       tags,
       ...openAPI,
       responses: {
         200: { description: "OK" },
-        ...defu(openAPI)?.responses || {},
+        ...mergedResponses,
         500: {
           description: 'Internal server error',
           content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
@@ -170,7 +162,6 @@ function getHandlersMeta(): {
     };
 
     if ($global) {
-      // TODO: Warn on conflicting global definitions?
       globals = defu($global, globals);
     }
 

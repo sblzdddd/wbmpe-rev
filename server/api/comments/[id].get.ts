@@ -1,4 +1,3 @@
-import { availableMemory } from 'process';
 import { Comments, IComment, ICommentSchema } from '../../models/Comments';
 import type { Comments as CommentType } from '../../models/Comments';
 import type { ObjectId } from 'mongoose';

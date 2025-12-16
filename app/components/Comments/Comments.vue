@@ -54,7 +54,6 @@ import { Button } from '~/components/ui/button';
 
 const { openInPopup } = useUserSession();
 
-// Component name for linting
 defineOptions({
   name: 'CommentsSection'
 });

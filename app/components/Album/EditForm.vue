@@ -80,10 +80,8 @@ import type { AlbumResponse } from '#types/Album';
 const route = useRoute();
 const albumId = route.params.id as string;
 
-// Get album data
 const album = useNuxtData<AlbumResponse>(`album-page-${albumId}`);
 
-// Form state
 const formData = reactive({
   name: '',
   description: '',
@@ -102,14 +100,12 @@ const message = reactive({
   type: 'success' as 'success' | 'error'
 });
 
-// Computed
 const hasChanges = computed(() => {
   return formData.name !== originalData.value.name ||
          formData.description !== originalData.value.description ||
          formData.coverUrl !== originalData.value.coverUrl;
 });
 
-// Initialize form data
 const initializeForm = () => {
   const albumData = album.data.value?.data;
   if (albumData) {
@@ -117,7 +113,6 @@ const initializeForm = () => {
     formData.description = albumData.description || '';
     formData.coverUrl = albumData.coverUrl || '';
     
-    // Store original data
     originalData.value = {
       name: albumData.name || '',
       description: albumData.description || '',
@@ -126,7 +121,6 @@ const initializeForm = () => {
   }
 };
 
-// Reset form to original values
 const resetForm = () => {
   formData.name = originalData.value.name;
   formData.description = originalData.value.description;
@@ -134,7 +128,6 @@ const resetForm = () => {
   message.text = '';
 };
 
-// Update album
 const updateAlbum = async () => {
   if (!hasChanges.value) return;
   
@@ -163,14 +156,12 @@ const updateAlbum = async () => {
       message.text = 'Album updated successfully!';
       message.type = 'success';
       
-      // Update original data
       originalData.value = {
         name: formData.name,
         description: formData.description,
         coverUrl: formData.coverUrl,
       };
       
-      // Refresh the album data
       await refreshCookie(`album-page-${albumId}`);
     }
   } catch (error: unknown) {
@@ -181,12 +172,10 @@ const updateAlbum = async () => {
   }
 };
 
-// Watch for album data changes
 watch(() => album.data.value, () => {
   initializeForm();
 }, { immediate: true });
 
-// Initialize on mount
 onMounted(() => {
   initializeForm();
 });

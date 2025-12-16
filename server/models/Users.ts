@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
-import Playlists, { type PlaylistDocument } from "./Playlists";
+import Playlists, { type Playlist } from "./Playlists";
 import UserAuth from "./UserAuth";
 import Songs from "./Songs";
 const logger = BakaLogger.child({service: 'Users'})
@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
     currentTime: {type: Number, default: 0}
   }
 }, {
-  timestamps: true, // Adds createdAt and updatedAt fields
+  timestamps: true,
   statics: {
     createNewUser: async (userName: string, email: string, pwdHash: string): Promise<SimpleUser> => {
       // Create default playlists first
@@ -54,11 +54,9 @@ const userSchema = new mongoose.Schema({
         recent: recent._id,
       });
     
-      // Update playlists with owner
       await Playlists.updateOne({ _id: favorites }, { owner: user._id });
       await Playlists.updateOne({ _id: recent }, { owner: user._id });
     
-      // Create user auth
       await UserAuth.create({userId: user._id, email, pwdHash});
 
       const userData = user.toObject() as unknown as SimpleUser;
@@ -66,11 +64,9 @@ const userSchema = new mongoose.Schema({
       return userData;
     },
     createNewOAuthUser: async (userName: string, nickName: string, email?: string, githubId?: string, googleId?: string, avatarUrl?: string): Promise<SimpleUser> => {
-      // Create default playlists first
       const favorites = await Playlists.createNewFavoritesPlaylist(null);
       const recent = await Playlists.createNewRecentPlaylist(null);
 
-      // Create user
       const user = await Users.create({
         userName,
         nickName: nickName || userName,
@@ -81,11 +77,9 @@ const userSchema = new mongoose.Schema({
         recent: recent._id,
       });
     
-      // Update playlists with owner
       await Playlists.updateOne({ _id: favorites }, { owner: user._id });
       await Playlists.updateOne({ _id: recent }, { owner: user._id });
     
-      // Create user auth for OAuth
       const authData: any = { userId: user._id };
       if (email) authData.email = email;
       if (githubId) authData.githubId = githubId;
@@ -158,9 +152,11 @@ const userSchema = new mongoose.Schema({
         throw new Error('Song not found');
       }
       if (set) {
-        playlist.songs.push({ song: song._id });
+        playlist.songs.push({ _id: new mongoose.Types.ObjectId(), owner: user._id, song: song._id });
       } else {
-        playlist.songs.pull({ song: songId });
+        playlist.songs = playlist.songs.filter(
+          (item: any) => !(item.owner.equals(user._id) && item.song.equals(song._id))
+        );
       }
       await playlist.save();
     },
@@ -172,7 +168,7 @@ const userSchema = new mongoose.Schema({
         recent: userObj.recent
       };
     },
-    createNewPlaylist: async (owner: ObjectId, name: string, description: string, coverUrl: string, isPublic: boolean): Promise<PlaylistDocument> => {
+    createNewPlaylist: async (owner: ObjectId, name: string, description: string, coverUrl: string, isPublic: boolean): Promise<Playlist> => {
       const user = await Users.findById(owner);
       if (!user) {
         throw new Error('User not found');
@@ -180,7 +176,7 @@ const userSchema = new mongoose.Schema({
       const playlist = await Playlists.createNewPlaylist(owner, name, description, coverUrl, isPublic);
       user.createdPlaylists.push(playlist._id as unknown as ObjectId);
       await user.save();
-      return playlist as unknown as PlaylistDocument;
+      return playlist;
     },
     deletePlaylist: async (owner: ObjectId, playlistId: ObjectId): Promise<void> => {
       const user = await Users.findById(owner);

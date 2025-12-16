@@ -25,17 +25,6 @@ export const searchSongRequest = z.object({
     description: 'The keyword to search for',
     example: 'hey jude',
   }),
-  page: z.coerce.number().min(1, 'Page must be at least 1').meta({
-    description: 'The page number',
-    example: 1,
-  }),
-});
-
-export const searchSuggestionsRequest = z.object({
-  keyword: z.string().min(1, 'Keyword is required').meta({
-    description: 'The keyword to get suggestions for',
-    example: 'hey',
-  }),
 });
 
 export const bilibiliPagesRequest = z.object({
@@ -61,13 +50,6 @@ export const searchSongResponse = z.object({
   }),
   stored_songs: z.array(simpleSongSchema).meta({
     description: 'Matching songs already stored in database',
-  }),
-});
-
-export const searchSuggestionsResponse = z.object({
-  suggestions: z.array(z.string()).meta({
-    description: 'Array of search suggestions',
-    example: ['hey jude', 'hey ya', 'hey soul sister'],
   }),
 });
 

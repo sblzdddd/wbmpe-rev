@@ -169,6 +169,8 @@ const formatDuration = (seconds: number) => {
 }
 
 .songItem-title, .songItem-artist, .songItem-album {
+  @apply hover:underline;
+  cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;

@@ -14,12 +14,8 @@ const { open, toggleSidebar } = useSidebar()
 
 // Use the search composable
 const { 
-  searchKeyword, 
-  searchSuggestions, 
-  showSuggestions, 
-  suggestionsPending,
-  performSearch, 
-  selectSuggestion 
+  searchKeyword,
+  performSearch
 } = useSearch()
 
 withDefaults(defineProps<{
@@ -32,31 +28,13 @@ const { scrollY } = useScrollBar()
 
 const isPlaylistPage = computed(() => route.path.includes('/playlists/') && !route.path.includes('/edit'))
 
-// Header search functionality
 const headerInputRef = ref<HTMLInputElement>()
-const isHeaderInputFocused = ref(false)
-
-const handleHeaderInputFocus = () => {
-  isHeaderInputFocused.value = true
-  if (searchKeyword.value.length >= 2) {
-    showSuggestions.value = true
-  }
-}
-
-const handleHeaderInputBlur = () => {
-  // Delay hiding suggestions to allow clicking on them
-  setTimeout(() => {
-    isHeaderInputFocused.value = false
-    showSuggestions.value = false
-  }, 200)
-}
 
 const handleHeaderKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Enter') {
     event.preventDefault()
     performSearch()
   } else if (event.key === 'Escape') {
-    showSuggestions.value = false
     headerInputRef.value?.blur()
   }
 }
@@ -92,40 +70,14 @@ const handleHeaderKeydown = (event: KeyboardEvent) => {
             v-model="searchKeyword"
             type="text" 
             placeholder="Search songs, artists, albums, and URL" 
-            class="w-full max-w-sm pl-10" 
-            @focus="handleHeaderInputFocus"
-            @blur="handleHeaderInputBlur"
+            class="w-full max-w-sm pl-10"
             @keydown="handleHeaderKeydown"
           />
           <span class="absolute start-0 inset-y-0 flex items-center justify-center px-3">
             <Icon name="lucide:search" size="16" />
           </span>
-          
-          <!-- Loading indicator -->
-          <span v-if="suggestionsPending" class="absolute end-3 inset-y-0 flex items-center justify-center">
-            <Icon name="lucide:loader-2" size="14" class="animate-spin" />
-          </span>
-
-          <!-- Suggestions dropdown for header -->
-          <div 
-            v-if="showSuggestions && searchSuggestions.length > 0 && isHeaderInputFocused" 
-            class="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50 max-h-60 overflow-y-auto"
-          >
-            <div class="py-1">
-              <button
-                v-for="(suggestion, index) in searchSuggestions"
-                :key="index"
-                class="w-full px-3 py-2 text-left hover:bg-accent hover:text-accent-foreground transition-colors duration-150 text-sm"
-                @click="selectSuggestion(suggestion)"
-                @mousedown.prevent
-              >
-                <Icon name="lucide:search" size="12" class="inline mr-2 text-muted-foreground" />
-                {{ suggestion }}
-              </button>
-            </div>
-          </div>
         </div>
-        <div class="grow" />
+        <div class="md:grow w-8" />
         <div class="flex items-center gap-2">
           <UserInfo />
           <LoginDialog />
@@ -142,7 +94,6 @@ const handleHeaderKeydown = (event: KeyboardEvent) => {
 </template>
 
 <style scoped>
-/* Optional: Add any additional styles if needed */
 .user-panel-enter-active,
 .user-panel-leave-active {
   transition: all 0.3s ease;

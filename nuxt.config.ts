@@ -43,16 +43,6 @@ export default defineNuxtConfig({
     aliyun: {
       baseURL: process.env.NUXT_IMAGE_ALIYUN_BASE_URL || 'https://no-cdn-you-baka.site'
     },
-    providers: {
-      proxy: {
-        name: 'proxy',
-        provider: '~/providers/proxy-provider.ts'
-      },
-      netease: {
-        name: 'netease',
-        provider: '~/providers/netease-provider.ts'
-      }
-    },
   },
 
   

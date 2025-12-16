@@ -14,7 +14,6 @@
     
     <div class="max-w-2xl">
       <form class="space-y-6" @submit.prevent="updateSong">
-        <!-- Song Name -->
         <div class="space-y-2">
           <Label for="song-name">Song Name</Label>
           <Input 
@@ -25,7 +24,6 @@
           />
         </div>
 
-        <!-- Album Selection -->
         <div class="space-y-2">
           <Label for="album-search">Album</Label>
           <div class="relative">
@@ -78,7 +76,6 @@
           </div>
         </div>
 
-        <!-- Artists Selection -->
         <div class="space-y-2">
           <Label for="artist-search">Artists</Label>
           <div class="relative">
@@ -137,7 +134,6 @@
           </div>
         </div>
 
-        <!-- Duration -->
         <div class="space-y-2">
           <Label for="duration">Duration (seconds)</Label>
           <Input 
@@ -153,7 +149,6 @@
           </p>
         </div>
 
-        <!-- Action Buttons -->
         <div class="flex gap-4 pt-4">
           <Button type="submit" :disabled="isSubmitting">
             <Icon v-if="isSubmitting" name="lucide:loader-2" class="w-4 h-4 animate-spin mr-2" />
@@ -176,7 +171,6 @@
       </form>
     </div>
 
-    <!-- Delete Confirmation Dialog -->
     <Dialog v-model:open="showDeleteDialog">
       <DialogContent>
         <DialogHeader>
@@ -220,7 +214,6 @@ if (!rawId) {
 
 const id = rawId as string;
 
-// Form data
 const formData = reactive({
   name: '',
   album: '',
@@ -232,11 +225,9 @@ const isSubmitting = ref(false);
 const isDeleting = ref(false);
 const showDeleteDialog = ref(false);
 
-// Album search
 const { searchResults: albumSearchResults, searchQuery: albumSearchQuery } = useAlbumSearch();
 const selectedAlbum = ref<{_id: string; name: string; coverUrl?: string; platform?: string} | null>(null);
 
-// Artist search
 const { searchResults: artistSearchResults, searchQuery: artistSearchQuery } = useArtistSearch();
 const selectedArtists = ref<{_id: string; name: string; avatarUrl?: string; platform?: string}[]>([]);
 
@@ -264,7 +255,6 @@ const removeArtist = (artistId: string) => {
   formData.artists = formData.artists.filter(id => id !== artistId);
 };
 
-// Format duration helper
 const formatDuration = (seconds: number) => {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
@@ -274,7 +264,6 @@ const formatDuration = (seconds: number) => {
 const { error, refresh: refreshFetch } = await useFetch(`/api/song/${id}`, {
   key: computed(() => `song-page-${rawId}`),
   onResponse({ response }) {
-    // Set background during SSR when data is received
     if (response._data?.song?.album?.coverUrl) {
       setBackground(response._data.song.album.coverUrl, BACKGROUND.playlist_edit);
     }
@@ -284,9 +273,7 @@ const { error, refresh: refreshFetch } = await useFetch(`/api/song/${id}`, {
 });
 
 if (error.value) {
-  // Check if there's browser history to go back
   if (import.meta.client && window.history.length > 1) {
-    // Go back to the previous page
     window.history.back();
   } else {
     throw createError({
@@ -301,7 +288,6 @@ if (error.value) {
 const song = useNuxtData<{success: boolean; song: SongType & { album: SimpleAlbum; artists: SimpleArtist[] }}>(`song-page-${rawId}`);
 const { user } = useAuth();
 
-// Watch for song data and populate form
 watch(() => song.data.value, (value) => {
   const songData = value?.song;
   if (!songData) {
@@ -309,7 +295,6 @@ watch(() => song.data.value, (value) => {
     return;
   }
 
-  // Check if user can edit this song
   if (songData.addedBy && songData.addedBy !== user.data.value?._id) {
     throw createError({
       statusCode: 403,
@@ -319,13 +304,11 @@ watch(() => song.data.value, (value) => {
     });
   }
 
-  // Populate form data
   formData.name = songData.name || '';
   formData.duration = songData.duration || 0;
   formData.album = songData.album?._id || '';
   formData.artists = songData.artists?.map((a: SimpleArtist) => a._id) || [];
 
-  // Set selected album and artists for UI
   if (songData.album) {
     selectedAlbum.value = {
       _id: songData.album._id,
@@ -368,10 +351,8 @@ const updateSong = async () => {
       }
     });
 
-    // Refresh the song data
     await refreshFetch();
     
-    // Navigate back to song view
     await router.push(`/songs/${id}`);
   } catch (error: unknown) {
     console.error('Error updating song:', error);
@@ -388,7 +369,6 @@ const deleteSong = async () => {
       method: 'DELETE'
     });
 
-    // Navigate to songs index or previous page
     await router.push('/songs');
   } catch (error: unknown) {
     console.error('Error deleting song:', error);

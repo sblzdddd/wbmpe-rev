@@ -6,7 +6,6 @@ import Image from '../Image.vue';
 const colorMode = useColorMode()
 const { toggleSidebar } = useSidebar()
 
-// Create a computed that safely handles SSR
 const logoSrc = computed(() => {
   return colorMode.value === 'dark' 
     ? '/images/logo/logo-dark_256.png' 

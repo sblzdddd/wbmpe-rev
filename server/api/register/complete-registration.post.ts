@@ -8,7 +8,6 @@ export default defineEventHandler(async (event) => {
   const { verificationToken, userName, password } = result.data
 
   try {
-    // Find and validate the verification token
     const emailToken = await EmailVerificationToken.findOne({
       _id: verificationToken,
       verified: true,
@@ -32,13 +31,10 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Hash the password
     const pwdHash = await hashPasswordCustom(password)
 
-    // Create the user
     const user = await Users.createNewUser(userName, emailToken.email, pwdHash)
 
-    // Mark the verification token as used
     await EmailVerificationToken.updateOne(
       { _id: verificationToken },
       { used: true }
@@ -50,7 +46,6 @@ export default defineEventHandler(async (event) => {
       userId: user._id 
     })
 
-    // verify and return user info
     const userInfo = await Users.getUserInfo(user._id.toString())
 
     if (!userInfo) {

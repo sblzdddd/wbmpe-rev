@@ -36,15 +36,13 @@ const artistsText = computed(() => {
 const albumText = computed(() => currentSong.value?.album?.name || '')
 const titleText = computed(() => currentSong.value?.name || 'No song selected')
 
-// Embla carousel setup for album art (prev/current/next)
 const emblaOptions = {
   loop: true,
-  draggable: false, // disable direct dragging
+  draggable: false,
   align: 'center' as const
 }
-const [emblaRef, emblaApi] = emblaCarouselVue(emblaOptions)
+const [_, emblaApi] = emblaCarouselVue(emblaOptions)
 
-// Whether queue visually wraps (repeat mode)
 const visualLoop = computed(() => playerState.value.playMode === 'repeat')
 
 const canGoPrev = computed(() => {
@@ -59,13 +57,11 @@ const canGoNext = computed(() => {
 })
 
 onMounted(() => {
-  // Start centered on the current item
   nextTick(() => {
     emblaApi.value?.scrollTo(currentIndex.value, true)
   })
 })
 
-// Buttons should animate the carousel as well
 const onPrevClick = () => {
   if (!canGoPrev.value) return
   previousSong()
@@ -76,13 +72,10 @@ const onNextClick = () => {
   nextSong()
 }
 
-// Keep centered when queue position changes externally
-watch(() => currentIndex.value, (newValue, oldValue) => {
-  // If song switched by other sources (end playing, buttons elsewhere), keep centered
+watch(() => currentIndex.value, (newValue, _) => {
   emblaApi.value?.scrollTo(newValue, false)
 })
 
-// Swipe overlay logic
 const SWIPE_THRESHOLD = 48
 const swipeState = reactive({ startX: 0, startY: 0, active: false })
 const onSwipeStart = (e: PointerEvent) => {
@@ -161,7 +154,7 @@ const onSwipeEnd = (e: PointerEvent) => {
               </div>
             </div>
           </div>
-          <!-- Swipe overlay: detect horizontal swipes, prevent direct drag -->
+          <!-- Swipe overlay -->
           <div
             class="absolute inset-0 z-10 swipe-overlay"
             @pointerdown="onSwipeStart"
@@ -171,7 +164,6 @@ const onSwipeEnd = (e: PointerEvent) => {
         </div>
 
         <div class="w-full flex flex-col items-center gap-3 px-2">
-          <!-- Progress slider (desktop-like), optional on mobile as well -->
           <div class="w-full mb-2">
             <ProgressSlider class="w-full" mobile-mode />
           </div>
@@ -249,8 +241,6 @@ const onSwipeEnd = (e: PointerEvent) => {
 
 <style scoped>
 @reference "../../assets/css/tailwind.css";
-
-/* Minimal Embla styles using utility classes */
 .embla {
   overflow: hidden;
 }
@@ -258,7 +248,6 @@ const onSwipeEnd = (e: PointerEvent) => {
   display: flex;
 }
 .embla__slide {
-  /* subtract horizontal gap (approx) so snaps align with gap */
   flex: 0 0 calc(100%);
   min-width: 0;
 }
@@ -269,7 +258,7 @@ const onSwipeEnd = (e: PointerEvent) => {
 }
 
 .player-body-container {
-  @apply max-w-[100vw] sm:max-w-[50vw] md:max-w-[40vw] lg:max-w-[35vw] xl:max-w-[30vw] 
+  @apply max-w-[100vw] sm:max-w-[70vw] md:max-w-[50vw] lg:max-w-[40vw] xl:max-w-[30vw] 
   mx-auto px-6 py-8 flex flex-col items-center gap-5 
   sm:bg-white/40 sm:dark:bg-white/10 rounded-3xl 
   overflow-hidden sm:backdrop-blur-xl 

@@ -16,26 +16,23 @@ export default defineEventHandler(async (event) => {
     }
     const { name, description, coverUrl } = result.data;
 
-    // Build update data with only provided fields
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {};
 
-    // Only update name if provided
     if (name !== undefined) {
       updateData.name = name.trim();
     }
 
-    // Only update description if provided
     if (description !== undefined) {
       updateData.description = description || '';
     }
 
-    // Handle cover URL update
     if (coverUrl !== undefined) {
-      // If coverUrl is empty string, remove the cover
       if (coverUrl === '' && album.coverUrl) {
-        // TODO: Delete old cover from media service if needed
-        // await mediaUploadService.deleteMedia(album.coverUrl);
+        try {
+          await mediaUploadService.deleteMedia(album.coverUrl);
+        } catch (error) {
+          logger.warn('AlbumUpdateAPI: Failed to delete old cover image', { error });
+        }
       }
       updateData.coverUrl = coverUrl;
     }

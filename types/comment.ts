@@ -5,6 +5,6 @@ export interface Comment {
   user: SimpleUser;
   content: string;
   createdAt: string;
-  parentComment?: string; // ID of parent comment for replies
-  replies?: Comment[]; // Array of reply comments
+  parentComment?: string;
+  replies?: Comment[];
 }

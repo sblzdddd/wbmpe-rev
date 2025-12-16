@@ -107,10 +107,8 @@ const { setBackground } = useBackground();
 const sortMode = ref<'index' | 'title' | 'artist' | 'duration' | 'like'>('index');
 const sortOrder = ref<'asc' | 'desc'>('asc');
 
-// Use the album page composable for common functionality
 const { album, songs, playAll, addAllToQueue, playSong } = useAlbumPage(id as string);
 
-// Tab configuration
 const tabsConfig = computed(() => [
   {
     key: 'songs',
@@ -132,7 +130,6 @@ const tabsConfig = computed(() => [
   }
 ]);
 
-// Flag to prevent infinite loops
 const isUpdatingFromRoute = ref(false);
 
 watch([() => route.query.sort, () => route.query.order], ([sort, order]) => {
@@ -143,7 +140,6 @@ watch([() => route.query.sort, () => route.query.order], ([sort, order]) => {
 }, {deep: true, immediate: true})
 
 watch([() => sortMode.value, () => sortOrder.value], async ([newSortMode, newSortOrder]) => {
-  // Only update if values are different from current route query
   if (route.query.sort === newSortMode && route.query.order === newSortOrder) return;
   
   isUpdatingFromRoute.value = true;
@@ -162,7 +158,6 @@ const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/album/
   onResponse({ response }) {
     const album = response._data?.data;
     if(!album) return;
-    // Set background during SSR when data is received
     if (album.coverUrl) {
       setBackground(album.coverUrl, BACKGROUND.playlist);
     }
@@ -172,9 +167,7 @@ const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/album/
 })
 
 if (error.value) {
-  // Check if there's browser history to go back
   if (import.meta.client && window.history.length > 1) {
-    // Go back to the previous page
     window.history.back();
   } else {
     throw createError({
@@ -186,7 +179,6 @@ if (error.value) {
   }
 }
 
-// Keep the watcher as fallback for client-side updates
 watch(() => album.data.value, (newVal) => {
   seoData.value.title = `${newVal?.data?.name || 'Album'}`
   if(newVal?.data?.coverUrl) {
@@ -202,17 +194,13 @@ const routePath = useState<RoutePath>('routePath', () => ({
   next: route.path
 }));
 
-// Watch for route changes to detect coming from edit page
 watch(() => routePath.value.last, (newPath, oldPath) => {
   if (oldPath && oldPath.includes(`/albums/${id}/edit`)) {
-    // Refresh data when coming back from edit page
     refreshFetch();
   }
 }, { immediate: false });
 
-// Also check on mount as fallback for direct navigation
 onMounted(() => {
-  // Check if coming from edit page (client-side only)
   if (import.meta.client) {
     const referrer = document.referrer;
     if (referrer && referrer.includes(`/albums/${id}/edit`)) {

@@ -235,6 +235,5 @@ export const validationErrorSchema = z.object({
   description: 'A validation error response'
 });
 
-// For backward compatibility, alias Error to generalErrorSchema
 export const errorSchema = generalErrorSchema;
 

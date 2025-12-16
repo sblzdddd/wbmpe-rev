@@ -41,7 +41,6 @@ defineProps({
   mobileMode: Boolean
 })
 
-// Utility function to format seconds to mm:ss
 function formatSeconds(seconds: number): string {
   if (!seconds || isNaN(seconds)) return '00:00'
   const minutes = Math.floor(seconds / 60)
@@ -49,13 +48,11 @@ function formatSeconds(seconds: number): string {
   return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
 }
 
-// Use composables for reactive data
 const { currentTime, duration, bufferedTime, isUserSeeking, seekPreviewTime, startSeeking, updateSeekPreview, stopSeeking } = useAudio()
 
 const progressValue = ref(0);
 const bufferedValue = ref(0);
 
-// Computed values for time display
 const currentLen = computed(() => {
   const time = isUserSeeking.value ? seekPreviewTime.value : currentTime.value
   return formatSeconds(time)
@@ -67,14 +64,12 @@ const remainLen = computed(() => {
   return formatSeconds(remaining)
 })
 
-// Watch for time updates and update progress values
 watch([currentTime, duration], ([current, total]) => {
   if (!isUserSeeking.value && total > 0) {
     progressValue.value = 1000 * current / total
   }
 })
 
-// Watch for buffered time updates
 watch([bufferedTime, duration], ([buffered, total]) => {
   if (!isUserSeeking.value && total > 0) {
     bufferedValue.value = 100 * buffered / total

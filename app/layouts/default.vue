@@ -18,7 +18,6 @@ const routePath = useState<RoutePath>('routePath', () => ({
   next: route.path
 }))
 
-// App-level fullscreen state
 const isFullscreen = useState<boolean>('isFullscreen', () => false)
 
 const exitAppFullscreen = async () => {

@@ -16,7 +16,7 @@ export type CollectionSongItem = {
 const CollectionSongItemSchema = new mongoose.Schema({
   song: {type: ObjectId, ref: 'Songs', required: true}
 }, {
-  timestamps: true, // Adds createdAt and updatedAt fields
+  timestamps: true,
 });
 
 export default CollectionSongItemSchema;

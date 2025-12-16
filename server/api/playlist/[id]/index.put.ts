@@ -1,5 +1,3 @@
-// update playlist by id
-
 const logger = BakaLogger.child({ service: 'PlaylistUpdateAPI' });
 
 export default defineEventHandler(async (event) => {
@@ -16,35 +14,29 @@ export default defineEventHandler(async (event) => {
     }
     const { name, description, coverUrl, isPublic } = result.data;
 
-    // Build update data with only provided fields
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {};
 
-    // Only update name if provided
     if (name !== undefined) {
       updateData.name = name.trim();
     }
 
-    // Only update description if provided
     if (description !== undefined) {
       updateData.description = description || '';
     }
 
-    // Only update isPublic if provided
     if (isPublic !== undefined) {
       updateData.isPublic = Boolean(isPublic);
     }
 
     // Handle cover URL update
     if (coverUrl !== undefined) {
-      // If coverUrl is empty string, remove the cover
       if (coverUrl === '' && playlist.coverUrl) {
         await mediaUploadService.deleteMedia(playlist.coverUrl);
       }
       updateData.coverUrl = coverUrl;
     }
 
-    // Update the playlist
     const updatedPlaylist = await Playlists.findByIdAndUpdate(
       playlistId,
       updateData,

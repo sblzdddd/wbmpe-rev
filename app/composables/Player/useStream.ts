@@ -12,16 +12,11 @@ export interface CachedStream {
 }
 
 export const useStream = () => {
-  // Cache for stream URLs (client-side only)
   const streamCache = ref<Map<string, CachedStream>>(new Map())
-  
-  // Cache TTL (5 minutes)
   const CACHE_TTL = 5 * 60 * 1000
 
-  // Get stream URL for a song
   const getStreamUrl = async (songId: string): Promise<string | null> => {
     try {
-      // Check cache first (client-side only)
       if (import.meta.client) {
         const cached = streamCache.value.get(songId)
         if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -29,7 +24,6 @@ export const useStream = () => {
         }
       }
 
-      // Fetch from API
       const { data } = await $fetch<{ data: StreamData }>(`/api/song/${songId}/stream`)
       
       const audioUrl = data.audio.high || data.audio.normal || data.audio.lossless
@@ -37,7 +31,6 @@ export const useStream = () => {
         throw new Error('No audio stream available')
       }
 
-      // Cache the result (client-side only)
       if (import.meta.client) {
         streamCache.value.set(songId, {
           url: audioUrl,
@@ -52,10 +45,8 @@ export const useStream = () => {
     }
   }
 
-  // Get stream URL with preferred quality
   const getStreamUrlWithQuality = async (songId: string, preferredQuality: 'lossless' | 'high' | 'normal' = 'high'): Promise<string | null> => {
     try {
-      // Check cache first (client-side only)
       if (import.meta.client) {
         const cached = streamCache.value.get(songId)
         if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -63,12 +54,10 @@ export const useStream = () => {
         }
       }
 
-      // Fetch from API
       const { data } = await $fetch<{ data: StreamData }>(`/api/song/${songId}/stream`)
       
       let audioUrl: string | undefined
 
-      // Try preferred quality first, then fallback
       switch (preferredQuality) {
         case 'lossless':
           audioUrl = data.audio.lossless || data.audio.high || data.audio.normal
@@ -85,7 +74,6 @@ export const useStream = () => {
         throw new Error('No audio stream available')
       }
 
-      // Cache the result (client-side only)
       if (import.meta.client) {
         streamCache.value.set(songId, {
           url: audioUrl,
@@ -100,12 +88,10 @@ export const useStream = () => {
     }
   }
 
-  // Preload stream for faster playback
   const preloadStream = async (songId: string): Promise<void> => {
     await getStreamUrl(songId)
   }
 
-  // Clear expired cache entries
   const clearExpiredCache = () => {
     if (import.meta.client) {
       const now = Date.now()
@@ -117,16 +103,14 @@ export const useStream = () => {
     }
   }
 
-  // Clear all cache
   const clearCache = () => {
     if (import.meta.client) {
       streamCache.value.clear()
     }
   }
 
-  // Auto-cleanup expired cache entries (client-side only)
   if (import.meta.client) {
-    const cleanupInterval = setInterval(clearExpiredCache, 60000) // Every minute
+    const cleanupInterval = setInterval(clearExpiredCache, 60000)
     
     onUnmounted(() => {
       clearInterval(cleanupInterval)

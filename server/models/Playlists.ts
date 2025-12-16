@@ -34,7 +34,7 @@ const playlistsSchema = new Schema<Playlist, PlaylistsModel>({
   songs: [CollectionSongItemSchema],
   isPublic: {type: Boolean, required: true, default: false},
 }, {
-  timestamps: true, // Adds createdAt and updatedAt fields
+  timestamps: true,
   methods: {
   },
   statics: {
@@ -54,23 +54,21 @@ const playlistsSchema = new Schema<Playlist, PlaylistsModel>({
             path: 'songs.song',
             select: '-createdAt -updatedAt -__v',
             populate: [
-              { path: 'artists', select: 'name' },  // add artist name (with _id)
-              { path: 'album', select: 'name coverUrl' }  // add album name (with _id)
+              { path: 'artists', select: 'name' },
+              { path: 'album', select: 'name coverUrl' }
             ],
           })
-          .select('-__v')   // remote song item object id and playlist versioning
+          .select('-__v')
           .lean();
         if(playlist?.playlistType === 'favorites' && playlist.songs.length > 0) {
-          // revert the list
           (playlist as any).songs = [...playlist.songs].reverse()
         }
-        // Return the playlist with paginated songs
         const result = JSON.parse(JSON.stringify(playlist)) as unknown as FullPlaylist;
         
         return result;
       } catch (error) {
         logger.error("Error fetching full playlist data:", error);
-        throw error; // Re-throw the error so it can be caught by the caller
+        throw error;
       }
     },
     async createNewFavoritesPlaylist(owner: Types.ObjectId | null = null): Promise<Playlist> {

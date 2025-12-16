@@ -47,7 +47,6 @@ watch(() => backgroundState.value.src, (newSrc, oldSrc) => {
   if (newSrc && newSrc !== oldSrc) {
     // Start cross-fade transition
     isTransitioning.value = true
-    // The new image will load in the background
     next.src = newSrc
   } else if (!newSrc) {
     // No image, reset everything

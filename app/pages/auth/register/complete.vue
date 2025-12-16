@@ -7,16 +7,13 @@ definePageMeta({
 
 const route = useRoute()
 
-// Get email and verification token from query parameters
 const email = ref(route.query.email as string || '')
 const verificationToken = ref(route.query.token as string || '')
 
-// Redirect to step 1 if no email or token provided
 if (!email.value || !verificationToken.value) {
   await navigateTo('/auth/register')
 }
 
-// Validate the verification token
 const tokenValidation = ref<boolean | null>(null)
 const validatingToken = ref(true)
 
@@ -33,7 +30,6 @@ onMounted(async () => {
     tokenValidation.value = response.valid
     
     if (!response.valid) {
-      // Token is invalid, redirect to verify page
       await navigateTo(`/auth/register/verify?email=${encodeURIComponent(email.value)}`)
     }
   } catch {
@@ -76,7 +72,6 @@ const completeRegistration = async () => {
     
     if (response.success) {
       success.value = 'Registration completed successfully!'
-      // Navigate to login page after success
       setTimeout(() => {
         navigateTo('/auth/login?message=Registration completed! Please sign in.')
       }, 1500)
@@ -92,7 +87,6 @@ const goBack = () => {
   navigateTo(`/auth/register/verify?email=${encodeURIComponent(email.value)}`)
 }
 
-// Clear error when form changes
 watch([userName, password, confirmPassword], () => {
   if (error.value) {
     error.value = ''

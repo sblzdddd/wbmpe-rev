@@ -17,7 +17,7 @@
     <section ref="carouselRef" class="carousel grow pr-3 md:py-3 overflow-hidden">
       <div class="carousel__container flex gap-2 md:gap-7 px-3">
         <NuxtLink v-for="item in data.items" :key="item.title" :to="item.link" :class="recom_item_class" class="carousel__slide">
-          <Picture :src="item.image" :alt="item.title" :img-attrs="{class: 'w-full h-full aspect-square object-cover rounded-sm'}" :modifiers="{resize: {s: 256}}" />
+          <Picture :src="item.image" :alt="item.title" :img-attrs="{class: 'w-full h-full !size-50 aspect-square object-cover rounded-sm'}" :modifiers="{resize: {s: 256}}" />
           <div class="pt-0 pb-0 flex flex-col items-start">
             <CardTitle class="mb-1 text-sm md:text-base">{{ item.title }}</CardTitle>
             <CardDescription class="text-xs md:text-sm">{{ item.artist }}</CardDescription>

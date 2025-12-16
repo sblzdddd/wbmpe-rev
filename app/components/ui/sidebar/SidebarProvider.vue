@@ -20,7 +20,6 @@ const emits = defineEmits<{
 const isMobile = useMediaQuery('(max-width: 768px)')
 const openMobile = ref(false)
 
-// Use cookie-based state management for SSR compatibility
 const { sidebarState, setSidebarState: saveSidebarState } = useSidebarState(props.defaultOpen ?? true)
 
 const open = useVModel(props, 'open', emits, {
@@ -28,21 +27,17 @@ const open = useVModel(props, 'open', emits, {
   passive: (props.open === undefined) as false,
 }) as Ref<boolean>
 
-// Sync the open state with the cookie when not controlled by props
 if (props.open === undefined) {
-  // Initialize from cookie state
   open.value = sidebarState.value
   
-  // Watch for changes and save to cookie
   watch(open, (newValue) => {
     saveSidebarState(newValue)
   }, { immediate: false })
 }
 
 function setOpen(value: boolean) {
-  open.value = value // emits('update:open', value)
+  open.value = value
   
-  // Save the sidebar state to cookie (only when not controlled by props)
   if (props.open === undefined) {
     saveSidebarState(value)
   }
@@ -52,7 +47,6 @@ function setOpenMobile(value: boolean) {
   openMobile.value = value
 }
 
-// Helper to toggle the sidebar.
 function toggleSidebar() {
   return isMobile.value ? setOpenMobile(!openMobile.value) : setOpen(!open.value)
 }
@@ -64,8 +58,6 @@ useEventListener('keydown', (event: KeyboardEvent) => {
   }
 })
 
-// We add a state so that we can do data-state="expanded" or "collapsed".
-// This makes it easier to style the sidebar with Tailwind classes.
 const state = computed(() => open.value ? 'expanded' : 'collapsed')
 
 provideSidebarContext({

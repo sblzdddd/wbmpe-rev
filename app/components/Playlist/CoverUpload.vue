@@ -7,7 +7,7 @@ interface Props {
   modelValue: string
   playlistId?: string
   disabled?: boolean
-  mode?: 'preview' | 'upload' // preview for create, upload for edit
+  mode?: 'preview' | 'upload'
 }
 
 interface Emits {
@@ -26,7 +26,6 @@ const emit = defineEmits<Emits>()
 const uploadError = ref('')
 const isUploading = ref(false)
 const selectedFile = ref<File | null>(null)
-// Add internal preview URL for display purposes only
 const previewUrl = ref('')
 
 const handleImageUpload = async (event: Event) => {
@@ -50,16 +49,11 @@ const handleImageUpload = async (event: Event) => {
   uploadError.value = ''
   selectedFile.value = file
   
-  // Emit the file so parent component can access it
   emit('fileSelected', file)
 
   if (props.mode === 'preview') {
-    // In preview mode, create preview URL for display only
-    // Don't emit blob URL as modelValue - keep it empty for server submission
     previewUrl.value = URL.createObjectURL(file)
-    // Don't emit modelValue for preview mode to avoid blob URL being submitted
   } else if (props.mode === 'upload' && props.playlistId) {
-    // Upload to server for edit mode
     isUploading.value = true
     emit('uploading', true)
 
@@ -87,7 +81,6 @@ const handleImageUpload = async (event: Event) => {
 
 const removeCover = async () => {
   if (props.mode === 'upload' && props.playlistId) {
-    // For edit mode, we need to update the server
     try {
       await $fetch(`/api/playlist/${props.playlistId}`, {
         method: 'PUT',
@@ -101,31 +94,24 @@ const removeCover = async () => {
       uploadError.value = err instanceof Error ? err.message : 'Failed to remove cover. Please try again.';
     }
   } else {
-    // For preview mode, just remove locally
     emit('update:modelValue', '');
     previewUrl.value = '';
   }
   
   selectedFile.value = null;
-  
-  // Emit that no file is selected
   emit('fileSelected', null);
-  
-  // Clear file input
   const fileInput = document.getElementById('cover-upload') as HTMLInputElement;
   if (fileInput) {
     fileInput.value = '';
   }
 }
 
-// Cleanup blob URL when component unmounts to prevent memory leaks
 onUnmounted(() => {
   if (previewUrl.value) {
     URL.revokeObjectURL(previewUrl.value)
   }
 })
 
-// Computed property to determine what image URL to display
 const displayImageUrl = computed(() => {
   if (props.mode === 'preview') {
     return previewUrl.value || props.modelValue

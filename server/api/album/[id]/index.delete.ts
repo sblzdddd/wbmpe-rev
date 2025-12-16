@@ -3,24 +3,23 @@ const logger = BakaLogger.child({ service: 'AlbumDeleteAPI' });
 export default defineEventHandler(async (event) => {
   try {
     const { id: albumId } = await parseRouteParams(event, albumRequestParamsInternal);
+    const album = await checkAlbumExists(albumId);
 
     await checkAlbumEditAccess(event, albumId);
 
     logger.info(`AlbumDeleteAPI: Deleting album ${albumId}`);
 
     try {
-      // TODO: Handle cover image deletion if needed
-      // if (album.coverUrl) {
-      //   try {
-      //     await mediaUploadService.deleteMedia(album.coverUrl);
-      //   } catch (error) {
-      //     logger.warn('AlbumDeleteAPI: Failed to delete album cover image', { error });
-      //   }
-      // }
+      if (album.coverUrl) {
+        try {
+          await mediaUploadService.deleteMedia(album.coverUrl);
+        } catch (error) {
+          logger.warn('AlbumDeleteAPI: Failed to delete album cover image', { error });
+        }
+      }
       
       await Albums.deleteAlbum(albumId);
     } catch (modelError: unknown) {
-      // Handle specific errors from the Albums.deleteAlbum method
       if (modelError instanceof Error && modelError.message === 'Album not found') {
         logger.warn('AlbumDeleteAPI: Album not found', { albumId });
         throw createError({
@@ -28,7 +27,6 @@ export default defineEventHandler(async (event) => {
           statusMessage: 'Album not found'
         });
       } else {
-        // Re-throw other errors to be handled by the outer catch
         throw modelError;
       }
     }

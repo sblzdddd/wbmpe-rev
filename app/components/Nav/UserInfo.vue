@@ -4,7 +4,6 @@ import Image from '../Image.vue';
 import Button from '../ui/button/Button.vue';
 import ThemeSwitcher from '../Widget/ThemeSwitcher.vue';
 import UserPanelInbox from './UserPanelInbox.vue';
-import { log } from 'console';
 
 const colorMode = useColorMode()
 const { openDialog } = useDialog()

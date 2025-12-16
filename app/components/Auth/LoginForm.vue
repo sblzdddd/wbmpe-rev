@@ -26,7 +26,6 @@ const submit = async (e: Event) => {
   if (result.success) {
     // Close dialog on successful login
     closeDialog?.(DialogType.LOGIN)
-    // Reset form
     email.value = ''
     password.value = ''
   }

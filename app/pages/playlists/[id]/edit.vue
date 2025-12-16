@@ -77,7 +77,6 @@ const tabsConfig = [
 const isUpdatingFromRoute = ref(false);
 
 watch([() => route.query.tab], async ([newTab]) => {
-  // Only update if values are different from current route query
   if (route.query.tab === newTab) return;
   
   isUpdatingFromRoute.value = true;
@@ -93,7 +92,6 @@ watch([() => route.query.tab], async ([newTab]) => {
 const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/playlist/:id']['get']>(`/api/playlist/${id}`, {
   key: computed(() => `playlist-page-${id}`),
   onResponse({ response }) {
-    // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {
       setBackground(response._data.data.coverUrl, BACKGROUND.playlist_edit);
     }
@@ -103,7 +101,6 @@ const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/playli
 })
 
 if (error.value) {
-  // Check if there's browser history to go back
   if (import.meta.client && window.history.length > 1) {
     // Go back to the previous page
     window.history.back();

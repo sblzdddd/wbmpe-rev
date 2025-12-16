@@ -13,7 +13,6 @@ export async function cleanupExpiredTokens(): Promise<CleanupResult> {
     
     const now = new Date()
     
-    // Find and delete expired tokens
     const result = await PasswordResetToken.deleteMany({
       $or: [
         { expiresAt: { $lt: now } },
@@ -44,7 +43,6 @@ export async function cleanupExpiredEmailVerificationTokens(): Promise<CleanupRe
     
     const now = new Date()
     
-    // Find and delete expired tokens
     const result = await EmailVerificationToken.deleteMany({
       $or: [
         { expiresAt: { $lt: now } },

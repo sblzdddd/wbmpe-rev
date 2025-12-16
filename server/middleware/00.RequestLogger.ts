@@ -2,7 +2,6 @@ const requestLogger = BakaLogger.child({service: 'API'})
 
 requestLogger.log('success', 'Request logger initialized');
 
-// Define event handler
 export default defineEventHandler(async (event) => {
   const startTime = Date.now()
   const url = getRequestURL(event)
@@ -11,12 +10,10 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const userAgent = headers['user-agent'] || 'Unknown'
   
-  // Get client IP from headers (handles proxy scenarios)
   const ip = getRequestIP(event, { xForwardedFor: true }) || 'Unknown'
   
   const referer = headers.referer || 'Direct'
   
-  // Get request body (for POST/PUT/PATCH requests)
   let body = null
   if (['POST', 'PUT', 'PATCH'].includes(method)) {
     try {
@@ -26,7 +23,6 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Create comprehensive log object for file/logtail
   const requestInfo = {
     timestamp: new Date().toISOString(),
     method,
@@ -65,16 +61,13 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Log the comprehensive request information to file/logtail
   requestLogger.log('verbose', JSON.stringify(requestInfo, null, 2))
 
-  // Add timing information after request processing
   event.node.res.on('finish', () => {
     const endTime = Date.now()
     const duration = endTime - startTime
     const statusCode = event.node.res.statusCode
     
-    // Create comprehensive response info for file/logtail
     const responseInfo = {
       timestamp: new Date().toISOString(),
       method,
@@ -84,10 +77,8 @@ export default defineEventHandler(async (event) => {
       contentLength: event.node.res.getHeader('content-length') || 'Unknown'
     }
     
-    // Log comprehensive response to file/logtail
     requestLogger.log('verbose', JSON.stringify(responseInfo, null, 2))
     
-    // Console output: single line with crucial info
     const params = Object.keys(query).length > 0 ? JSON.stringify(query) : ''
     const statusColor = statusCode >= 500 ? 'error' : statusCode >= 400 ? 'warn' : statusCode >= 300 ? 'info' : 'success'
     const consoleMessage = `${levelColors.verbose}${ip} ${levelColors.silly}${method} ${levelColors.lightBlue}${url.pathname} ${levelColors[statusColor]}${statusCode} ${levelColors.orange}${duration}ms${levelColors.gray}${params ? ` ${params}` : ''}${resetColor}`

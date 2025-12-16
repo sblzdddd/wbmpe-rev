@@ -2,12 +2,6 @@ import bcrypt from 'bcryptjs'
 
 const logger = BakaLogger.child({ service: 'AuthUtils' })
 
-/**
- * Hash a password using bcryptjs
- * @param password - The plain text password to hash
- * @param saltRounds - Number of salt rounds (default: 12)
- * @returns Promise<string> - The hashed password
- */
 export async function hashPasswordCustom(password: string, saltRounds: number = 12): Promise<string> {
   try {
     logger.log("silly", 'Hashing password', { 
@@ -29,12 +23,6 @@ export async function hashPasswordCustom(password: string, saltRounds: number = 
   }
 }
 
-/**
- * Verify a password against a hash using bcryptjs
- * @param password - The plain text password to verify
- * @param hash - The hashed password to compare against
- * @returns Promise<boolean> - True if password matches, false otherwise
- */
 export async function verifyPasswordCustom(password: string, hash: string): Promise<boolean> {
   try {
     logger.log("silly", 'Verifying password', {
@@ -54,11 +42,6 @@ export async function verifyPasswordCustom(password: string, hash: string): Prom
   }
 }
 
-/**
- * Generate a salt for password hashing
- * @param saltRounds - Number of salt rounds (default: 12)
- * @returns Promise<string> - The generated salt
- */
 export async function generateSalt(saltRounds: number = 12): Promise<string> {
   try {
     const salt = await bcrypt.genSalt(saltRounds)
@@ -70,11 +53,6 @@ export async function generateSalt(saltRounds: number = 12): Promise<string> {
   }
 }
 
-/**
- * Get the number of salt rounds from a hash
- * @param hash - The bcrypt hash
- * @returns number - The number of salt rounds used
- */
 export function getSaltRoundsFromHash(hash: string): number {
   try {
     // bcrypt hash format: $2b$12$...
@@ -82,10 +60,10 @@ export function getSaltRoundsFromHash(hash: string): number {
     if (match) {
       return parseInt(match[1], 10)
     }
-    return 12 // default fallback
+    return 12
   } catch (error) {
     logger.error('Error parsing salt rounds from hash:', error)
-    return 12 // default fallback
+    return 12
   }
 }
 

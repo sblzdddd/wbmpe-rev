@@ -7,14 +7,12 @@ export default defineOAuthGoogleEventHandler({
     try {
       logger.info('login success:', { user: user.name, id: user.sub })
       
-      // Check if this Google ID already exists
       const existingUserAuth = await UserAuth.findOne({ googleId: tokens.id_token })
       
       if (existingUserAuth) {
         // User already exists, get user data and create session
         const existingUser = await Users.getSimpleUserInfo(existingUserAuth.userId.toString())
         
-        // Set user session
         await setUserSession(event, {
           userId: existingUser._id.toString(),
           googleId: tokens.id_token,
@@ -23,11 +21,9 @@ export default defineOAuthGoogleEventHandler({
         
         logger.info('existing user logged in', { userId: existingUser._id })
       } else {
-        // Create new user with Google data
-        let userName = user.email.split('@')[0] // Use email prefix as base username
+        let userName = user.email.split('@')[0]
         let counter = 1
         
-        // Ensure unique username
         while (await Users.findOne({ userName })) {
           userName = `${user.email.split('@')[0]}${counter}`
           counter++

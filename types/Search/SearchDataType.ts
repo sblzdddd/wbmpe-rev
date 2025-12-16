@@ -26,11 +26,6 @@ export interface SearchSongRequestType {
   page: number
 }
 
-export interface GetSuggestionsRequestType {
-  keyword: string
-  platform?: string
-}
-
 export interface GetBilibiliPagesRequestType {
   url: string
 }

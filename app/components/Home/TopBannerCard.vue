@@ -27,7 +27,8 @@ import {Card, CardFooter, CardTitle} from '../ui/card';
 defineProps({
   banner: {
     type: Array as PropType<Banner[]>,
-    required: true,
+    required: false,
+    default: () => []
   }
 })
 

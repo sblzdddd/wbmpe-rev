@@ -103,7 +103,6 @@ const id = route.params.id as string;
 
 definePageMeta({
   validate: async (route) => {
-    // Check if the id is a valid ObjectId (24-character hexadecimal string)
     return typeof route.params.id === 'string' && /^[0-9a-fA-F]{24}$/.test(route.params.id)
   },
 });
@@ -115,7 +114,6 @@ const { setBackground } = useBackground();
 const sortMode = ref<'index' | 'title' | 'album' | 'duration' | 'like'>('index');
 const sortOrder = ref<'asc' | 'desc'>('asc');
 
-// Use the playlist page composable for common functionality
 const { songs, playAll, addAllToQueue, playSong } = usePlaylistPage(id);
 
 const { user } = useAuth()
@@ -124,7 +122,6 @@ const canEdit = computed(() => {
   return playlist.data.value?.data?.playlistType === 'playlist' && playlist.data.value?.data?.owner._id === user.data.value?._id
 })
 
-// Tab configuration
 const tabsConfig = computed(() => [
   {
     key: 'songs',
@@ -146,7 +143,6 @@ const tabsConfig = computed(() => [
   }
 ]);
 
-// Flag to prevent infinite loops
 const isUpdatingFromRoute = ref(false);
 
 watch([() => route.query.sort, () => route.query.order], ([sort, order]) => {
@@ -174,7 +170,6 @@ watch([() => sortMode.value, () => sortOrder.value], async ([newSortMode, newSor
 const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/playlist/:id']['get']>(`/api/playlist/${id}`, {
   key: computed(() => `playlist-page-${id}`),
   onResponse({ response }) {
-    // Set background during SSR when data is received
     if (response._data?.data?.coverUrl) {
       setBackground(response._data.data.coverUrl, BACKGROUND.playlist);
     }
@@ -189,7 +184,6 @@ const routePath = useState<RoutePath>('routePath', () => ({
   next: route.path
 }))
 
-// Watch for route changes to detect coming from edit page
 watch(() => routePath.value.last, (newPath, oldPath) => {
   if (oldPath && oldPath.includes(`/playlists/${id}/edit`)) {
     // Refresh data when coming back from edit page
@@ -197,9 +191,7 @@ watch(() => routePath.value.last, (newPath, oldPath) => {
   }
 }, { immediate: false });
 
-// Also check on mount as fallback for direct navigation
 onMounted(() => {
-  // Check if coming from edit page (client-side only)
   if (import.meta.client) {
     const referrer = document.referrer;
     if (referrer && referrer.includes(`/playlists/${id}/edit`)) {
@@ -209,9 +201,7 @@ onMounted(() => {
 });
 
 if (error.value) {
-  // Check if there's browser history to go back
   if (import.meta.client && window.history.length > 1) {
-    // Go back to the previous page
     window.history.back();
   } else {
     throw createError({
@@ -225,7 +215,6 @@ if (error.value) {
 
 const BackgroundImages = ref<string[]>([]);
 
-// Keep the watcher as fallback for client-side updates
 watch(() => playlist.data.value, (newVal) => {
   seoData.value.title = `${newVal?.data?.name || 'Playlist'}`
   if(newVal?.data?.coverUrl) {

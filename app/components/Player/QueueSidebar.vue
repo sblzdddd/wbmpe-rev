@@ -9,59 +9,44 @@ const { clearQueue, playQueueIndex, removeFromQueue } = usePlayer()
 const { queue, currentIndex, hasQueue } = useQueue()
 const { isPlaying } = useAudio()
 
-// Track items being removed for optimistic UI updates
 const removingItems = ref<Set<string>>(new Set())
 const pendingRemovals = ref<Set<string>>(new Set())
 
-// Debounced removal function
 const debouncedRemove = useDebounceFn(async () => {
   if (pendingRemovals.value.size === 0) return
   
-  // Process all pending removals in a single batch
   const itemsToRemove = Array.from(pendingRemovals.value)
   pendingRemovals.value.clear()
   
   try {
-    // Use the new batch removal function
     await removeFromQueue(itemsToRemove)
     
-    // Clear all removing items on successful removal
     for (const itemId of itemsToRemove) {
       removingItems.value.delete(itemId)
     }
   } catch (error) {
     console.error('Failed to remove items from queue:', error)
     
-    // Remove from removing items even on error to prevent permanent hidden state
     for (const itemId of itemsToRemove) {
       removingItems.value.delete(itemId)
     }
   }
 }, 500) // 500ms debounce
 
-// Optimistic removal handler
 const handleRemoveFromQueue = (itemId: string) => {
-  // Immediately hide the item in the UI
   removingItems.value.add(itemId)
-  
-  // Add to pending removals
   pendingRemovals.value.add(itemId)
-  
-  // Trigger debounced removal
   debouncedRemove()
 }
 
-// Filter queue to hide removing items
 const filteredQueue = computed(() => {
   return queue.value.filter(item => item && !removingItems.value.has(item._id))
 })
 
-// Helper function to get original queue index from item ID
 const getOriginalIndex = (itemId: string) => {
   return queue.value.findIndex(item => item._id === itemId)
 }
 
-// Helper function to check if an item in filtered queue is currently playing
 const isCurrentlyPlaying = (item: SongType) => {
   const originalIndex = getOriginalIndex(item._id)
   return originalIndex === currentIndex.value && isPlaying.value
@@ -79,7 +64,7 @@ const isFullscreen = useState('isFullscreen');
 
 <template>
   <Sheet v-model:open="open.queue" @update:open="(e: boolean) => changeOpen?.call(null, DialogType.QUEUE, e)">
-    <SheetContent :class="`${isFullscreen ? 'bg-white/10' : ''} rounded-l-2xl`">
+    <SheetContent :class="`${isFullscreen ? 'bg-white/20 dark:bg-black/40' : ''} rounded-l-2xl`">
       <SheetHeader class="pt-3 pb-0 pr-10 gap-0 flex flex-row items-center justify-between">
         <div class="flex items-center gap-2">
           <SheetTitle>Queue </SheetTitle>

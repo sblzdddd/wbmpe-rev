@@ -49,7 +49,6 @@ export class MediaUploadService {
       const size = fs.statSync(filePath).size;
       const mime = this.getMediaContentType(fileExtension);
       logger.info(`uploading ${filePath} to oss (${ossPath}, ${mime})`);
-      //@ts-expect-error the fucking oss sdk does not mark some options as optional
       await this.client.putStream(ossPath, stream, {
         contentLength: size,
         timeout: 600000,
@@ -57,7 +56,9 @@ export class MediaUploadService {
         headers: {
           ...headers,
           'Content-Type': mime,
-        }
+        },
+        meta: { uid: 0, pid: 0 },
+        callback:{url: '', body: ''}
       });
       return {
         url: `cdn://${ossPath}`,
@@ -71,9 +72,7 @@ export class MediaUploadService {
   }
 
   
-  /**
-   * Upload an image buffer to OSS
-   */
+  // Upload an image buffer to OSS
   async uploadMediaFromBuffer(
     buffer: Buffer,
     ossPath: string = 'uploads/unknown',
@@ -86,7 +85,6 @@ export class MediaUploadService {
       // Generate unique filename
       const fileExtension = ossPath.split('.').pop()?.toLowerCase() || 'jpg';
 
-      // Upload to OSS
       const result = await this.client.put(ossPath, buffer, { headers: {
         ...headers,
         'Content-Type': this.getMediaContentType(fileExtension),
@@ -105,17 +103,13 @@ export class MediaUploadService {
     }
   }
 
-  /**
-   * Delete an audio/video file from OSS
-   */
+  // Delete an audio/video file from OSS
   async deleteMedia(path: string): Promise<void> {
     try {
-      // Remove cdn:// prefix if present
       const cleanPath = path.replace('cdn://', '');
       await this.client.delete(cleanPath);
     } catch (error) {
       logger.error('Media deletion failed:', error);
-      // Don't throw here - deletion failures shouldn't break the main operation
     }
   }
 

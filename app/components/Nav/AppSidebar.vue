@@ -8,7 +8,6 @@ const props = withDefaults(defineProps<SidebarProps>(), {
 
 const isFullscreen = useState<boolean>('isFullscreen', () => false)
 
-// This is sample data.
 const data = {
   navMain: [
     {

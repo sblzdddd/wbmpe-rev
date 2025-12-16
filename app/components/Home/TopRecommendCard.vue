@@ -3,7 +3,7 @@
   <Card class="bg-white/70 dark:bg-muted/70 rounded-xl gap-1 pt-4 px-0 pb-3" v-bind="$attrs">
     <CardHeader class="flex justify-between items-center">
       <div>
-        <CardTitle>Good afternoon, Bitch!</CardTitle>
+        <CardTitle>Good afternoon {{ user?.data.value?.nickName }}!</CardTitle>
         <CardDescription class="mt-0.5">Recover Last Session: </CardDescription>
       </div>
       <div class="flex flex-row items-center gap-2">
@@ -37,13 +37,16 @@ import emblaCarouselVue from 'embla-carousel-vue'
 import Button from '../ui/button/Button.vue'
 import {Card, CardHeader, CardContent, CardTitle, CardDescription} from '../ui/card';
 
+const { user } = useAuth()
+
 const itemClass = `bg-cover bg-center min-w-20 h-20 relative
 cursor-pointer hover:scale-120 active:scale-110 transition-all duration-200 rounded-sm p-0 overflow-hidden`
 
 defineProps({
   data: {
     type: Array as PropType<CardRecom[]>,
-    required: true,
+    required: false,
+    default: () => []
   }
 })
 

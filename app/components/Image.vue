@@ -1,12 +1,11 @@
 <template>
   <NuxtImg
     v-slot="{ isLoaded, imgAttrs }"
-    :src="processedSrc"
+    :src="src"
     :alt="alt"
     :custom="true"
     v-bind="$attrs"
-    :provider="provider"
-    :key="processedSrc"
+    :key="src"
   >
     <img
       v-if="isLoaded"
@@ -20,7 +19,6 @@
 </template>
 
 <script setup lang="ts">
-import { useImageProxy } from '~/lib/useImageProxy'
 import {Skeleton} from "~/components/ui/skeleton";
 import { toRef } from 'vue'
 
@@ -39,10 +37,6 @@ const props = defineProps({
     default: true,
   },
 })
-
-// Make src reactive for the composable so changes trigger recomputation
-const srcRef = toRef(props, 'src')
-const { processedSrc, provider } = useImageProxy(srcRef)
 </script>
 
 <style scoped>

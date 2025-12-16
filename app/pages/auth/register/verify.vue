@@ -7,15 +7,12 @@ definePageMeta({
 
 const route = useRoute()
 
-// Get email from query parameters
 const email = ref(route.query.email as string || '')
 
-// Redirect to step 1 if no email provided
 if (!email.value) {
   await navigateTo('/auth/register')
 }
 
-// Check email status on page load
 const emailStatus = ref<string | null>(null)
 const checkingEmail = ref(true)
 
@@ -29,15 +26,11 @@ onMounted(async () => {
     emailStatus.value = response.status
     
     if (response.status === 'registered') {
-      // Email is already registered, redirect to login
       await navigateTo('/auth/login?message=Email is already registered. Please sign in.')
     } else if (response.status === 'new') {
-      // No pending verification, redirect to step 1
       await navigateTo('/auth/register')
     }
-    // If status is 'pending_verification', stay on this page
   } catch {
-    // If check fails, redirect to step 1
     await navigateTo('/auth/register')
   } finally {
     checkingEmail.value = false
@@ -72,7 +65,6 @@ const verifyCode = async () => {
     
     if (response.success) {
       success.value = 'Code verified successfully!'
-      // Navigate to complete page with verification token
       setTimeout(() => {
         navigateTo(`/auth/register/complete?email=${encodeURIComponent(email.value)}&token=${response.verificationToken}`)
       }, 1000)
@@ -96,7 +88,6 @@ const resendCode = async () => {
     
     if (response.success) {
       success.value = 'New verification code sent!'
-      // Clear the current code
       code.value = ['', '', '', '', '', '']
     }
   } catch {
@@ -110,7 +101,6 @@ const goBack = () => {
   navigateTo('/auth/register')
 }
 
-// Clear messages when code changes
 watch(code, () => {
   if (error.value) {
     error.value = ''
@@ -125,15 +115,13 @@ watch(code, () => {
   <div class="w-screen h-screen flex items-center justify-center">
     <div class="w-full max-w-md">
       <div class="bg-card border rounded-lg shadow-lg p-4">
-        <!-- Loading state while checking email -->
         <div v-if="checkingEmail" class="py-3 px-6 md:px-8">
           <div class="flex flex-col items-center gap-4">
             <Icon name="line-md:loading-twotone-loop" size="32" />
             <p class="text-muted-foreground">Verifying email status...</p>
           </div>
         </div>
-        
-        <!-- Main form after email validation -->
+
         <div v-else class="py-3 px-6 md:px-8">
           <div class="flex flex-col gap-6">
             <div class="flex flex-col items-center text-center">
@@ -171,12 +159,10 @@ watch(code, () => {
               </p>
             </div>
             
-            <!-- Success message -->
             <div v-if="success" class="text-sm text-green-600 text-center">
               {{ success }}
             </div>
             
-            <!-- Error message -->
             <div v-if="error" class="text-sm text-red-500 text-center">
               {{ error }}
             </div>

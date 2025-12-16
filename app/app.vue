@@ -44,6 +44,13 @@ useSeoMeta({
   twitterCard: computed(() => seoData.value.twitterCard),
 })
 
+import { useWSP } from '~/composables/WSP/useWSP';
+
+// Initialize global multiplayer sync
+if (import.meta.client) {
+  useWSP()
+}
+
 onMounted(() => {
   console.log('App mounted')
 })

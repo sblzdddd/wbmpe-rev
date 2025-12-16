@@ -29,6 +29,8 @@
         </div>
       </div>
       </div>
+
+      <div class="md:hidden grow" />
       
       <div class="flex flex-col md:w-full gap-1 justify-center items-center">
         <div class="player-controls flex items-center gap-2">
@@ -222,7 +224,6 @@ const { open, openDialog } = useDialog()
 
 const { isFavorite, toggleFavorite } = useFavorites()
 
-// Volume before muting
 const volumeBeforeMute = ref(0.8)
 
 const playIconKey = ref(0)
@@ -232,16 +233,12 @@ watch(isPlaying, () => {
   pauseIconKey.value++
 })
 
-// Progress functionality is now handled by ProgressSlider component
-
-// Handle volume change
 const handleVolumeChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   const volume = parseFloat(target.value)
   setVolume(volume)
 }
 
-// Toggle mute
 const toggleMute = () => {
   if (volume.value === 0) {
     setVolume(volumeBeforeMute.value)
@@ -251,7 +248,6 @@ const toggleMute = () => {
   }
 }
 
-// Get the next play mode for tooltip
 const getNextPlayMode = () => {
   const modes: PlayMode[] = ['queue', 'repeat', 'repeat-one', 'random']
   const currentIndex = modes.indexOf(playerState.value.playMode)

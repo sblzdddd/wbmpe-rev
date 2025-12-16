@@ -3,7 +3,6 @@ import { ObjectId } from "mongodb"
 const logger = BakaLogger.child({service: 'AuthMiddleware'})
 
 export default defineEventHandler(async (event) => {
-  // Get the request URL
   const url = getRequestURL(event)
   
   // Define endpoints that require authentication for specific methods only
@@ -22,8 +21,6 @@ export default defineEventHandler(async (event) => {
   try {
     // Get current user from session
     const session = await getUserSession(event)
-    // Check if session has actual user data (not just a session ID)
-    // A valid session should have id, pwdHash
     if (!session || !session.userId || typeof session.userId !== 'string' || (!session.pwdHash && !session.githubId && !session.googleId)) {
       if(!requiresAuth) {
         return
@@ -36,7 +33,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Verify the session against the database, based on the type of auth
     let userAuth: UserAuthDocument | null = null
     if (session.pwdHash) {
       userAuth = await UserAuth.findOne({userId: new ObjectId(session.userId), pwdHash: session.pwdHash})

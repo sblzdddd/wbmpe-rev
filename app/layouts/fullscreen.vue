@@ -10,7 +10,6 @@ const opacity = ref(0)
 const colorMode = useColorMode()
 const router = useRouter()
 
-// Create a computed that safely handles SSR
 const logoSrc = computed(() => {
   return colorMode.value === 'dark' 
     ? '/images/logo/logo-dark_1024.png' 
@@ -29,7 +28,7 @@ const logoSrc = computed(() => {
       <ClientOnly fallback-tag="div">
         <Image :src="logoSrc" img-class="w-full" alt="logo" @load="opacity = 0.2" />
         <template #fallback>
-          <!-- Fallback for SSR - use a neutral logo -->
+          <!-- Fallback for SSR -->
           <Image src="/images/logo/logo-light_1024.png" img-class="w-full" alt="logo" @load="opacity = 0.2" />
         </template>
       </ClientOnly>

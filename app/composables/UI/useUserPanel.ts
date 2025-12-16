@@ -1,6 +1,4 @@
 
-
-// Color constants
 const primaryBGDark = "648dfeff"
 const contentBGDark = "02061880"
 const contentBGDarkSolid = "0c1327"
@@ -156,8 +154,7 @@ export const useUserPanel = () => {
     const target = event.target as HTMLElement
     const userPanelRoot = document.querySelector('.user-panel-root') as HTMLElement
     const userPanelToggle = document.querySelector('.user-panel-toggle') as HTMLElement
-    
-    // Check if click is outside the panel and toggle button
+
     if (userPanelRoot && userPanelToggle && 
         !userPanelRoot.contains(target) && 
         !userPanelToggle.contains(target)) {
@@ -175,12 +172,10 @@ export const useUserPanel = () => {
   })
 
   return {
-    // State
     showUserPanel: computed(() => userPanelState.value.showUserPanel),
     showUserPanelDOM: computed(() => userPanelState.value.showUserPanelDOM),
     isOnTop: computed(() => isOnTop.value),
     
-    // Methods
     openUserPanel,
     closeUserPanel,
     toggleUserPanel,

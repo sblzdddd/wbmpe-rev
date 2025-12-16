@@ -9,7 +9,7 @@ const lyricsSchema = new mongoose.Schema({
     format: {type: String, required: true}
   }]
 }, {
-  timestamps: true, // Adds createdAt and updatedAt fields
+  timestamps: true,
 });
 
 const Lyrics = mongoose.model('Lyrics', lyricsSchema);

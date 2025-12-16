@@ -8,11 +8,9 @@ export default defineOAuthGitHubEventHandler({
     try {
       logger.info('login success:', { user: user.login, id: user.id })
       
-      // Check if this GitHub access token already exists
       const existingUserAuth = await UserAuth.findOne({ githubId: user.id })
       
       if (existingUserAuth) {
-        // User already exists, get user data and create session
         const existingUser = await Users.getSimpleUserInfo(existingUserAuth.userId.toString())
         
         // Set user session
@@ -28,7 +26,6 @@ export default defineOAuthGitHubEventHandler({
         let userName = user.login
         let counter = 1
         
-        // Ensure unique username
         while (await Users.findOne({ userName })) {
           userName = `${user.login}${counter}`
           counter++

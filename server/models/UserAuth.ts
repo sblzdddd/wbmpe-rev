@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
-const logger = BakaLogger.child({service: 'UserAuth'})
+
 export type UserAuthDocument = {
   userId: ObjectId;
   email: string | null;
@@ -16,7 +16,7 @@ const userAuthSchema = new mongoose.Schema({
   githubId: {type: String, required: false},
   googleId: {type: String, required: false},
 }, {
-  timestamps: true, // Adds createdAt and updatedAt fields
+  timestamps: true,
 });
 
 const User_Auth = mongoose.model('User_Auth', userAuthSchema);

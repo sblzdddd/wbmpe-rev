@@ -136,7 +136,6 @@ import type { Comment as CommentType } from '../../../types/comment';
 import type { InternalApi } from '#imports';
 
 
-// Component name for linting
 defineOptions({
   name: 'CommentItemComponent'
 });
@@ -158,7 +157,6 @@ const submittingReply = ref(false);
 // Track reply form states for each reply
 const replyFormStates = ref<Record<string, { show: boolean; content: string; submitting: boolean }>>({});
 
-// Helper function to get or create form state for a reply
 const getReplyFormState = (replyId: string) => {
   if (!replyFormStates.value[replyId]) {
     replyFormStates.value[replyId] = { show: false, content: '', submitting: false };
@@ -166,7 +164,6 @@ const getReplyFormState = (replyId: string) => {
   return replyFormStates.value[replyId];
 };
 
-// Initialize form states for existing replies
 onMounted(() => {
   if (props.comment.replies) {
     props.comment.replies.forEach(reply => {
@@ -177,7 +174,6 @@ onMounted(() => {
   }
 });
 
-// Watch for new replies and initialize their form states
 watch(() => props.comment.replies, (newReplies) => {
   if (newReplies) {
     newReplies.forEach(reply => {
@@ -188,12 +184,10 @@ watch(() => props.comment.replies, (newReplies) => {
   }
 }, { deep: true });
 
-// Check if current user can delete this comment
 const canDeleteComment = (user: userType) => {
   return user && props.comment.user._id === user.data.value?._id;
 };
 
-// Check if current user can delete a reply
 const canDeleteReply = (reply: CommentType, user: userType) => {
   return user && reply.user._id === user.data.value?._id;
 };
@@ -226,7 +220,6 @@ const addReply = async () => {
     if (response.success && response.data) {
       refreshNuxtData(`comments-${props.requestId}`);
       
-      // Reset form
       replyContent.value = '';
       showReplyForm.value = false;
     }
@@ -304,7 +297,6 @@ const addReplyToReply = async (user: userType, reply: CommentType) => {
     if (response.success && response.data) {
       refreshNuxtData(`comments-${props.requestId}`);
       
-      // Reset form
       formState.content = '';
       formState.show = false;
     }

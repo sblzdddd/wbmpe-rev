@@ -1,11 +1,10 @@
-// server/plugins/mongodb.ts
 import mongoose from 'mongoose';
 import type { Nitro } from 'nitropack';
 
 const logger = BakaLogger.child({service: 'MongoDB'})
 
 export default async (_nitroApp: Nitro) => {
-  const config = useRuntimeConfig(); // Access runtime config
+  const config = useRuntimeConfig();
 
   try {
     await mongoose.connect(config.mongodbUri as string);

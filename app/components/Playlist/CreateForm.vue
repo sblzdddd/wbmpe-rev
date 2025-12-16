@@ -7,7 +7,6 @@ import Checkbox from '../ui/checkbox/Checkbox.vue';
 
 const { setBackground, resetBackground } = useBackground();
 
-// Form state
 const createForm = ref({
   name: '',
   description: '',
@@ -15,7 +14,6 @@ const createForm = ref({
   isPublic: true
 });
 
-// Add ref for the selected cover file
 const selectedCoverFile = ref<File | null>(null);
 
 const createError = ref('');
@@ -41,7 +39,6 @@ const validateForm = () => {
   return true;
 };
 
-// Handle file selection from CoverUpload component
 const handleFileSelected = (file: File | null) => {
   selectedCoverFile.value = file;
 };
@@ -52,12 +49,11 @@ const handleSubmit = async (event: Event) => {
   if (!validateForm()) return;
   
   try {
-    // Pass the actual file object instead of coverUrl
     const response = await useUserPlaylist().createPlaylist(
       createForm.value.name, 
       createForm.value.description, 
       createForm.value.isPublic, 
-      selectedCoverFile.value // Pass the File object instead of coverUrl string
+      selectedCoverFile.value
     );
     await navigateTo(`/playlists/${response._id}`);
   } catch (err: unknown) {

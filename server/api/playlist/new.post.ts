@@ -4,12 +4,9 @@ export default defineEventHandler(async (event) => {
 
   try {
     const userId = event.context.user?.id;
-
-    // Parse multipart form data for image upload support
     const form = await readMultipartFormData(event);
     if (!form) {throw createError({statusCode: 400, statusMessage: 'No form data provided'});}
 
-    // Validate using schema
     const result = PlaylistCreateRequest.safeParse({
       name: form.find(item => item.name === 'name')?.data?.toString('utf-8'),
       description: form.find(item => item.name === 'description')?.data?.toString('utf-8'),
@@ -24,7 +21,6 @@ export default defineEventHandler(async (event) => {
 
     logger.info('PlaylistAPI: Creating new playlist', { userId });
 
-    // Handle optional image upload
     let coverUrl = '';
     if (coverFile) {
       // Generate temporary playlist ID for upload

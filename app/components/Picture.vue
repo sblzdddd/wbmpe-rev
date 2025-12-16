@@ -2,12 +2,11 @@
   <NuxtPicture
     v-slot="{ isLoaded, imgAttrs }"
     format="avif,webp"
-    :src="processedSrc"
+    :src="src"
     :alt="alt"
     :custom="true"
     v-bind="$attrs"
-    :provider="provider"
-    :key="processedSrc"
+    :key="src"
   >
   <img
     v-if="isLoaded"
@@ -21,7 +20,6 @@
 </template>
 
 <script setup lang="ts">
-import { useImageProxy } from '~/lib/useImageProxy'
 import { toRef } from 'vue'
 import { Skeleton } from '~/components/ui/skeleton'
 
@@ -41,8 +39,4 @@ const props = defineProps({
     default: true,
   },
 })
-
-// Make src reactive so picture updates when src changes
-const srcRef = toRef(props, 'src')
-const { processedSrc, provider } = useImageProxy(srcRef)
 </script>

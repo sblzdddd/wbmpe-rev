@@ -8,7 +8,6 @@ export default defineEventHandler(async (event) => {
   const { email } = result.data
 
   try {
-    // Check if email is already registered
     const existingUser = await UserAuth.findOne({ email })
     if (existingUser) {
       throw createError({
@@ -17,16 +16,9 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Clean up any existing verification tokens for this email
     await EmailVerificationToken.deleteMany({ email })
-
-    // Generate 6-digit verification code
     const verificationCode = generateVerificationCode()
-
-    // Set expiry to 10 minutes from now
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
-
-    // Store verification token
     await EmailVerificationToken.create({
       email,
       code: verificationCode,
@@ -35,7 +27,6 @@ export default defineEventHandler(async (event) => {
       verified: false
     })
 
-    // Send verification email
     await sendEmailVerificationCode(email, verificationCode)
 
     logger.info('Verification code sent successfully', { email })

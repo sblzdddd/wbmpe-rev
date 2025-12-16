@@ -32,11 +32,9 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Get optional folder parameter
     const folderItem = form.find(item => item.name === 'folder');
     const folder = folderItem?.data?.toString() || 'images';
 
-    // Validate file type and size
     const filename = imageFile.filename || 'image.jpg';
     const buffer = imageFile.data;
 

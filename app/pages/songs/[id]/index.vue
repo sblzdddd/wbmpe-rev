@@ -96,14 +96,12 @@ const id = route.params.id;
 const { open } = useSidebar();
 const { setBackground } = useBackground();
 
-// Use the song page composable for common functionality
 const { song, playSong, addToQueue } = useSongPage(id);
 
 const canEdit = computed(() => {
   return true;
 });
 
-// Tab configuration
 const tabsConfig = computed(() => [
   {
     key: 'comments',
@@ -124,7 +122,6 @@ const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/song/:
   onResponse({ response }) {
     const song = response._data?.song;
     if(!song) return;
-    // Set background during SSR when data is received
     if (song.album?.coverUrl) {
       setBackground(song.album.coverUrl, BACKGROUND.playlist);
     }
@@ -135,9 +132,7 @@ const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/song/:
 });
 
 if (error.value) {
-  // Check if there's browser history to go back
   if (import.meta.client && window.history.length > 1) {
-    // Go back to the previous page
     window.history.back();
   } else {
     throw createError({
@@ -157,14 +152,12 @@ const routePath = useState<RoutePath>('routePath', () => ({
 // Watch for route changes to detect coming from edit page
 watch(() => routePath.value.last, (newPath, oldPath) => {
   if (oldPath && oldPath.includes(`/songs/${id}/edit`)) {
-    // Refresh data when coming back from edit page
     refreshFetch();
   }
 }, { immediate: false });
 
 // Also check on mount as fallback for direct navigation
 onMounted(() => {
-  // Check if coming from edit page (client-side only)
   if (import.meta.client) {
     const referrer = document.referrer;
     if (referrer && referrer.includes(`/songs/${id}/edit`)) {
@@ -173,7 +166,6 @@ onMounted(() => {
   }
 });
 
-// Keep the watcher as fallback for client-side updates
 watch(() => song.data.value, (newVal) => {
   if (newVal?.song) {
     seoData.value.title = `${newVal.song.name || 'Song'}`;

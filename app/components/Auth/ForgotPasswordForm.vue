@@ -34,7 +34,6 @@ const submit = async (e: Event) => {
     
     if (response.success) {
       successMessage.value = response.message
-      // Reset form
       email.value = ''
     } else {
       formError.value = response.message || 'Failed to send reset email'

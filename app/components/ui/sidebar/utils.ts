@@ -20,43 +20,10 @@ export function useSidebarState(defaultValue = true) {
     sidebarCookie.value = value
   }
 
-  const getSidebarState = () => {
-    return sidebarCookie.value
-  }
-
   return {
     sidebarState: sidebarCookie,
     setSidebarState,
-    getSidebarState,
   }
-}
-
-// Legacy functions for backward compatibility (now use cookies)
-export function getSidebarState(): boolean | null {
-  // For SSR compatibility, we can't access localStorage during server-side rendering
-  // Instead, we should use the useSidebarState composable
-  if (typeof window === 'undefined') return null
-  
-  // Fallback to localStorage for any existing usage, but migrate to cookie
-  const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY)
-  if (stored) {
-    const value = JSON.parse(stored)
-    // Migrate to cookie and remove from localStorage
-    const { setSidebarState } = useSidebarState()
-    setSidebarState(value)
-    localStorage.removeItem(SIDEBAR_STORAGE_KEY)
-    return value
-  }
-  
-  return null
-}
-
-export function setSidebarState(value: boolean): void {
-  // For SSR compatibility, prefer using the useSidebarState composable
-  if (typeof window === 'undefined') return
-  
-  // Legacy localStorage fallback (will be migrated)
-  localStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(value))
 }
 
 export const [useSidebar, provideSidebarContext] = createContext<{

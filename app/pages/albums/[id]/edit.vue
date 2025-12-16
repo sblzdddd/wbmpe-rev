@@ -105,7 +105,6 @@ const { error, refresh: refreshFetch } = await useFetch<InternalApi['/api/album/
 if (error.value) {
   // Check if there's browser history to go back
   if (import.meta.client && window.history.length > 1) {
-    // Go back to the previous page
     window.history.back();
   } else {
     throw createError({

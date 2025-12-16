@@ -254,5 +254,4 @@ export const PlaylistListResponse = z.object({
   }),
 });
 
-// Legacy exports for backward compatibility
 export const PlaylistRequestParamsInternal = playlistIdParam;
