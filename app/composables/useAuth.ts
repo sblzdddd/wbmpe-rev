@@ -1,56 +1,75 @@
-import { is } from "zod/v4/locales"
-
 const loading = ref(false)
 const error = ref<string | null>(null)
 
 export const useAuth = () => {
   const user = useNuxtData<InternalApi['/api/user/me']['get']>('userInfo')
 
+  const fetchUser = async () => {
+    loading.value = true
+    error.value = null
+    await useFetch<InternalApi['/api/user/me']['get']>('/api/user/me', {
+       key: 'userInfo',
+       retry: false,
+    }).catch(() => {
+        // failed to fetch user, likely not logged in
+    }).finally(() => {
+        loading.value = false
+    })
+  }
+
   const login = async (email: string, password: string) => {
     loading.value = true
     error.value = null
 
-    await $fetch<InternalApi['/api/auth/login']['post']>('/api/auth/login', {
-      method: 'POST',
-      body: { email, password },
-      onResponse: () => {
-        refreshNuxtData('userInfo')
-        refreshNuxtData('userPlaylists')
-        refreshNuxtData('userFavorites')
-      },
-    }).catch((err: ApiError) => {
-      error.value = JSON.stringify([{path: [err.data?.statusCode || 'Error'], message: err.data?.message || 'Login failed'}])
-      return { success: false, error: error.value }
-    }).finally(() => {
-      loading.value = false
-    });
-    return { success: true }
+    try {
+      await $fetch<InternalApi['/api/auth/login']['post']>('/api/auth/login', {
+        method: 'POST',
+        body: { email, password },
+        onResponse: () => {
+          refreshNuxtData('userInfo')
+          refreshNuxtData('userPlaylists')
+          refreshNuxtData('userFavorites')
+        },
+      })
+       await fetchUser()
+
+      return { success: true }
+    } catch (err: any) {
+        const apiError = err.data as { statusCode?: number; message?: string }
+        error.value = JSON.stringify([{path: [apiError?.statusCode || 'Error'], message: apiError?.message || 'Login failed'}])
+        return { success: false, error: error.value }
+    } finally {
+        loading.value = false
+    }
   }
 
   const logout = async () => {
     loading.value = true
     error.value = null
     const originalUserData = user.data.value
-    const response = await $fetch<InternalApi['/api/auth/logout']['post']>('/api/auth/logout', {
-      method: 'POST',
-      onRequest: () => {
-        user.data.value = undefined;
-      },
-      onResponse: () => {
-        refreshNuxtData('userInfo')
-        refreshNuxtData('userPlaylists')
-        refreshNuxtData('userFavorites')
-      },
-      onResponseError: () => {
-        user.data.value = originalUserData;
-      }
-    }).catch((err: ApiError) => {
-      error.value = err.data?.message || 'Logout failed'
-      return { success: false, error: error.value }
-    }).finally(() => {
-      loading.value = false
-    });
-    return { success: response.success }
+    
+    try {
+        const response = await $fetch<InternalApi['/api/auth/logout']['post']>('/api/auth/logout', {
+            method: 'POST',
+            onRequest: () => {
+                user.data.value = undefined;
+            },
+            onResponse: () => {
+                refreshNuxtData('userInfo')
+                refreshNuxtData('userPlaylists')
+                refreshNuxtData('userFavorites')
+            },
+            onResponseError: () => {
+                user.data.value = originalUserData;
+            }
+        })
+        return { success: response.success }
+    } catch (err: any) {
+         error.value = err.data?.message || 'Logout failed'
+         return { success: false, error: error.value }
+    } finally {
+         loading.value = false
+    }
   }
 
   const popupListener = (e: StorageEvent) => {
@@ -80,21 +99,23 @@ export const useAuth = () => {
     loading.value = true
     error.value = null
     
-    await $fetch<InternalApi['/api/register/complete-registration']['post']>('/api/register/complete-registration', {
-      method: 'POST',
-      body: { email, password, userName },
-      onResponse: () => {
-        refreshNuxtData('userInfo')
-        refreshNuxtData('userPlaylists')
-        refreshNuxtData('userFavorites')
-      },
-    }).catch((err: ApiError) => {
-      error.value = err.data?.message || 'Registration failed'
-      return { success: false, error: error.value }
-    }).finally(() => {
-      loading.value = false
-    });
-    return { success: true }
+    try {
+        await $fetch<InternalApi['/api/register/complete-registration']['post']>('/api/register/complete-registration', {
+        method: 'POST',
+        body: { email, password, userName },
+        onResponse: () => {
+            refreshNuxtData('userInfo')
+            refreshNuxtData('userPlaylists')
+            refreshNuxtData('userFavorites')
+        },
+        })
+        return { success: true }
+    } catch (err: any) {
+        error.value = err.data?.message || 'Registration failed'
+        return { success: false, error: error.value } 
+    } finally {
+        loading.value = false
+    }
   }
 
   const clearError = () => {
@@ -111,6 +132,7 @@ export const useAuth = () => {
     logout,
     register,
     openInPopup,
-    clearError
+    clearError,
+    fetchUser
   }
 }

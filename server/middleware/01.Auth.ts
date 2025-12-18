@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
     { path: '/api/user', methods: ['GET', 'POST', 'PUT'] },
     { path: '/api/upload', methods: ['POST'] },
     { path: '/api/search', methods: ['GET', 'POST'] },
+    { path: '/api/user/subscribe', methods: ['POST'] },
   ]
   
   // Check if this is a method-specific protected endpoint
@@ -19,48 +20,46 @@ export default defineEventHandler(async (event) => {
   )
   
   try {
-    // Get current user from session
     const session = await getUserSession(event)
-    if (!session || !session.userId || typeof session.userId !== 'string' || (!session.pwdHash && !session.githubId && !session.googleId)) {
-      if(!requiresAuth) {
+    
+    if (session && session.userId && (session.pwdHash || session.githubId || session.googleId)) {
+        let userAuth: UserAuthDocument | null = null
+        if (session.pwdHash) {
+          userAuth = await UserAuth.findOne({userId: new ObjectId(session.userId as string), pwdHash: session.pwdHash})
+        } else if (session.githubId) {
+          userAuth = await UserAuth.findOne({userId: new ObjectId(session.userId as string), githubId: session.githubId})
+        } else if (session.googleId) {
+          userAuth = await UserAuth.findOne({userId: new ObjectId(session.userId as string), googleId: session.googleId})
+        }
+
+        if(!userAuth) {
+           logger.warn('Auth middleware: User auth not found in database for valid session', {userId: session.userId})
+           await clearUserSession(event)
+           // If auth is required, throw 401
+           if (requiresAuth) {
+             throw createError({
+               statusCode: 401,
+               message: 'Not authenticated (Session invalid)'
+             })
+           }
+           return
+        }
+        
+        event.context.user = {
+            id: session.userId,
+            email: userAuth.email,
+            githubId: userAuth.githubId,
+            googleId: userAuth.googleId
+        }
         return
-      }
-      logger.warn('Auth middleware: Invalid session data:', session)
-      await clearUserSession(event)
-      throw createError({
-        statusCode: 401,
-        message: 'Not authenticated'
-      })
     }
 
-    let userAuth: UserAuthDocument | null = null
-    if (session.pwdHash) {
-      userAuth = await UserAuth.findOne({userId: new ObjectId(session.userId), pwdHash: session.pwdHash})
-    } else if (session.githubId) {
-      userAuth = await UserAuth.findOne({userId: new ObjectId(session.userId), githubId: session.githubId})
-    } else if (session.googleId) {
-      userAuth = await UserAuth.findOne({userId: new ObjectId(session.userId), googleId: session.googleId})
-    }
-
-    if(!userAuth) {
-      if(!requiresAuth) {
-        return
-      }
-      logger.warn('Auth middleware: User auth not found in database')
-      // clear the invalid session
-      await clearUserSession(event)
-      throw createError({
-        statusCode: 401,
-        message: 'Not authenticated'
-      })
-    }
-
-    // Add user info to event context for use in API handlers
-    event.context.user = {
-      id: session.userId,
-      email: userAuth.email,
-      githubId: userAuth.githubId,
-      googleId: userAuth.googleId
+    if (requiresAuth) {
+       logger.warn('Auth middleware: No valid session found', { url: url.pathname })
+       throw createError({
+         statusCode: 401,
+         message: 'Not authenticated'
+       })
     }
     
   } catch (error: unknown) {
@@ -74,4 +73,4 @@ export default defineEventHandler(async (event) => {
       message: 'Internal server error: ' + error
     })
   }
-}) 
+})

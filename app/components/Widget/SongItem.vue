@@ -69,7 +69,7 @@ const formatDuration = (seconds: number) => {
       <button v-if="isDeferredPlayback" class="songItem-processing" disabled>
         <Icon name="svg-spinners:ring-resize" size="20" class="text-blue-500" />
       </button>
-      <button v-else-if="!isPlaying.value || !isPlayingThis" class="songItem-play" @click.stop="playSong()">
+      <button v-else-if="!isPlaying || !isPlayingThis" class="songItem-play" @click.stop="playSong()">
         <Icon name="material-symbols:play-arrow-rounded" size="24" />
       </button>
       <button v-else class="songItem-pause" @click.stop="pauseSong()">
@@ -83,9 +83,9 @@ const formatDuration = (seconds: number) => {
           <a class="songItem-title" @click.stop="router.push(`/songs/${song._id}`)">{{ song.name }}</a>
         </div>
         <p class="songItem-artist">
-          <span v-for="(artist, index) in song.artists" :key="index">
+          <a v-for="(artist, index) in song.artists" :key="index" @click.stop="router.push(`/artists/${artist._id}`)">
             {{ artist.name + (index === song.artists.length - 1 ? '' : ', ') }}
-          </span>
+          </a>
         </p>
       </div>
       <div class="song-actions">
@@ -174,7 +174,6 @@ const formatDuration = (seconds: number) => {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   white-space: unset;
   word-break: break-all;

@@ -64,6 +64,7 @@ const playlistsSchema = new Schema<Playlist, PlaylistsModel>({
           (playlist as any).songs = [...playlist.songs].reverse()
         }
         const result = JSON.parse(JSON.stringify(playlist)) as unknown as FullPlaylist;
+        result.coverUrl = result.coverUrl.replace('cdn://', process.env.NUXT_IMAGE_ALIYUN_BASE_URL + '/');
         
         return result;
       } catch (error) {

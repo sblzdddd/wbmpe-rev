@@ -16,7 +16,7 @@ const {
 
 const { open, openDialog } = useDialog()
 
-const { volume, togglePlayPause, setVolume, isPlaying } = useAudio()
+const { togglePlayPause, isPlaying } = useAudio()
 const { currentSong, hasQueue, queue, currentIndex } = useQueue()
 const { isFavorite, toggleFavorite } = useFavorites()
 
@@ -28,20 +28,12 @@ const handlePlayPause = () => {
   }
 }
 
-const artistsText = computed(() => {
-  const artists = currentSong.value?.artists?.map(a => a.name).join(', ')
-  return artists || ''
-})
-
-const albumText = computed(() => currentSong.value?.album?.name || '')
-const titleText = computed(() => currentSong.value?.name || 'No song selected')
-
 const emblaOptions = {
   loop: true,
   draggable: false,
   align: 'center' as const
 }
-const [_, emblaApi] = emblaCarouselVue(emblaOptions)
+const [emblaRef, emblaApi] = emblaCarouselVue(emblaOptions)
 
 const visualLoop = computed(() => playerState.value.playMode === 'repeat')
 

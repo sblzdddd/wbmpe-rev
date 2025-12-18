@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-
+import ThemeSwitcher from '~/components/Widget/ThemeSwitcher.vue';
 
 defineOptions({
   name: "FullscreenLayout",
@@ -24,12 +24,12 @@ const logoSrc = computed(() => {
       src="/images/bg.jpg"
       alt="background image"
     >
-    <div :style="{ opacity: opacity }" class="absolute top-0 left-[20vh] w-[100vh] z-[-1] rotate-90 transition-opacity duration-1000 ease-in-out" style="transform-origin: top left;">
+    <div :style="{ opacity: opacity }" class="absolute top-0 left-[20vh] w-[100vh] h-[10vw] z-[-1] rotate-90 transition-opacity duration-1000 ease-in-out" style="transform-origin: top left;">
       <ClientOnly fallback-tag="div">
-        <Image :src="logoSrc" img-class="w-full" alt="logo" @load="opacity = 0.2" />
+        <Image :src="logoSrc" class="w-full" alt="logo" @load="opacity = 0.2" />
         <template #fallback>
           <!-- Fallback for SSR -->
-          <Image src="/images/logo/logo-light_1024.png" img-class="w-full" alt="logo" @load="opacity = 0.2" />
+          <Image src="/images/logo/logo-light_1024.png" class="w-full" alt="logo" @load="opacity = 0.2" />
         </template>
       </ClientOnly>
     </div>
@@ -37,7 +37,7 @@ const logoSrc = computed(() => {
       <Button variant="ghost" size="icon" class="w-10 h-10" @click="router.push('/')">
         <Icon name="lucide:home" size="20" />
       </Button>
-      <Widget-Theme-Switcher icon-size="20" class="w-10 h-10" />
+      <ThemeSwitcher icon-size="20" class="w-10 h-10" />
     </div>
     <slot />
   </div>

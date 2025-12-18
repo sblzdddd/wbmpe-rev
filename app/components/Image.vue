@@ -11,7 +11,6 @@
       v-if="isLoaded"
       v-bind="imgAttrs"
       :alt="alt"
-      src=""
     >
     <Skeleton v-else-if="showSkeleton" v-bind="imgAttrs" />
     <slot v-else name="placeholder" v-bind="imgAttrs" />

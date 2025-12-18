@@ -28,6 +28,7 @@
           <Button variant="outline" :disabled="!songs || songs.length === 0" @click="addAllToQueue">
             <Icon name="lucide:plus" class="w-4 h-4" /> Add to queue
           </Button>
+          <SubscribeButton type="album" :id="id as string" :initial-subscribed="isSubscribed" />
           <NuxtLink :to="`/albums/${id}/edit`">
             <Button variant="outline"><Icon name="lucide:edit" class="w-4 h-4" /> Edit</Button>
           </NuxtLink>
@@ -41,6 +42,7 @@
       <Button variant="outline" class="grow" :disabled="!songs || songs.length === 0" @click="addAllToQueue">
         <Icon name="lucide:plus" class="w-4 h-4" /> Add to queue
       </Button>
+      <SubscribeButton type="album" :id="id as string" :initial-subscribed="isSubscribed" class="grow" />
       <NuxtLink class="grow" :to="`/albums/${id}/edit`">
         <Button variant="outline" class="w-full"><Icon name="lucide:edit" class="w-4 h-4" /> Edit</Button>
       </NuxtLink>
@@ -83,10 +85,6 @@
       <template #comments>
         <Comments :entity-id="route.params.id as string ?? ''" />
       </template>
-
-      <template #subscribers>
-        <p>Subscribers</p>
-      </template>
     </TabPages>
   </div>
 </template>
@@ -95,12 +93,17 @@
 import { BACKGROUND } from '@/lib/background_settings';
 import type { SEOData } from '#types/Utils/SEO';
 import { WindowVirtualizer } from '~/components/ui/Virtua';
+import SubscribeButton from '~/components/Widget/SubscribeButton.vue';
 
 const seoData = useState<SEOData>('seoData')
 const route = useRoute();
 const id = route.params.id;
 
 const { open } = useSidebar()
+const { user } = useAuth();
+const isSubscribed = computed(() => {
+  return user.data.value?.subscribedAlbums?.some((a:any) => a._id === id) ?? false;
+})
 
 const { setBackground } = useBackground();
 
@@ -121,12 +124,6 @@ const tabsConfig = computed(() => [
     label: 'Comments',
     to: '?tab=comments',
     slot: 'comments'
-  },
-  {
-    key: 'subscribers',
-    label: 'Subscribers',
-    to: '?tab=subscribers',
-    slot: 'subscribers'
   }
 ]);
 

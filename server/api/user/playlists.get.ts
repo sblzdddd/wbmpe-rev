@@ -11,6 +11,10 @@ export default defineEventHandler(async (event) => {
     const userId = event.context.user?.id
     
     const playlists = await Users.getUserPlaylists(userId)
+    playlists.createdPlaylists.forEach(p => {
+      if (!p.coverUrl) return
+      p.coverUrl = p.coverUrl.replace('cdn://', process.env.NUXT_IMAGE_ALIYUN_BASE_URL + '/');
+    })
 
     return playlists as UserPlaylistsResponse
   } catch (error: unknown) {

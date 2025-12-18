@@ -12,12 +12,47 @@ export default defineEventHandler(async (event) => {
   }
 
   const query = getQuery(event);
-  const roomId = (query.roomId as string) || 'UNKNOWN'; // Default room for now
+  const roomId = query.roomId as string;
+
+  if (!roomId) {
+    throw createError({
+      statusCode: 400,
+      message: 'Room ID is required'
+    });
+  }
 
   // Ensure room exists
-  const room = await WSPRooms.getOrCreateRoom(roomId, userId);
+  const room = await WSPRooms.findOne({ name: roomId }); 
+  if (!room) {
+    throw createError({
+      statusCode: 404,
+      message: 'Room not found'
+    });
+  }
+
   await WSPRooms.addParticipant(roomId, userId);
   wspManager.addClient(roomId, userId, event);
+
+  // Broadcast join
+  const updatedRoom = await WSPRooms.findOne({ name: roomId }).populate('participants', 'userName avatarUrl');
+  if (updatedRoom) {
+      wspManager.broadcast(roomId, {
+          type: 'UPDATE_PARTICIPANTS',
+          participants: updatedRoom.participants
+      });
+  }
+
+  // Clean up on disconnect
+  event.node.req.on('close', async () => {
+     await WSPRooms.removeParticipant(roomId, userId);
+     const leftRoom = await WSPRooms.findOne({ name: roomId }).populate('participants', 'userName avatarUrl');
+     if (leftRoom) {
+        wspManager.broadcast(roomId, {
+            type: 'UPDATE_PARTICIPANTS',
+            participants: leftRoom.participants
+        });
+     }
+  });
 
   const initialEvent = {
     type: 'SYNC_RESPONSE',

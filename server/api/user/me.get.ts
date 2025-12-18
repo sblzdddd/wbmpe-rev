@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
       })
     }
     
-    return await Users.getBasicUserInfo(userId)
+    return await Users.getUserInfo(userId)
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error 

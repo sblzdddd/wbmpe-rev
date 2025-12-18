@@ -10,6 +10,7 @@ type WSPEvent =
   | { type: 'CHANGE_SONG', song: SongType | null }
   | { type: 'UPDATE_QUEUE', songs: SongType[], currentIndex: number }
   | { type: 'SYNC_RESPONSE', state: PlayerSyncState }
+  | { type: 'UPDATE_PARTICIPANTS', participants: any[] }
 
 interface PlayerSyncState {
   isPlaying: boolean
@@ -23,6 +24,7 @@ interface PlayerSyncState {
 const connected = ref(false)
 const lastEvent = ref<WSPEvent | null>(null)
 const isRemoteUpdate = ref(false)
+const currentRoom = ref<{ name: string, participants: any[] } | null>(null)
 let eventSource: EventSource | null = null
 let initialized = false
 
@@ -33,11 +35,15 @@ export const useWSP = () => {
   const { loggedIn } = useUserSession()
 
   const sendAction = async (type: string, payload: any = {}) => {
-    if (!loggedIn.value) return 
+    if (!loggedIn.value || !currentRoom.value) return 
     try {
         await $fetch('/api/wsp/action', {
             method: 'POST',
-            body: { type, payload }
+            body: { 
+                type, 
+                payload,
+                roomId: currentRoom.value.name
+            }
         })
     } catch (e) {
         console.error('Failed to send WSP action', e)
@@ -119,6 +125,11 @@ export const useWSP = () => {
             audio.seek(event.state.currentTime)
           }
           break
+        case 'UPDATE_PARTICIPANTS':
+          if (currentRoom.value) {
+              currentRoom.value.participants = event.participants
+          }
+          break
       }
     } finally {
       setTimeout(() => {
@@ -127,13 +138,14 @@ export const useWSP = () => {
     }
   }
 
-  const connect = () => {
-    if (eventSource?.readyState === 1 || !loggedIn.value) return 
+  const connect = (roomId: string) => {
+    if (eventSource?.readyState === 1) return 
+    if (!loggedIn.value) return
 
-    eventSource = new EventSource('/api/wsp/connect')
+    eventSource = new EventSource(`/api/wsp/connect?roomId=${roomId}`)
     
     eventSource.onopen = () => {
-        console.log('[WSP] Connected')
+        console.log('[WSP] Connected to', roomId)
         connected.value = true
     }
 
@@ -146,18 +158,48 @@ export const useWSP = () => {
         console.error('[WSP] Error', e)
         connected.value = false
         eventSource?.close()
-        // Retry logic could be added here
-        setTimeout(connect, 5000)
+        eventSource = null
     }
+  }
+
+  const joinRoom = async (roomName: string) => {
+      // Check if room exists first
+      try {
+          const info = await $fetch('/api/wsp/room/info', { query: { name: roomName } })
+          currentRoom.value = { name: roomName, participants: info.participants }
+          connect(roomName)
+          return true
+      } catch (e) {
+          console.error('Failed to join room', e)
+          return false
+      }
+  }
+
+  const createRoom = async (roomName: string) => {
+      try {
+          const res = await $fetch('/api/wsp/room/create', { 
+              method: 'POST',
+              body: { name: roomName }
+          })
+          currentRoom.value = { name: res.name, participants: [] }
+          connect(res.name)
+          return true
+      } catch (e) {
+          console.error('Failed to create room', e)
+          return false
+      }
+  }
+
+  const leaveRoom = () => {
+      eventSource?.close()
+      eventSource = null
+      connected.value = false
+      currentRoom.value = null
   }
 
   const init = () => {
     if (initialized || !import.meta.client) return
     initialized = true
-    
-    if (loggedIn.value) {
-        connect()
-    }
     
     watch(() => audio.isPlaying.value, (isPlaying) => {
       if (isRemoteUpdate.value) return
@@ -190,12 +232,8 @@ export const useWSP = () => {
 
     // Watch login state to connect/disconnect
     watch(loggedIn, (isLoggedIn) => {
-        if (isLoggedIn) {
-            connect()
-        } else {
-            eventSource?.close()
-            connected.value = false
-            eventSource = null
+        if (!isLoggedIn) {
+            leaveRoom()
         }
     })
   }
@@ -207,6 +245,10 @@ export const useWSP = () => {
 
   return {
     connected,
-    lastEvent
+    lastEvent,
+    currentRoom,
+    joinRoom,
+    createRoom,
+    leaveRoom
   }
 }

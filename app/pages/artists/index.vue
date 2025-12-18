@@ -56,7 +56,7 @@ const goToPage = (page: number) => {
       </div>
 
       <!-- Loading state -->
-      <div v-else-if="pending" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div v-else-if="pending" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
         <div v-for="i in 12" :key="i" class="animate-pulse">
           <div class="bg-muted/50 aspect-square rounded-full mb-2" />
           <div class="bg-muted/50 h-4 rounded mb-1 mx-auto w-3/4" />
@@ -65,37 +65,8 @@ const goToPage = (page: number) => {
 
       <!-- Artists grid -->
       <div v-else-if="artists.length > 0" class="space-y-6">
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <NuxtLink 
-            v-for="artist in artists" 
-            :key="artist._id" 
-            :to="`/artist/${artist._id}`"
-            class="group cursor-pointer text-center"
-          >
-            <div class="space-y-2">
-              <div class="relative aspect-square rounded-full overflow-hidden bg-muted/50 mx-auto w-full max-w-[200px]">
-                <Picture 
-                  v-if="artist.avatarUrl" 
-                  :src="artist.avatarUrl" 
-                  :alt="`Artist ${artist.name}`"
-                  class="w-full h-full"
-                  :img-attrs="{class: 'w-full h-full object-cover transition-transform group-hover:scale-105'}"
-                  :modifiers="{resize: {s: 300}}"
-                />
-                <div class="w-full h-full flex items-center justify-center text-muted-foreground">
-                  <Icon name="lucide:mic-2" size="32" />
-                </div>
-              </div>
-              <div class="space-y-1">
-                <h3 class="font-medium text-sm truncate group-hover:text-primary transition-colors">
-                  {{ artist.name }}
-                </h3>
-                <p class="text-xs text-muted-foreground">
-                  {{ artist.platform || 'Local' }}
-                </p>
-              </div>
-            </div>
-          </NuxtLink>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+          <EntityCard v-for="artist in artists" :image="artist.avatarUrl" :href="`/artists/${artist._id}`" :title="artist.name" :sub-title="artist.platform" img-class="!w-full !rounded-full" />
         </div>
 
         <!-- Pagination -->

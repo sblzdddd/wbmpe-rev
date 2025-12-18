@@ -43,7 +43,7 @@ const goToPage = (page: number) => {
       </div>
 
       <!-- Loading state -->
-      <div v-else-if="pending" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div v-else-if="pending" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <div v-for="i in 12" :key="i" class="animate-pulse">
           <div class="bg-muted/50 aspect-square rounded-lg mb-2" />
           <div class="bg-muted/50 h-4 rounded mb-1" />
@@ -53,37 +53,8 @@ const goToPage = (page: number) => {
 
       <!-- Albums grid -->
       <div v-else-if="albums.length > 0" class="space-y-6">
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <NuxtLink 
-            v-for="album in albums" 
-            :key="album._id" 
-            :to="`/albums/${album._id}`"
-            class="group cursor-pointer"
-          >
-            <div class="space-y-2">
-              <div class="relative aspect-square rounded-lg overflow-hidden bg-muted/50">
-                <Picture 
-                  v-if="album.coverUrl" 
-                  :src="album.coverUrl" 
-                  :alt="`Album ${album.name}`"
-                  class="w-full h-full"
-                  :img-attrs="{class: 'w-full h-full object-cover transition-transform group-hover:scale-105'}"
-                  :modifiers="{resize: {s: 300}}"
-                />
-                <div v-else class="w-full h-full flex items-center justify-center text-muted-foreground">
-                  <Icon name="lucide:music" size="32" />
-                </div>
-              </div>
-              <div class="space-y-1">
-                <h3 class="font-medium text-sm truncate group-hover:text-primary transition-colors">
-                  {{ album.name }}
-                </h3>
-                <p class="text-xs text-muted-foreground">
-                  {{ album.platform || 'Local' }}
-                </p>
-              </div>
-            </div>
-          </NuxtLink>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+          <EntityCard v-for="album in albums" :image="album.coverUrl" :href="`/albums/${album._id}`" :title="album.name" :sub-title="album.platform" img-class="!w-full" />
         </div>
 
         <!-- Pagination -->

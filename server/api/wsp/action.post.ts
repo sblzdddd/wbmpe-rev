@@ -12,7 +12,16 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event);
-  const { type, payload, roomId = 'WNFOSG' } = body;
+  const { type, payload, roomId } = body;
+
+  if (!roomId) {
+     throw createError({ statusCode: 400, message: 'Missing roomId' });
+  }
+
+  const roomExists = await WSPRooms.exists({ name: roomId });
+  if (!roomExists) {
+      throw createError({ statusCode: 404, message: 'Room not found' });
+  }
 
   if (!type) {
      throw createError({ statusCode: 400, message: 'Missing type' });

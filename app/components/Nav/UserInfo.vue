@@ -51,7 +51,7 @@ const userDisplayName = computed(() => {
               <div class="flex flex-col gap-2">
                 <span class="user-panel-name">{{ userDisplayName }}</span>
                 <div class="flex gap-1">
-                  <Button variant="outline" size="sm" class="h-8 rounded-full">
+                  <Button variant="outline" size="sm" class="h-8 rounded-full" @click="navigateTo('/profile')">
                     <Icon name="lucide:user" size="16" /> Profile
                   </Button>
                   <Button variant="outline" size="icon" class="w-8 h-8 rounded-full" @click.stop="handleLogout">
@@ -75,22 +75,18 @@ const userDisplayName = computed(() => {
 <style scoped>
 @reference "../../assets/css/tailwind.css";
 
-/* User info root styles */
 .user-info-root {
   @apply text-sm flex items-center gap-2;
 }
 
-/* User avatar styles */
 .user-avatar {
   @apply w-5 h-5 rounded-full hidden sm:flex items-center justify-center overflow-hidden;
 }
 
-/* User name styles */
 .user-name {
   @apply text-xs font-light hidden sm:block;
 }
 
-/* User panel toggle styles */
 .user-panel-toggle {
   @apply rounded-full w-7 h-7 relative flex items-center justify-center bg-primary;
 }
@@ -107,44 +103,35 @@ const userDisplayName = computed(() => {
   @apply !text-black;
 }
 
-/* User panel root styles */
 .user-panel-root {
   @apply absolute top-0 right-0 z-[60] flex flex-col rounded-lg;
 }
 
-/* User panel backdrop styles */
 .user-panel-backdrop {
   @apply absolute top-0 right-0 z-0 rounded-[17px] shadow-2xl;
 }
 
-/* User panel header styles */
 .user-panel-header {
   @apply relative z-10 flex justify-end gap-2;
 }
 
-/* User panel avatar styles */
 .user-panel-avatar {
   @apply rounded-full flex items-center justify-center overflow-hidden size-14;
 }
 
-/* User panel name styles */
 .user-panel-name {
   @apply text-base pl-1;
 }
 
-/* User panel content styles */
 .user-panel-content {
   @apply p-1 flex flex-col relative z-10;
 }
 
-/* User panel user info styles */
 .user-panel-user-info {
   @apply flex items-center gap-2 relative mb-2 px-2;
 }
 
 
-
-/* Animation styles */
 .user-panel-enter-active,
 .user-panel-leave-active {
   transition: all 0.3s ease;

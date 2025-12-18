@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import Playlists, { type Playlist } from "./Playlists";
 import UserAuth from "./UserAuth";
 import Songs from "./Songs";
+import UserSubscriptions from "./UserSubscriptions";
 const logger = BakaLogger.child({service: 'Users'})
 
 export type UserDocument = {
@@ -121,6 +122,24 @@ const userSchema = new mongoose.Schema({
       }
       
       const userObject = user as any;
+      
+      // Fetch subscriptions
+      const subscriptions = await UserSubscriptions.findOne({ userId: user._id })
+        .populate({path: 'subscribed_playlists.playlist', select: 'name coverUrl isPublic'})
+        .populate({path: 'subscribed_artists.artist', select: 'name avatarUrl'})
+        .populate({path: 'subscribed_albums.album', select: 'name coverUrl'})
+        .lean();
+
+      if (subscriptions) {
+        userObject.subscribedPlaylists = subscriptions.subscribed_playlists.map((item: any) => item.playlist);
+        userObject.subscribedArtists = subscriptions.subscribed_artists.map((item: any) => item.artist);
+        userObject.subscribedAlbums = subscriptions.subscribed_albums.map((item: any) => item.album);
+      } else {
+        userObject.subscribedPlaylists = [];
+        userObject.subscribedArtists = [];
+        userObject.subscribedAlbums = [];
+      }
+
       if(userObject.favorites) {
         userObject.favorites.coverUrl = await Playlists.getLastSongCoverUrl(userObject.favorites._id);
       }

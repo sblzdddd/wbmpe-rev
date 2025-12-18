@@ -25,6 +25,7 @@
           <Button variant="outline" :disabled="!songs || songs.length === 0" @click="addAllToQueue">
             <Icon name="lucide:plus" class="w-4 h-4" /> Add to queue
           </Button>
+          <SubscribeButton type="playlist" :id="id" :initial-subscribed="isSubscribed" />
           <NuxtLink v-if="canEdit" :to="`/playlists/${id}/edit`">
             <Button variant="outline"><Icon name="lucide:edit" class="w-4 h-4" /> Edit</Button>
           </NuxtLink>
@@ -38,6 +39,7 @@
       <Button variant="outline" class="grow" :disabled="!songs || songs.length === 0" @click="addAllToQueue">
         <Icon name="lucide:plus" class="w-4 h-4" /> Add to queue
       </Button>
+      <SubscribeButton type="playlist" :id="id" :initial-subscribed="isSubscribed" class="grow" />
       <NuxtLink class="grow" :to="`/playlists/${id}/edit`">
         <Button variant="outline" class="w-full"><Icon name="lucide:edit" class="w-4 h-4" /> Edit</Button>
       </NuxtLink>
@@ -80,12 +82,6 @@
       <template #comments>
         <Comments :entity-id="route.params.id as string ?? ''" />
       </template>
-
-      <template #subscribers>
-        <div class="flex flex-col gap-2">
-          <p>Subscribers</p>
-        </div>
-      </template>
     </TabPages>
   </div>
 </template>
@@ -96,6 +92,7 @@ import type { SEOData } from '#types/Utils/SEO';
 import type { RoutePath } from "#types/Utils/RoutePath"
 import type { PlaylistResponse } from '#types/Playlist';
 import { WindowVirtualizer } from '~/components/ui/Virtua';
+import SubscribeButton from '~/components/Widget/SubscribeButton.vue';
 
 const seoData = useState<SEOData>('seoData')
 const route = useRoute();
@@ -118,6 +115,10 @@ const { songs, playAll, addAllToQueue, playSong } = usePlaylistPage(id);
 
 const { user } = useAuth()
 
+const isSubscribed = computed(() => {
+  return user.data.value?.subscribedPlaylists?.some((p:any) => p?._id === id) ?? false;
+})
+
 const canEdit = computed(() => {
   return playlist.data.value?.data?.playlistType === 'playlist' && playlist.data.value?.data?.owner._id === user.data.value?._id
 })
@@ -134,12 +135,6 @@ const tabsConfig = computed(() => [
     label: 'Comments',
     to: '?tab=comments',
     slot: 'comments'
-  },
-  {
-    key: 'subscribers',
-    label: 'Subscribers',
-    to: '?tab=subscribers',
-    slot: 'subscribers'
   }
 ]);
 

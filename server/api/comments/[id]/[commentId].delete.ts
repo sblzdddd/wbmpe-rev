@@ -1,5 +1,5 @@
 import type { ObjectId } from 'mongodb';
-import { Comments } from '~~/server/models/Comments';
+import { Comments } from '../../../models/Comments';
 import { deleteCommentParams } from '~~/shared/validators/comment';
 
 const logger = BakaLogger.child({'service': 'CommentAPI'})
